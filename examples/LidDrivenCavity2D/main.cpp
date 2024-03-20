@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include "grid2D.h"
-#include "grid2D.hh"
+#include "gridGeometry2D.h"
+#include "gridGeometry2D.hh"
 
 using FLOATING_POINT_TYPE = double;
 using T = FLOATING_POINT_TYPE;
@@ -16,7 +16,7 @@ int main( int argc, char* argv[] )
 // ======================
 // === Prepare domain ===
 // ======================
-Grid2D grid = Grid2D<T>(0.,0.,.1,100,100);
+GridGeometry2D grid = GridGeometry2D<T>(0.,0.,.1,100,100);
 grid.print();
 
 // =========================

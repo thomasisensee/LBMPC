@@ -1,7 +1,7 @@
 #ifndef Solver_H
 #define Solver_H
 
-##include "grid2D.h"
+##include "gridGeometry2D.h"
 
 template<typename T>
 class Solver {
@@ -9,7 +9,9 @@ class Solver {
 private:
   /// Grid object
   Grid2D grid;
-  /// Host collide field pointer
+  /// Pointer to the collision model instance
+  CollisionModel* collisionModel;
+  /// LatticeGrid, containing distribution functions
   T *h_Collide;
   /// Device collide field pointer
   T *d_Collide=NULL;
@@ -19,6 +21,8 @@ private:
 public:
   /// Construction of a solver
   Solver(Grid2D grid);
+  /// Destruction of a solver
+  ~Solver();
   /// Initializes the solver
   void init(Grid2D grid);
   /// Initializes host fields
