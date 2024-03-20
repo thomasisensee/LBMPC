@@ -15,5 +15,5 @@ Makefile
 CMakeFiles
 cmake_install.cmake
 
-build/
+build/*
 examples/*/build
