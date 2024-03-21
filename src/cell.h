@@ -8,17 +8,17 @@ class Cell
 {
 private:
     /// LBM model providing dimensionality, velocity set, and weights
-    lbmModelType *lbmModel;
+    lbmModelType* lbmModel;
 
 public:
     // Constructor
     Cell(lbmModelType* model);
     /// Computes the 0th moment (density)
-    T getZeroMoment(T *d_population) const;
+    T getZeroMoment(T* d_population) const;
     /// Computes the 1st moment X
-    T getFirstMomentX(T *d_population) const;
+    T getFirstMomentX(T* d_population) const;
     /// Computes the 1st moment Y
-    T getFirstMomentY(T *d_population) const;
+    T getFirstMomentY(T* d_population) const;
 };
 
 #endif

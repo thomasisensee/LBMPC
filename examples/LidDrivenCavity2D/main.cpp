@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-
 #include "lbmModel.h"
 #include "lbmModel.hh"
 #include "gridGeometry.h"
@@ -9,6 +8,8 @@
 #include "cell.hh"
 #include "latticeGrid.h"
 #include "latticeGrid.hh"
+#include "simulation.h"
+#include "simulation.hh"
 
 using FLOATING_POINT_TYPE = double;
 using T = FLOATING_POINT_TYPE;
@@ -29,12 +30,15 @@ lbm.print();
 // ===============================
 // === Prepare domain geometry ===
 // ===============================
-GridGeometry2D grid = GridGeometry2D<T>(0.,0.,.1,100,100);
-grid.print();
+GridGeometry2D grid2D = GridGeometry2D<T>(0.,0.,.1,100,100);
+grid2D.print();
 
 
 Cell cell = Cell<T,D2Q9<T>>(&lbm);
-LatticeGrid latticeGrid = LatticeGrid<T,D2Q9<T>,GridGeometry2D<T>>(&lbm,&grid);
+LatticeGrid latticeGrid = LatticeGrid<T>(&lbm,&grid2D);
+LatticeGrid latticeGridT = LatticeGrid<T>(&lbm,&grid2D);
+
+LBMFluidSimulation sim = LBMFluidSimulation<T>(&latticeGrid);
 
 // =========================
 // === Initialize fields ===
