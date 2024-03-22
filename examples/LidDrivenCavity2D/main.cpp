@@ -1,15 +1,10 @@
 #include <stdio.h>
 
 #include "lbmModel.h"
-#include "lbmModel.hh"
 #include "gridGeometry.h"
-#include "gridGeometry.hh"
 #include "cell.h"
-#include "cell.hh"
 #include "latticeGrid.h"
-#include "latticeGrid.hh"
 #include "simulation.h"
-#include "simulation.hh"
 
 using FLOATING_POINT_TYPE = double;
 using T = FLOATING_POINT_TYPE;

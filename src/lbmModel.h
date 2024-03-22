@@ -39,5 +39,6 @@ public:
     T getWEIGHT(unsigned int i) const;
 };
 
+#include "lbmModel.hh"
 
 #endif

@@ -63,6 +63,12 @@ unsigned int GridGeometry2D<T>::getGhostNy() const
 }
 
 template<typename T>
+unsigned int GridGeometry2D<T>::getGhostVolume() const
+{
+    return (_nX+2)*(_nY+2);
+}
+
+template<typename T>
 void GridGeometry2D<T>::print() const
 {
     std::cout << "============== Grid Details ==============" << std::endl;

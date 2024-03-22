@@ -3,7 +3,6 @@
 
 #include "gridGeometry.h"
 #include "latticeGrid.h"
-#include "latticeGrid.hh"
 
 template<typename T>
 class Simulation
@@ -14,7 +13,7 @@ protected:
 
 public:
   /// Constructor
-  Simulation(LatticeGrid<T>* latGrid,bool GPU=true);
+  Simulation(LatticeGrid<T>* latGrid, bool GPU=true);
   /// Destructor
   //~Simulation();
   /// Time loop
@@ -28,7 +27,7 @@ class LBMFluidSimulation : public Simulation<T>
 {
 public:
     /// Constructor
-    LBMFluidSimulation(LatticeGrid<T>* latGrid,bool GPU=true);
+    LBMFluidSimulation(LatticeGrid<T>* latGrid, bool GPU=true);
     /// One time step
     void PerformTimeStep();
     /// Streaming of populations
@@ -36,5 +35,7 @@ public:
     /// Collision step
     void Collision();
 };
+
+#include "simulation.hh"
 
 #endif

@@ -1,8 +1,10 @@
 #ifndef Solver_HH
 #define Solver_HH
 
+#include "simulation.h"
+
 template<typename T>
-Simulation<T>::Simulation(LatticeGrid<T>* lGrid,bool GPU) : latGrid(lGrid)
+Simulation<T>::Simulation(LatticeGrid<T>* lGrid, bool GPU) : latGrid(lGrid)
 {
     GPU_ENABLED = GPU;
 }
@@ -16,7 +18,7 @@ Simulation<T>::~Simulation()
 */
 
 template<typename T>
-LBMFluidSimulation<T>::LBMFluidSimulation(LatticeGrid<T>* lGrid,bool GPU) : Simulation<T>(lGrid,GPU)
+LBMFluidSimulation<T>::LBMFluidSimulation(LatticeGrid<T>* lGrid, bool GPU) : Simulation<T>(lGrid,GPU)
 {
 
 }

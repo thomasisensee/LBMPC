@@ -3,19 +3,17 @@
 
 #include <stdio.h>
 
-#include "constants.h"
-#include "cuda.cuh"
-
+#include "latticeGrid.h"
 
 template<typename T>
-LatticeGrid<T>::LatticeGrid(lbmModel<T>* model,GridGeometry2D<T>* grid,bool GPU) : LBMModel(model),gridGeometry(grid)
+LatticeGrid<T>::LatticeGrid(lbmModel<T>* model, GridGeometry2D<T>* grid, bool GPU) : LBMModel(model), gridGeometry(grid)
 {
     GPU_ENABLED = GPU;
-    this->h_distribution = new T[this->LBMModel->getQ() * this->gridGeometry->getGhostNx() * this->gridGeometry->getGhostNy()];
+    this->h_distribution = new T[this->LBMModel->getQ() * this->gridGeometry->getGhostVolume()];
     
     if(GPU_ENABLED)
     {
-        AllocateDeviceField<T>(&(this->d_collision),this->LBMModel->getQ());
+        AllocateDeviceField<T>(&d_collision, this->LBMModel->getQ());
     }
     else
     {
@@ -27,6 +25,10 @@ template<typename T>
 LatticeGrid<T>::~LatticeGrid()
 {
     delete[] this->h_distribution;
+    if(this->GPU_ENABLED)
+    {
+        FreeDeviceField<T>(d_collision);
+    }
 }
 
 template<typename T>

@@ -5,7 +5,7 @@
 
 #include "lbmModel.h"
 #include "gridGeometry.h"
-#include "cell.h"
+#include "cuda.h"
 
 template<typename T>
 class LatticeGrid
@@ -29,5 +29,7 @@ public:
     ~LatticeGrid();
     void InitializeCPU(T* h_data);
 };
+
+#include "latticeGrid.hh"
 
 #endif

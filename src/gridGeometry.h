@@ -35,8 +35,12 @@ public:
     unsigned int getGhostNx() const;
     /// Read access to grid height
     unsigned int getGhostNy() const;
+    /// Read access to grid volume
+    unsigned int getGhostVolume() const;
     /// Prints grid details
     void print() const;
 };
+
+#include "gridGeometry.hh"
 
 #endif

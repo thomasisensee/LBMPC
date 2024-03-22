@@ -21,4 +21,6 @@ public:
     T getFirstMomentY(T* d_population) const;
 };
 
+#include "cell.hh"
+
 #endif
