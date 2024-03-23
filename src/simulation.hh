@@ -9,14 +9,6 @@ Simulation<T>::Simulation(LatticeGrid<T>* lGrid, bool GPU) : latGrid(lGrid)
     GPU_ENABLED = GPU;
 }
 
-/*
-template<typename T>
-Simulation<T>::~Simulation()
-{
-
-}
-*/
-
 template<typename T>
 LBMFluidSimulation<T>::LBMFluidSimulation(LatticeGrid<T>* lGrid, bool GPU) : Simulation<T>(lGrid,GPU)
 {
@@ -24,23 +16,23 @@ LBMFluidSimulation<T>::LBMFluidSimulation(LatticeGrid<T>* lGrid, bool GPU) : Sim
 }
 
 template<typename T>
-void LBMFluidSimulation<T>::PerformTimeStep()
+void LBMFluidSimulation<T>::performTimeStep()
 {
 
 }
 
 template<typename T>
-void LBMFluidSimulation<T>::Streaming()
+void LBMFluidSimulation<T>::streamingStep()
 {
 
 }
 
 template<typename T>
-void LBMFluidSimulation<T>::Collision()
+void LBMFluidSimulation<T>::collisionStep()
 {
 #define pos(x,y)		(Nx*(y)+(x))
 
-    unsigned int Q = this->latGrid->LBMModel->getQ();
+    unsigned int Q = this->latGrid->lbmModel->getQ();
     unsigned int Nx = this->latGrid->gridGeometry->getGhostNx();
     unsigned int Ny = this->latGrid->gridGeometry->getGhostNy();
     

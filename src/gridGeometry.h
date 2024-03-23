@@ -1,10 +1,8 @@
 #ifndef GridGeometry_H
 #define GridGeometry_H
 
-/* A grid is given with its left lower corner, the number of nodes
- * in the direction x and y and the distance between two nodes.
- */
- 
+#include <cuda_runtime.h>
+
 template<typename T>
 class GridGeometry2D
 {
@@ -23,20 +21,20 @@ public:
     /// Initializes the grid
     void init(T globPosX, T globPosY, T delta, int nX, int nY);
     /// Read access to left lower corner coordinates
-    T get_globPosX() const;
-    T get_globPosY() const;
+    __host__ __device__ T getGlobPosX() const;
+    __host__ __device__ T getGlobPosY() const;
     /// Read access to the distance of grid nodes
-    T getDelta() const;
+    __host__ __device__ T getDelta() const;
     /// Read access to grid width
-    unsigned int getNx() const;
+    __host__ __device__ unsigned int getNx() const;
     /// Read access to grid height
-    unsigned int getNy() const;
+    __host__ __device__ unsigned int getNy() const;
     /// Read access to grid width
-    unsigned int getGhostNx() const;
+    __host__ __device__ unsigned int getGhostNx() const;
     /// Read access to grid height
-    unsigned int getGhostNy() const;
+    __host__ __device__ unsigned int getGhostNy() const;
     /// Read access to grid volume
-    unsigned int getGhostVolume() const;
+    __host__ __device__ unsigned int getGhostVolume() const;
     /// Prints grid details
     void print() const;
 };

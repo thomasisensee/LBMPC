@@ -5,19 +5,19 @@
 #include "lbmModel.h"
 
 template<typename T>
-unsigned int lbmModel<T>::getD() const
+__host__ __device__ unsigned int LBMModel<T>::getD() const
 {
     return D;
 }
 
 template<typename T>
-unsigned int lbmModel<T>::getQ() const
+__host__ __device__ unsigned int LBMModel<T>::getQ() const
 {
     return Q;
 }
 
 template<typename T>
-void lbmModel<T>::print() const
+void LBMModel<T>::print() const
 {
     std::cout << "============================== LBM Model Details ==============================" << std::endl;
     std::cout << "==                                   D" << this->getD() << "Q" << this->getQ() << "                                    ==" << std::endl;
@@ -60,19 +60,19 @@ D2Q9<T>::~D2Q9()
 }
 
 template<typename T>
-int D2Q9<T>::getCX(unsigned int i) const
+__host__ __device__ int D2Q9<T>::getCX(unsigned int i) const
 {
     return this->LATTICE_VELOCITIES[i*2];
 }
 
 template<typename T>
-int D2Q9<T>::getCY(unsigned int i) const
+__host__ __device__ int D2Q9<T>::getCY(unsigned int i) const
 {
     return this->LATTICE_VELOCITIES[i*2+1];
 }
 
 template<typename T>
-T D2Q9<T>::getWEIGHT(unsigned int i) const
+__host__ __device__ T D2Q9<T>::getWEIGHT(unsigned int i) const
 {
     return this->LATTICE_WEIGHTS[i];
 }

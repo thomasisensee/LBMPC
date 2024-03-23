@@ -4,20 +4,22 @@
 #include <stdio.h>
 
 #include "latticeGrid.h"
+#include "cuda.h"
 
 template<typename T>
-LatticeGrid<T>::LatticeGrid(lbmModel<T>* model, GridGeometry2D<T>* grid, bool GPU) : LBMModel(model), gridGeometry(grid)
+LatticeGrid<T>::LatticeGrid(LBMModel<T>* lbmModel, GridGeometry2D<T>* gridGeometry, bool GPU) : lbmModel(lbmModel), gridGeometry(gridGeometry)
 {
     GPU_ENABLED = GPU;
-    this->h_distribution = new T[this->LBMModel->getQ() * this->gridGeometry->getGhostVolume()];
+    this->h_distribution = new T[this->lbmModel->getQ() * this->gridGeometry->getGhostVolume()];
     
     if(GPU_ENABLED)
     {
-        AllocateDeviceField<T>(&d_collision, this->LBMModel->getQ());
+        allocateDeviceField<T>(&d_collision, this->lbmModel->getQ() * this->gridGeometry->getGhostVolume()*sizeof(T));
+        KERNEL_CALLER_initializeLBMDistributions<T>(d_collision,lbmModel,gridGeometry);
     }
     else
     {
-        InitializeCPU(h_distribution);   
+        initializeLBMDistributionsCPU(h_distribution);   
     }
 }
 
@@ -27,19 +29,20 @@ LatticeGrid<T>::~LatticeGrid()
     delete[] this->h_distribution;
     if(this->GPU_ENABLED)
     {
-        FreeDeviceField<T>(d_collision);
+        freeDeviceField<T>(d_collision);
+        freeDeviceField<T>(d_streaming);
     }
 }
 
 template<typename T>
-void LatticeGrid<T>::InitializeCPU(T* h_data)
+void LatticeGrid<T>::initializeLBMDistributionsCPU(T* h_data)
 {
 #define pos(x,y)		(Nx*(y)+(x))
 
-    unsigned int Q = this->LBMModel->getQ();
+    unsigned int Q = this->lbmModel->getQ();
     unsigned int Nx = this->gridGeometry->getGhostNx();
     unsigned int Ny = this->gridGeometry->getGhostNy();
-	T first_order, second_order, third_order, fourth_order;
+	T firstOrder, secondOrder, thirdOrder, fourthOrder;
 
 	for(int l=0; l<Q; l++)
 	{
@@ -47,11 +50,11 @@ void LatticeGrid<T>::InitializeCPU(T* h_data)
 	    {
 	        for(int j=0; j<Ny; j++)
 	        {
-                first_order = 0.;
-                second_order = 0.;
-                third_order = 0.;
-                fourth_order = 0.;
-   		        h_data[Q*pos(i,j)+l] = this->LBMModel->getWEIGHT(l)*(1. + first_order + second_order + third_order + fourth_order);
+                firstOrder = 0.;
+                secondOrder = 0.;
+                thirdOrder = 0.;
+                fourthOrder = 0.;
+   		        h_data[Q*pos(i,j)+l] = this->lbmModel->getWEIGHT(l)*(1. + firstOrder + secondOrder + thirdOrder + fourthOrder);
 		    }
 		}
 	}

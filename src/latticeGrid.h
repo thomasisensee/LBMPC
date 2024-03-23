@@ -19,15 +19,15 @@ private:
     
 public:
     /// LBM model providing dimensionality, velocity set, and weights
-    lbmModel<T>* LBMModel;
+    LBMModel<T>* lbmModel;
     /// Grid geometry (spacing, Nx, Ny, etc.)
     GridGeometry2D<T>* gridGeometry;
 
     /// Constructor
-    LatticeGrid(lbmModel<T>* model,GridGeometry2D<T>* grid,bool GPU=true);
+    LatticeGrid(LBMModel<T>* model,GridGeometry2D<T>* grid,bool GPU=true);
     /// Destructor
     ~LatticeGrid();
-    void InitializeCPU(T* h_data);
+    void initializeLBMDistributionsCPU(T* h_data);
 };
 
 #include "latticeGrid.hh"

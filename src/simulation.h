@@ -17,9 +17,9 @@ public:
   /// Destructor
   //~Simulation();
   /// Time loop
-  virtual void PerformTimeStep() = 0;
-  virtual void Streaming() = 0;
-  virtual void Collision() = 0;
+  virtual void performTimeStep() = 0;
+  virtual void streamingStep() = 0;
+  virtual void collisionStep() = 0;
 };
 
 template<typename T>
@@ -29,11 +29,11 @@ public:
     /// Constructor
     LBMFluidSimulation(LatticeGrid<T>* latGrid, bool GPU=true);
     /// One time step
-    void PerformTimeStep();
+    void performTimeStep();
     /// Streaming of populations
-    void Streaming();
+    void streamingStep();
     /// Collision step
-    void Collision();
+    void collisionStep();
 };
 
 #include "simulation.hh"

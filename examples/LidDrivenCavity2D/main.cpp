@@ -25,13 +25,13 @@ lbm.print();
 // ===============================
 // === Prepare domain geometry ===
 // ===============================
-GridGeometry2D grid2D = GridGeometry2D<T>(0.,0.,.1,100,100);
+GridGeometry2D grid2D = GridGeometry2D<T>(0.,0.,.1,14,14);
 grid2D.print();
 
 
 Cell cell = Cell<T,D2Q9<T>>(&lbm);
 LatticeGrid latticeGrid = LatticeGrid<T>(&lbm,&grid2D);
-LatticeGrid latticeGridT = LatticeGrid<T>(&lbm,&grid2D);
+//LatticeGrid latticeGridT = LatticeGrid<T>(&lbm,&grid2D);
 
 LBMFluidSimulation sim = LBMFluidSimulation<T>(&latticeGrid);
 
