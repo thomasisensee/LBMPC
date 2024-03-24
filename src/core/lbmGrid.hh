@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "lbmGrid.h"
-#include "cuda.h"
+#include "cuda/cuda.h"
 
 template<typename T>
 LBMGrid<T>::LBMGrid(LBMModelWrapper<T>* lbmModel, GridGeometry2DWrapper<T>* gridGeometry, bool GPU) : lbmModel(lbmModel), gridGeometry(gridGeometry)

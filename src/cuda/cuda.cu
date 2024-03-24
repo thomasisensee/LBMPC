@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
 
-#include "constants.h"
 #include "cuda.h"
-#include "lbmModel.h"
-#include "gridGeometry.h"
+#include "core/constants.h"
+#include "core/lbmModel.h"
+#include "core/gridGeometry.h"
 
 /**
  * Checks the returned cudaError_t and prints corresponding message in case of error.

@@ -1,8 +1,8 @@
 #ifndef CUDA_H
 #define CUDA_H
 
-#include "lbmModel.h"
-#include "gridGeometry.h"
+#include "core/lbmModel.h"
+#include "core/gridGeometry.h"
 
 template<typename T>
 void allocateDeviceField(T** d_array, size_t ArraySize);

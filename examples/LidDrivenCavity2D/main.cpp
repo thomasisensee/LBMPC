@@ -1,8 +1,8 @@
 #include <stdio.h>
 
-#include "lbmModel.h"
-#include "gridGeometry.h"
-#include "lbmGrid.h"
+#include "core/lbmModel.h"
+#include "core/gridGeometry.h"
+#include "core/lbmGrid.h"
 //#include "simulation.h"
 
 using FLOATING_POINT_TYPE = double;

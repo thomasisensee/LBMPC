@@ -12,19 +12,19 @@ include_directories(${CUDA_INCLUDE_DIRS})
 
 # Add source files
 set(SOURCES
-    src/constants.h
-    src/cell.h
-    src/cell.hh
-    src/gridGeometry.h
-    src/gridGeometry.hh
-    src/latticeGrid.h
-    src/latticeGrid.hh
-    src/lbmModel.h
-    src/lbmModel.hh
-    src/simulation.h
-    src/simulation.hh
-    src/cuda.h
-    src/cuda.cu
+    src/core/constants.h
+    src/core/cell.h
+    src/core/cell.hh
+    src/core/gridGeometry.h
+    src/core/gridGeometry.hh
+    src/core/lbmGrid.h
+    src/core/lbmGrid.hh
+    src/core/lbmModel.h
+    src/core/lbmModel.hh
+    src/core/simulation.h
+    src/core/simulation.hh
+    src/cuda/cuda.h
+    src/cuda/cuda.cu
 )
 
 # Example: LidDrivenCavity2D
