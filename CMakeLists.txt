@@ -32,6 +32,7 @@ set(SOURCES
 CUDA_ADD_EXECUTABLE(LidDrivenCavity2D examples/LidDrivenCavity2D/main.cpp ${SOURCES})
 target_link_libraries(LidDrivenCavity2D ${CUDA_LIBRARIES})
 set_target_properties(LidDrivenCavity2D PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/LidDrivenCavity2D/build")
+set_target_properties(LidDrivenCavity2D PROPERTIES CUDA_ARCHITECTURES "native")
 
 
 ## Example: Fluid-Heat Coupling

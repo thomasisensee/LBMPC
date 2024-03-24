@@ -78,4 +78,39 @@ void GridGeometry2D<T>::print() const
     std::cout << "==========================================\n" << std::endl;
 }
 
+template<typename T>
+GridGeometry2DWrapper<T>::GridGeometry2DWrapper(GridGeometry2D<T>* gridGeometry) : hostGridGeometry(gridGeometry), deviceGridGeometry(nullptr)
+{
+    allocateAndCopyToDevice();
+}
+
+template<typename T>
+GridGeometry2DWrapper<T>::~GridGeometry2DWrapper()
+{
+    if(deviceGridGeometry)
+    {
+        cudaFree(deviceGridGeometry);
+    }
+}
+
+template<typename T>
+void GridGeometry2DWrapper<T>::allocateAndCopyToDevice()
+{
+    // Allocate device version of LBMModel object and copy data
+    cudaMalloc(&deviceGridGeometry, sizeof(GridGeometry2D<T>));
+    cudaMemcpy(deviceGridGeometry, hostGridGeometry, sizeof(GridGeometry2D<T>), cudaMemcpyHostToDevice);
+}
+
+template<typename T>
+GridGeometry2D<T>* GridGeometry2DWrapper<T>::getHostGridGeometry() const
+{
+    return hostGridGeometry;
+}
+
+template<typename T>
+GridGeometry2D<T>* GridGeometry2DWrapper<T>::getDeviceGridGeometry() const
+{
+    return deviceGridGeometry;
+}
+    
 #endif

@@ -11,6 +11,6 @@ template<typename T>
 void freeDeviceField(T* d_array);
 
 template<typename T>
-void KERNEL_CALLER_initializeLBMDistributions(T *Collide, LBMModel<T>* lbmModel, GridGeometry2D<T>* gridGeometry);
+void KERNEL_CALLER_initializeLBMDistributions(T *Collide, LBMModelWrapper<T>* lbmModel, GridGeometry2DWrapper<T>* gridGeometry);
 
 #endif

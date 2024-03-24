@@ -18,14 +18,6 @@ inline void cudaAssert(cudaError_t code, const char *file, int line, bool abort=
 }
 
 template<typename T>
-void allocateDeviceField(T** d_array, size_t ArraySize)
-{
-	cudaErrorCheck(cudaMalloc(d_array, ArraySize));
-}
-template void allocateDeviceField<float>(float**, size_t);
-template void allocateDeviceField<double>(double**, size_t);
-
-template<typename T>
 void freeDeviceField(T* d_array)
 {
 	cudaErrorCheck(cudaFree(d_array));
@@ -54,7 +46,7 @@ __global__ void initializeLBMDistributions(T* Collide, LBMModel<T>* lbmModel, Gr
         //ciy = lbmModel->getCY(i);
         cix = 0.0;
         ciy = 0.0;
-   		printf("(cix,ciy) = (%d,%d)\n",cix,ciy);
+
         cixcs2 = cix*cix-C_S_POW2;
         ciycs2 = ciy*ciy-C_S_POW2;
         firstOrder = C_S_POW2_INV*(U*cix+V*ciy);
@@ -70,28 +62,15 @@ template __global__ void initializeLBMDistributions<float>(float*, LBMModel<floa
 template __global__ void initializeLBMDistributions<double>(double*, LBMModel<double>*, GridGeometry2D<double>*);
 
 template<typename T>
-void KERNEL_CALLER_initializeLBMDistributions(T* Collide, LBMModel<T>* lbmModel, GridGeometry2D<T>* gridGeometry)
+void KERNEL_CALLER_initializeLBMDistributions(T* Collide, LBMModelWrapper<T>* lbmModel, GridGeometry2DWrapper<T>* gridGeometry)
 {
-    /// Create a D2Q9(LBMModel) device pointer and copy from Host to Device
-    D2Q9<T>* d_lbmModel;
-    cudaMalloc(&d_lbmModel, sizeof(D2Q9<T>));
-    cudaMemcpy(d_lbmModel, lbmModel, sizeof(D2Q9<T>), cudaMemcpyHostToDevice);
- 
-    /// Create a D2Q9(LBMModel) device pointer and copy from Host to Device
-    GridGeometry2D<T>* d_gridGeometry;
-    cudaMalloc(&d_gridGeometry, sizeof(GridGeometry2D<T>));
-    cudaMemcpy(d_gridGeometry, gridGeometry, sizeof(GridGeometry2D<T>), cudaMemcpyHostToDevice);
-
     /// Call CUDA kernel
     unsigned int blockDimX = 16;
     unsigned int blockDimY = 16;
     dim3 blockDim(blockDimX, blockDimY);
-    dim3 gridDim((gridGeometry->getGhostNx() + blockDimX - 1) / blockDimX, (gridGeometry->getGhostNy() + blockDimY - 1) / blockDimY);
-    initializeLBMDistributions<T><<<gridDim,blockDim>>>(Collide, d_lbmModel, d_gridGeometry);
+    dim3 gridDim((gridGeometry->getHostGridGeometry()->getGhostNx() + blockDimX - 1) / blockDimX, (gridGeometry->getHostGridGeometry()->getGhostNy() + blockDimY - 1) / blockDimY);
 
-    /// Free allocated device memory
-    cudaFree(d_lbmModel);
-    cudaFree(d_gridGeometry);
+    initializeLBMDistributions<T><<<gridDim,blockDim>>>(Collide, lbmModel->getDeviceModel(), gridGeometry->getDeviceGridGeometry());
 }
-template void KERNEL_CALLER_initializeLBMDistributions<float>(float*, LBMModel<float>*, GridGeometry2D<float>*);
-template void KERNEL_CALLER_initializeLBMDistributions<double>(double*, LBMModel<double>*, GridGeometry2D<double>*);
+template void KERNEL_CALLER_initializeLBMDistributions<float>(float*, LBMModelWrapper<float>*, GridGeometry2DWrapper<float>*);
+template void KERNEL_CALLER_initializeLBMDistributions<double>(double*, LBMModelWrapper<double>*, GridGeometry2DWrapper<double>*);

@@ -26,6 +26,8 @@ public:
     __host__ __device__ virtual int getCY(unsigned int i) const = 0;
     /// get the lattice weight corresponding to index i
     __host__ __device__ virtual T getWEIGHT(unsigned int i) const = 0;
+    __host__  int* getLatticeVelocitiesPtr() const;
+    __host__  T* getLatticeWeightsPtr() const;
     /// Prints LBM model details
     void print() const;
 };
@@ -39,6 +41,32 @@ public:
     __host__ __device__ int getCX(unsigned int i) const;
     __host__ __device__ int getCY(unsigned int i) const;
     __host__ __device__ T getWEIGHT(unsigned int i) const;
+};
+
+/// Wrapper class for duplication on GPU
+template<typename T>
+class LBMModelWrapper {
+private:
+    /// Host-side LBMModel object
+    LBMModel<T>* hostModel;
+    /// Device-side LBMModel object
+    LBMModel<T>* deviceModel;
+
+public:
+    // Constructor
+    LBMModelWrapper(LBMModel<T>* lbmModel);
+
+    // Destructor
+    ~LBMModelWrapper();
+
+    // Allocate device memory and copy data
+    void allocateAndCopyToDevice();
+    
+    /// Get pointer to the host LBMModel object
+    LBMModel<T>* getHostModel() const;
+    
+    /// Get pointer to the device LBMModel object
+    LBMModel<T>* getDeviceModel() const;
 };
 
 #include "lbmModel.hh"
