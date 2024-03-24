@@ -30,22 +30,32 @@ public:
     __host__  T* getLatticeWeightsPtr() const;
     /// Prints LBM model details
     void print() const;
+    /// Provides access to the specific derived class type
+    __host__  virtual LBMModel<T>* getDerivedModel() const = 0;
 };
 
 template<typename T>
 class D2Q9 : public LBMModel<T>
 {
 public:
+    // Constructor
     D2Q9();
+    // Destructor
     ~D2Q9();
-    __host__ __device__ int getCX(unsigned int i) const;
-    __host__ __device__ int getCY(unsigned int i) const;
-    __host__ __device__ T getWEIGHT(unsigned int i) const;
+    /// get the lattice velocity x-component corresponding to index i
+    __host__ __device__ virtual int getCX(unsigned int i) const override;
+    /// get the lattice velocity y-component corresponding to index i
+    __host__ __device__ virtual int getCY(unsigned int i) const override;
+    /// get the lattice weight corresponding to index i
+    __host__ __device__ virtual T getWEIGHT(unsigned int i) const override;
+    /// Provides access to the specific derived class type
+    __host__ virtual LBMModel<T>* getDerivedModel() const override;
 };
 
 /// Wrapper class for duplication on GPU
 template<typename T>
-class LBMModelWrapper {
+class LBMModelWrapper
+{
 private:
     /// Host-side LBMModel object
     LBMModel<T>* hostModel;
@@ -67,6 +77,9 @@ public:
     
     /// Get pointer to the device LBMModel object
     LBMModel<T>* getDeviceModel() const;
+    
+    /// Provides access to the specific derived class type
+    LBMModel<T>* getDerivedDeviceModel() const;
 };
 
 #include "lbmModel.hh"

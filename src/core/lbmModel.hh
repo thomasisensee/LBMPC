@@ -76,25 +76,31 @@ D2Q9<T>::~D2Q9()
 }
 
 template<typename T>
-__host__ __device__ int D2Q9<T>::getCX(unsigned int i) const
+__host__ __device__ int D2Q9<T>::getCX(unsigned int i) const 
 {
     return this->LATTICE_VELOCITIES[i*2];
 }
 
 template<typename T>
-__host__ __device__ int D2Q9<T>::getCY(unsigned int i) const
+__host__ __device__ int D2Q9<T>::getCY(unsigned int i) const 
 {
     return this->LATTICE_VELOCITIES[i*2+1];
 }
 
 template<typename T>
-__host__ __device__ T D2Q9<T>::getWEIGHT(unsigned int i) const
+__host__ __device__ T D2Q9<T>::getWEIGHT(unsigned int i) const 
 {
     return this->LATTICE_WEIGHTS[i];
 }
 
 template<typename T>
-LBMModelWrapper<T>::LBMModelWrapper(LBMModel<T>* lbmModel) : hostModel(lbmModel), deviceModel(nullptr)
+__host__ LBMModel<T>* D2Q9<T>::getDerivedModel() const
+{
+    return new D2Q9<T>(*this); // Return a pointer to a new D2Q9 object
+}
+
+template<typename T>
+LBMModelWrapper<T>::LBMModelWrapper(LBMModel<T>* lbmModel) : hostModel(lbmModel)//, deviceModel(nullptr)
 {
     //allocateAndCopyToDevice();  
 }
@@ -114,8 +120,9 @@ template<typename T>
 void LBMModelWrapper<T>::allocateAndCopyToDevice()
 {
     // Allocate device version of LBMModel object and copy data
-    cudaErrorCheck(cudaMalloc((void **)&deviceModel, sizeof(D2Q9<T>)));
-    cudaErrorCheck(cudaMemcpy(deviceModel, hostModel, sizeof(D2Q9<T>), cudaMemcpyHostToDevice));
+    cudaErrorCheck(cudaMalloc((void **)&deviceModel, sizeof(*hostModel)));
+    cudaErrorCheck(cudaMemcpy(deviceModel, hostModel, sizeof(*hostModel), cudaMemcpyHostToDevice));
+
 
     // Allocate device memory for LATTICE_VELOCITIES and copy data
     int* deviceLatticeVelocities;
@@ -151,8 +158,8 @@ void LBMModelWrapper<T>::allocateAndCopyToDevice()
     }
 */  
     
-    
-    KERNEL_CALLER_test(deviceModel);
+    test1(deviceModel);
+    //test2(deviceLatticeWeights);
 }
 
 template<typename T>
@@ -165,6 +172,12 @@ template<typename T>
 LBMModel<T>* LBMModelWrapper<T>::getDeviceModel() const
 {
     return deviceModel;
+}
+
+template<typename T>
+LBMModel<T>* LBMModelWrapper<T>::getDerivedDeviceModel() const
+{
+    return hostModel->getDerivedModel();
 }
 
 #endif

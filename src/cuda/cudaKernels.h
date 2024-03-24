@@ -5,7 +5,10 @@
 #include "core/gridGeometry.h"
 
 template<typename T>
-void KERNEL_CALLER_test(LBMModel<T>* lbmModel);
+void test1(LBMModel<T>* lbmModel);
+
+template<typename T>
+void test2(T* test);
 
 template<typename T>
 __global__ void useClass(LBMModel<T>* lbmModel);

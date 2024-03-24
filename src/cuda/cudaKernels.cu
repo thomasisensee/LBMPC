@@ -21,19 +21,32 @@ __global__ void useClass(LBMModel<T>* lbmModel)
     unsigned int Q = lbmModel->getQ();
     unsigned int D = lbmModel->getD();
     printf("Q = %d, D = %d\n",Q,D);
-    int ci;
+    int cix,ciy;
     for(unsigned int i=0; i<Q; i++)
     {
-        ci = lbmModel->getCX(i);
-        printf("ci = %d\n",ci);
-    } 
+        //cix = lbmModel->LATTICE_VELOCITIES[i*2];
+        //ciy = lbmModel->LATTICE_VELOCITIES[i*2+1];        
+        cix = lbmModel->getCX(i);
+        ciy = lbmModel->getCY(i);
+        printf("cix = %d, ciy = %d\n",cix,ciy);
+    }
 }
 template __global__ void useClass<float>(LBMModel<float>* lbmModel);
 template __global__ void useClass<double>(LBMModel<double>* lbmModel);
 
+template<typename T>
+__global__ void testKernel(T* test)
+{
+    for(int i=0; i<9; i++)
+    {
+        printf("%g\n",test[i]);
+    }
+}
+template __global__ void testKernel<float>(float* test);
+template __global__ void testKernel<double>(double* lbtestmModel);
 
 template<typename T>
-void KERNEL_CALLER_test(LBMModel<T>* lbmModel)
+void test1(LBMModel<T>* lbmModel)
 {
     printf("before\n");
     useClass<T><<<1,1>>>(lbmModel);
@@ -43,8 +56,21 @@ void KERNEL_CALLER_test(LBMModel<T>* lbmModel)
     cudaDeviceSynchronize();
     printf("after\n");
 }
-template void KERNEL_CALLER_test<float>(LBMModel<float>*);
-template void KERNEL_CALLER_test<double>(LBMModel<double>*);
+template void test1<float>(LBMModel<float>*);
+template void test1<double>(LBMModel<double>*);
+
+template<typename T>
+void test2(T* test)
+{
+    printf("before\n");
+    testKernel<<<1,1>>>(test);
+    cudaDeviceSynchronize();
+    //testKernel<T><<<1,1>>>(a);
+    printf("after\n");
+}
+template void test2<float>(float*);
+template void test2<double>(double*);
+
 
 template<typename T>
 __global__ void initializeLBMDistributions(T* Collide, LBMModel<T>* lbmModel, GridGeometry2D<T>* gridGeometry)
