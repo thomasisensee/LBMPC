@@ -2,7 +2,9 @@
 #define GridGeometry_HH
 
 #include <iostream>
+
 #include "gridGeometry.h"
+#include "cuda/cudaErrorHandler.h"
 
 template<typename T>
 GridGeometry2D<T>::GridGeometry2D(T globPosX, T globPosY, T delta, int nX, int nY)
@@ -89,7 +91,7 @@ GridGeometry2DWrapper<T>::~GridGeometry2DWrapper()
 {
     if(deviceGridGeometry)
     {
-        cudaFree(deviceGridGeometry);
+        cudaErrorCheck(cudaFree(deviceGridGeometry));
     }
 }
 
@@ -97,8 +99,8 @@ template<typename T>
 void GridGeometry2DWrapper<T>::allocateAndCopyToDevice()
 {
     // Allocate device version of LBMModel object and copy data
-    cudaMalloc(&deviceGridGeometry, sizeof(GridGeometry2D<T>));
-    cudaMemcpy(deviceGridGeometry, hostGridGeometry, sizeof(GridGeometry2D<T>), cudaMemcpyHostToDevice);
+    cudaErrorCheck(cudaMalloc(&deviceGridGeometry, sizeof(GridGeometry2D<T>)));
+    cudaErrorCheck(cudaMemcpy(deviceGridGeometry, hostGridGeometry, sizeof(GridGeometry2D<T>), cudaMemcpyHostToDevice));
 }
 
 template<typename T>

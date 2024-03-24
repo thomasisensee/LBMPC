@@ -5,6 +5,7 @@
 
 #include "lbmGrid.h"
 #include "cuda/cuda.h"
+#include "cuda/cudaErrorHandler.h"
 
 template<typename T>
 LBMGrid<T>::LBMGrid(LBMModelWrapper<T>* lbmModel, GridGeometry2DWrapper<T>* gridGeometry, bool GPU) : lbmModel(lbmModel), gridGeometry(gridGeometry)
@@ -20,8 +21,8 @@ LBMGrid<T>::~LBMGrid()
     delete[] collision;
     if(GPU_ENABLED)
     {
-        freeDeviceField<T>(collision);
-        freeDeviceField<T>(d_streaming);
+        cudaErrorCheck(cudaFree(collision));
+        cudaErrorCheck(cudaFree(d_streaming));
     }
 }
 
@@ -75,9 +76,9 @@ LBMGridWrapper<T>::~LBMGridWrapper()
 {
     if(deviceLBMGrid)
     {
-        cudaFree(deviceLBMGrid->getDeviceCollisionPtr());
-        cudaFree(deviceLBMGrid->getDeviceStreamingPtr());
-        cudaFree(deviceLBMGrid);
+        cudaErrorCheck(cudaFree(deviceLBMGrid->getDeviceCollisionPtr()));
+        cudaErrorCheck(cudaFree(deviceLBMGrid->getDeviceStreamingPtr()));
+        cudaErrorCheck(cudaFree(deviceLBMGrid));
     }
 }
 
@@ -85,15 +86,15 @@ template<typename T>
 void LBMGridWrapper<T>::allocateOnDevice()
 {
     // Allocate device version of LBMGrid object and copy data
-    cudaMalloc(&deviceLBMGrid, sizeof(LBMGrid<T>));
-    cudaMemcpy(deviceLBMGrid, hostLBMGrid, sizeof(LBMGrid<T>), cudaMemcpyHostToDevice);
+    cudaErrorCheck(cudaMalloc(&deviceLBMGrid, sizeof(LBMGrid<T>)));
+    cudaErrorCheck(cudaMemcpy(deviceLBMGrid, hostLBMGrid, sizeof(LBMGrid<T>), cudaMemcpyHostToDevice));
 
     // Allocate device memory for collision and streaming fields
     size_t gridSize = sizeof(T)*hostLBMGrid->gridGeometry->getHostGridGeometry()->getGhostVolume();
     T* CollisionPtr = deviceLBMGrid->getDeviceCollisionPtr();
     T* StreamingPtr = deviceLBMGrid->getDeviceCollisionPtr();
-    cudaMalloc(&(CollisionPtr), gridSize);
-    cudaMalloc(&(StreamingPtr), gridSize);
+    cudaErrorCheck(cudaMalloc(&(CollisionPtr), gridSize));
+    cudaErrorCheck(cudaMalloc(&(StreamingPtr), gridSize));
 }
 
 template<typename T>

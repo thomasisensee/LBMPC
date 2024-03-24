@@ -5,6 +5,7 @@
 #include <cuda_runtime.h>
 
 #include "lbmModel.h"
+#include "cuda/cudaErrorHandler.h"
 
 template<typename T>
 __host__ __device__ unsigned int LBMModel<T>::getD() const
@@ -102,9 +103,9 @@ LBMModelWrapper<T>::~LBMModelWrapper()
 {
     if(deviceModel)
     {
-        cudaFree(deviceModel->getLatticeVelocitiesPtr());
-        cudaFree(deviceModel->getLatticeWeightsPtr());
-        cudaFree(deviceModel);
+        cudaErrorCheck(cudaFree(deviceModel->getLatticeVelocitiesPtr()));
+        cudaErrorCheck(cudaFree(deviceModel->getLatticeWeightsPtr()));
+        cudaErrorCheck(cudaFree(deviceModel));
     }
 }
 
@@ -112,18 +113,18 @@ template<typename T>
 void LBMModelWrapper<T>::allocateAndCopyToDevice()
 {
     // Allocate device version of LBMModel object and copy data
-    cudaMalloc(&deviceModel, sizeof(LBMModel<T>));
-    cudaMemcpy(deviceModel, hostModel, sizeof(LBMModel<T>), cudaMemcpyHostToDevice);
+    cudaErrorCheck(cudaMalloc(&deviceModel, sizeof(LBMModel<T>)));
+    cudaErrorCheck(cudaMemcpy(deviceModel, hostModel, sizeof(LBMModel<T>), cudaMemcpyHostToDevice));
 
     // Allocate device memory for LATTICE_VELOCITIES and copy data
     int* latticeVelocitiesPtr = deviceModel->getLatticeVelocitiesPtr();
-    cudaMalloc(&(latticeVelocitiesPtr), sizeof(int)*hostModel->getQ()*hostModel->getD());
-    cudaMemcpy(deviceModel->getLatticeVelocitiesPtr(), hostModel->getLatticeVelocitiesPtr(), sizeof(int)*hostModel->getQ()*hostModel->getD(), cudaMemcpyHostToDevice);
+    cudaErrorCheck(cudaMalloc(&(latticeVelocitiesPtr), sizeof(int)*hostModel->getQ()*hostModel->getD()));
+    cudaErrorCheck(cudaMemcpy(deviceModel->getLatticeVelocitiesPtr(), hostModel->getLatticeVelocitiesPtr(), sizeof(int)*hostModel->getQ()*hostModel->getD(), cudaMemcpyHostToDevice));
 
     // Allocate device memory for LATTICE_WEIGHTS and copy data
     T* latticeWeightsPtr = deviceModel->getLatticeWeightsPtr();
-    cudaMalloc(&(latticeWeightsPtr), sizeof(T)*hostModel->getQ());
-    cudaMemcpy(deviceModel->getLatticeWeightsPtr(), hostModel->getLatticeWeightsPtr(), sizeof(T)*hostModel->getQ(), cudaMemcpyHostToDevice);
+    cudaErrorCheck(cudaMalloc(&(latticeWeightsPtr), sizeof(T)*hostModel->getQ()));
+    cudaErrorCheck(cudaMemcpy(deviceModel->getLatticeWeightsPtr(), hostModel->getLatticeWeightsPtr(), sizeof(T)*hostModel->getQ(), cudaMemcpyHostToDevice));
 }
 
 template<typename T>

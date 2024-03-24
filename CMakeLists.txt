@@ -23,6 +23,7 @@ set(SOURCES
     src/core/lbmModel.hh
     src/core/simulation.h
     src/core/simulation.hh
+    src/cuda/cudaErrorHandler.h
     src/cuda/cuda.h
     src/cuda/cuda.cu
 )

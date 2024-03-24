@@ -2,28 +2,10 @@
 #include <cuda_runtime.h>
 
 #include "cuda.h"
+#include "cudaErrorHandler.h"
 #include "core/constants.h"
 #include "core/lbmModel.h"
 #include "core/gridGeometry.h"
-
-/**
- * Checks the returned cudaError_t and prints corresponding message in case of error.
- */
-#define cudaErrorCheck(ans){ cudaAssert((ans), __FILE__, __LINE__); }
-inline void cudaAssert(cudaError_t code, const char *file, int line, bool abort=true){
-	if (code != cudaSuccess){
-		fprintf(stderr,"CUDA Assert: %s %s %d\n", cudaGetErrorString(code), file, line);
-		if (abort) exit(code);
-	}
-}
-
-template<typename T>
-void freeDeviceField(T* d_array)
-{
-	cudaErrorCheck(cudaFree(d_array));
-}
-template void freeDeviceField<float>(float*);
-template void freeDeviceField<double>(double*);
 
 template<typename T>
 __global__ void initializeLBMDistributions(T* Collide, LBMModel<T>* lbmModel, GridGeometry2D<T>* gridGeometry)
