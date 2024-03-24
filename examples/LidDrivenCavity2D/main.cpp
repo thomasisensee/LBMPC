@@ -3,6 +3,7 @@
 #include "core/lbmModel.h"
 #include "core/gridGeometry.h"
 #include "core/lbmGrid.h"
+#include "cuda/cudaUtilities.h"
 //#include "simulation.h"
 
 using FLOATING_POINT_TYPE = double;
@@ -14,6 +15,7 @@ int main( int argc, char* argv[] )
 // =======================
 // === Read input file ===
 // =======================
+SetDevice();
 
 // ========================
 // === Define LBM model ===

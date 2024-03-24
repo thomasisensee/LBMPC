@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
 
-#include "cuda.h"
+#include "cudaKernels.h"
 #include "cudaErrorHandler.h"
 #include "core/constants.h"
 #include "core/lbmModel.h"

@@ -24,8 +24,10 @@ set(SOURCES
     src/core/simulation.h
     src/core/simulation.hh
     src/cuda/cudaErrorHandler.h
-    src/cuda/cuda.h
-    src/cuda/cuda.cu
+    src/cuda/cudaKernels.h
+    src/cuda/cudaKernels.cu
+    src/cuda/cudaUtilities.h
+    src/cuda/cudaUtilities.cu
 )
 
 # Example: LidDrivenCavity2D

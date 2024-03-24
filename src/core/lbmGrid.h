@@ -5,7 +5,7 @@
 
 #include "lbmModel.h"
 #include "gridGeometry.h"
-#include "cuda.h"
+//#include "cudaKernels.h"
 
 template<typename T>
 class LBMGrid

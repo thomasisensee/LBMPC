@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "lbmGrid.h"
-#include "cuda/cuda.h"
+#include "cuda/cudaKernels.h"
 #include "cuda/cudaErrorHandler.h"
 
 template<typename T>
