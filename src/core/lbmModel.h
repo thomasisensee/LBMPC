@@ -6,15 +6,15 @@
 template<typename T>
 class LBMModel
 {
-protected:
+public:
     /// Dimension
     unsigned int D;
     /// Number of velocities in velocity set
     unsigned int Q;
     /// pointer to array with lattice velocities
-    int *LATTICE_VELOCITIES;
+    int* LATTICE_VELOCITIES;
     /// pointer to array with lattice weights
-    T *LATTICE_WEIGHTS;
+    T* LATTICE_WEIGHTS;
 public:
     /// get the dimension (D)
     __host__ __device__ unsigned int getD() const;

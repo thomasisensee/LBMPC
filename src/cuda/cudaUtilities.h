@@ -1,7 +1,7 @@
 #ifndef CUDA_UTILITIES_H
 #define CUDA_UTILITIES_H
 
-void DisplayDeviceProperties(int Ndev);
+void DisplayDeviceProperties();
 void SetDevice();
 int getDevice();
 int getDeviceCount();

@@ -20,26 +20,27 @@ SetDevice();
 // ========================
 // === Define LBM model ===
 // ========================
-D2Q9 lbm = D2Q9<T>();
-lbm.print();
-LBMModelWrapper lbmWrap = LBMModelWrapper<T>(&lbm);
+D2Q9<T> lbmModel;
+lbmModel.print();
+LBMModelWrapper<T> lbmWrap(&lbmModel);
+lbmWrap.allocateAndCopyToDevice();
 
 // ===============================
 // === Prepare domain geometry ===
 // ===============================
-//GridGeometry2D grid2D = GridGeometry2D<T>(0.,0.,.1,14,14);
-//GridGeometry2DWrapper grid2DWrap = GridGeometry2DWrapper(&grid2D);
+//GridGeometry2D<T> grid2D(0.,0.,.1,14,14);
+//GridGeometry2DWrapper<T> grid2DWrap(&grid2D);
 //grid2D.print();
 
-//LBMGrid latticeGrid = LBMGrid<T>(&lbmWrap,&grid2DWrap);
-//LBMGridWrapper latticeGridWrap = LBMGridWrapper<T>(&latticeGrid);
+//LBMGrid<T> latticeGrid(&lbmWrap,&grid2DWrap);
+//LBMGridWrapper<T> latticeGridWrap(&latticeGrid);
 
-//LBMFluidSimulation sim = LBMFluidSimulation<T>(&latticeGridWrap);
+//LBMFluidSimulation<T> sim(&latticeGridWrap);
 
 // =========================
 // === Initialize fields ===
 // =========================
-//Cell2D cell = Cell2D<T>();
+//Cell2D<T> cell;
 
 
 

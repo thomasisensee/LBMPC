@@ -8,6 +8,45 @@
 #include "core/gridGeometry.h"
 
 template<typename T>
+__global__ void testKernel(T a)
+{
+    printf("Test kernel.\n");
+};
+template __global__ void testKernel<float>(float a);
+template __global__ void testKernel<double>(double a);
+
+template<typename T>
+__global__ void useClass(LBMModel<T>* lbmModel)
+{
+    unsigned int Q = lbmModel->getQ();
+    unsigned int D = lbmModel->getD();
+    printf("Q = %d, D = %d\n",Q,D);
+    int ci;
+    for(unsigned int i=0; i<Q; i++)
+    {
+        ci = lbmModel->getCX(i);
+        printf("ci = %d\n",ci);
+    } 
+}
+template __global__ void useClass<float>(LBMModel<float>* lbmModel);
+template __global__ void useClass<double>(LBMModel<double>* lbmModel);
+
+
+template<typename T>
+void KERNEL_CALLER_test(LBMModel<T>* lbmModel)
+{
+    printf("before\n");
+    useClass<T><<<1,1>>>(lbmModel);
+    cudaDeviceSynchronize();
+    T a = 1.0;
+    //testKernel<T><<<1,1>>>(a);
+    cudaDeviceSynchronize();
+    printf("after\n");
+}
+template void KERNEL_CALLER_test<float>(LBMModel<float>*);
+template void KERNEL_CALLER_test<double>(LBMModel<double>*);
+
+template<typename T>
 __global__ void initializeLBMDistributions(T* Collide, LBMModel<T>* lbmModel, GridGeometry2D<T>* gridGeometry)
 {
 #define pos(x,y)		(Nx*(y)+(x))
