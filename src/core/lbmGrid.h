@@ -7,7 +7,7 @@
 #include "gridGeometry.h"
 //#include "cudaKernels.h"
 
-template<typename T>
+template<typename T, typename LBMModelWrapperClassType>
 class LBMGrid
 {
 private:
@@ -18,12 +18,12 @@ private:
     
 public:
     /// LBM model providing dimensionality, velocity set, and weights
-    LBMModelWrapper<T>* lbmModel;
+    LBMModelWrapperClassType* lbmModel;
     /// Grid geometry (spacing, Nx, Ny, etc.)
     GridGeometry2DWrapper<T>* gridGeometry;
 
     /// Constructor
-    LBMGrid(LBMModelWrapper<T>* lbmModel,GridGeometry2DWrapper<T>* gridGeometry, bool GPU=true);
+    LBMGrid(LBMModelWrapperClassType* lbmModel,GridGeometry2DWrapper<T>* gridGeometry, bool GPU=true);
     /// Destructor
     ~LBMGrid();
     T* getDeviceCollisionPtr();
@@ -35,17 +35,17 @@ public:
 
 
 /// Wrapper class for duplication on GPU
-template<typename T>
+template<typename T, typename LBMGridClassType>
 class LBMGridWrapper {
 private:
     /// Host-side LBMModel object
-    LBMGrid<T>* hostLBMGrid;
+    LBMGridClassType* hostLBMGrid;
     /// Device-side LBMModel object
-    LBMGrid<T>* deviceLBMGrid;
+    LBMGridClassType* deviceLBMGrid;
 
 public:
     // Constructor
-    LBMGridWrapper(LBMGrid<T>* lbmGrid);
+    LBMGridWrapper(LBMGridClassType* lbmGrid);
 
     // Destructor
     ~LBMGridWrapper();
@@ -54,10 +54,10 @@ public:
     void allocateOnDevice();
     
     /// Get pointer to the host LBMModel object
-    LBMGrid<T>* getHostGrid() const;
+    LBMGridClassType* getHostGrid() const;
     
     /// Get pointer to the device LBMModel object
-    LBMGrid<T>* getDeviceGrid() const;
+    LBMGridClassType* getDeviceGrid() const;
 };
 
 #include "lbmGrid.hh"

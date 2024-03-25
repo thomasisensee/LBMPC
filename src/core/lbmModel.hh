@@ -21,13 +21,13 @@ __host__ __device__ unsigned int LBMModel<T>::getQ() const
 }
 
 template<typename T>
-__host__ int* LBMModel<T>::getLatticeVelocitiesPtr() const
+__host__ __device__ int* LBMModel<T>::getLatticeVelocitiesPtr() const
 {
     return LATTICE_VELOCITIES;
 }
 
 template<typename T>
-__host__ T* LBMModel<T>::getLatticeWeightsPtr() const
+__host__ __device__ T* LBMModel<T>::getLatticeWeightsPtr() const
 {
     return LATTICE_WEIGHTS;
 }
@@ -37,29 +37,29 @@ void LBMModel<T>::print() const
 {
     std::cout << "============================== LBM Model Details ==============================" << std::endl;
     std::cout << "==                                   D" << getD() << "Q" << getQ() << "                                    ==" << std::endl;
-    std::cout << "== Cx ="; for(int i=0; i<Q; i++) {std::cout << "\t" << LATTICE_VELOCITIES[i*D]; } std::cout << "    ==" << std::endl;
-    std::cout << "== Cy ="; for(int i=0; i<Q; i++) {std::cout << "\t" << LATTICE_VELOCITIES[i*D+1]; } std::cout << "   ==" << std::endl;
-    std::cout << "== w  ="; for(int i=0; i<Q; i++) {std::cout << "\t" << LATTICE_WEIGHTS[i]; } std::cout << "   ==" << std::endl;
+    std::cout << "== Cx ="; for(int i=0; i<Q; ++i) {std::cout << "\t" << LATTICE_VELOCITIES[i*D]; } std::cout << "    ==" << std::endl;
+    std::cout << "== Cy ="; for(int i=0; i<Q; ++i) {std::cout << "\t" << LATTICE_VELOCITIES[i*D+1]; } std::cout << "   ==" << std::endl;
+    std::cout << "== w  ="; for(int i=0; i<Q; ++i) {std::cout << "\t" << LATTICE_WEIGHTS[i]; } std::cout << "   ==" << std::endl;
     std::cout << "===============================================================================\n" << std::endl;
 }
 
 template<typename T>
-D2Q9<T>::D2Q9()
+__host__ __device__ D2Q9<T>::D2Q9()
 {
     this->D = 2;
     this->Q = 9;
     this->LATTICE_WEIGHTS = new T[9];
-    this->LATTICE_WEIGHTS[0] = 4./9.;
-    this->LATTICE_WEIGHTS[1] = 1./9.;
-    this->LATTICE_WEIGHTS[2] = 1./9.;
-    this->LATTICE_WEIGHTS[3] = 1./9.;
-    this->LATTICE_WEIGHTS[4] = 1./9.;
-    this->LATTICE_WEIGHTS[5] = 1./36.;
-    this->LATTICE_WEIGHTS[6] = 1./36.;
-    this->LATTICE_WEIGHTS[7] = 1./36.;
-    this->LATTICE_WEIGHTS[8] = 1./36.;
+    this->LATTICE_WEIGHTS[0] = 4.0/9.0;
+    this->LATTICE_WEIGHTS[1] = 1.0/9.0;
+    this->LATTICE_WEIGHTS[2] = 1.0/9.0;
+    this->LATTICE_WEIGHTS[3] = 1.0/9.0;
+    this->LATTICE_WEIGHTS[4] = 1.0/9.0;
+    this->LATTICE_WEIGHTS[5] = 1.0/36.0;
+    this->LATTICE_WEIGHTS[6] = 1.0/36.0;
+    this->LATTICE_WEIGHTS[7] = 1.0/36.0;
+    this->LATTICE_WEIGHTS[8] = 1.0/36.0;
 
-    this->LATTICE_VELOCITIES = new int[this->Q*this->D];
+    this->LATTICE_VELOCITIES = new int[18];
     int velocities[9][2] = {{0, 0},{1, 0},{0, 1},{-1, 0},{0, -1},{1, 1},{-1, 1},{-1, -1},{1, -1}};
     for (int i = 0; i < 9; ++i) {
         for (int j = 0; j < 2; ++j) {
@@ -69,7 +69,7 @@ D2Q9<T>::D2Q9()
 }
 
 template<typename T>
-D2Q9<T>::~D2Q9()
+__host__ __device__ D2Q9<T>::~D2Q9()
 {
     delete[] this->LATTICE_VELOCITIES;
     delete[] this->LATTICE_WEIGHTS;
@@ -99,14 +99,14 @@ __host__ LBMModel<T>* D2Q9<T>::getDerivedModel() const
     return new D2Q9<T>(*this); // Return a pointer to a new D2Q9 object
 }
 
-template<typename T>
-LBMModelWrapper<T>::LBMModelWrapper(LBMModel<T>* lbmModel) : hostModel(lbmModel)//, deviceModel(nullptr)
+template<typename T, typename LBMModelClassType>
+LBMModelWrapper<T,LBMModelClassType>::LBMModelWrapper(LBMModelClassType* lbmModel) : hostModel(lbmModel)//, deviceModel(nullptr)
 {
-    //allocateAndCopyToDevice();  
+    allocateAndCopyToDevice();
 }
 
-template<typename T>
-LBMModelWrapper<T>::~LBMModelWrapper()
+template<typename T, typename LBMModelClassType>
+LBMModelWrapper<T,LBMModelClassType>::~LBMModelWrapper()
 {
 /*
     if(deviceModel)
@@ -116,66 +116,59 @@ LBMModelWrapper<T>::~LBMModelWrapper()
     */
 }
 
-template<typename T>
-void LBMModelWrapper<T>::allocateAndCopyToDevice()
+
+template<typename T, typename LBMModelClassType>
+void LBMModelWrapper<T,LBMModelClassType>::allocateAndCopyToDevice()
 {
     // Allocate device version of LBMModel object and copy data
     cudaErrorCheck(cudaMalloc((void **)&deviceModel, sizeof(*hostModel)));
     cudaErrorCheck(cudaMemcpy(deviceModel, hostModel, sizeof(*hostModel), cudaMemcpyHostToDevice));
 
-
     // Allocate device memory for LATTICE_VELOCITIES and copy data
     int* deviceLatticeVelocities;
     size_t sizeLatticeVelocities = sizeof(int)*hostModel->getQ()*hostModel->getD();
-    
     cudaErrorCheck(cudaMalloc((void**)&deviceLatticeVelocities, sizeLatticeVelocities));
-    
     cudaErrorCheck(cudaMemcpy(deviceLatticeVelocities, hostModel->getLatticeVelocitiesPtr(), sizeLatticeVelocities, cudaMemcpyHostToDevice));
-
     cudaErrorCheck(cudaMemcpy(&(deviceModel->LATTICE_VELOCITIES), &deviceLatticeVelocities, sizeof(int*), cudaMemcpyHostToDevice));
-/*    
-    for(int i=0; i<hostModel->getQ()*hostModel->getD(); i++)
-    {
-        cudaErrorCheck(cudaMalloc((void**)(deviceLatticeVelocities[i]),sizeof(int)));  
-        cudaErrorCheck(cudaMemcpy(&(deviceModel->LATTICE_VELOCITIES[i]),&(hostModel->LATTICE_VELOCITIES[i]), sizeof(int*), cudaMemcpyHostToDevice));  
-    }
-*/
 
     // Allocate device memory for LATTICE_WEIGHTS and copy data
     T* deviceLatticeWeights;
     size_t sizeLatticeWeights = sizeof(T)*hostModel->getQ();
-    
     cudaErrorCheck(cudaMalloc((void**)&deviceLatticeWeights, sizeLatticeWeights));
-    
     cudaErrorCheck(cudaMemcpy(deviceLatticeWeights, hostModel->getLatticeWeightsPtr(), sizeLatticeWeights, cudaMemcpyHostToDevice));
-
     cudaErrorCheck(cudaMemcpy(&(deviceModel->LATTICE_WEIGHTS), &deviceLatticeWeights, sizeof(T*), cudaMemcpyHostToDevice));
-/*
-    for(int i=0; i<hostModel->getQ(); i++)
-    {
-        cudaErrorCheck(cudaMalloc((void**)(deviceLatticeWeights[i]),sizeof(T)));  
-        cudaErrorCheck(cudaMemcpy(&(deviceModel->LATTICE_WEIGHTS[i]),&(hostModel->LATTICE_WEIGHTS[i]), sizeof(T*), cudaMemcpyHostToDevice));  
-    }
-*/  
-    
-    test1(deviceModel);
+
+
+
+    test1<T, LBMModelClassType>(deviceModel);
     //test2(deviceLatticeWeights);
+    
+    
+    /* // Different method: create object on device and copy pointer. Doesn't work yet.
+    // Allocate memory for device-side object
+    cudaErrorCheck(cudaMalloc((void**)&deviceModel, sizeof(*hostModel)));
+    
+    // Allocation of deviceModel on the device
+    launchCreateDeviceModel<T, LBMModelClassType>(&(deviceModel));
+    
+    cudaErrorCheck(cudaMemcpy(deviceModel->getLatticeWeightsPtr(), hostModel->getLatticeWeightsPtr(), sizeLatticeWeights, cudaMemcpyHostToDevice));
+*/
 }
 
-template<typename T>
-LBMModel<T>* LBMModelWrapper<T>::getHostModel() const
+template<typename T, typename LBMModelClassType>
+LBMModelClassType* LBMModelWrapper<T,LBMModelClassType>::getHostModel() const
 {
     return hostModel;
 }
 
-template<typename T>
-LBMModel<T>* LBMModelWrapper<T>::getDeviceModel() const
+template<typename T, typename LBMModelClassType>
+LBMModelClassType* LBMModelWrapper<T,LBMModelClassType>::getDeviceModel() const
 {
     return deviceModel;
 }
 
-template<typename T>
-LBMModel<T>* LBMModelWrapper<T>::getDerivedDeviceModel() const
+template<typename T, typename LBMModelClassType>
+LBMModelClassType* LBMModelWrapper<T,LBMModelClassType>::getDerivedDeviceModel() const
 {
     return hostModel->getDerivedModel();
 }

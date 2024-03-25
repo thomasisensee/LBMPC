@@ -1,79 +1,74 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
 
-#include "cudaKernels.h"
-#include "cudaErrorHandler.h"
 #include "core/constants.h"
 #include "core/lbmModel.h"
 #include "core/gridGeometry.h"
 
-template<typename T>
-__global__ void testKernel(T a)
-{
-    printf("Test kernel.\n");
-};
-template __global__ void testKernel<float>(float a);
-template __global__ void testKernel<double>(double a);
+#include "cudaKernels.h"
+#include "cudaErrorHandler.h"
 
-template<typename T>
-__global__ void useClass(LBMModel<T>* lbmModel)
+#include <iostream>
+template<typename T, typename LBMModelClassType>
+void launchCreateDeviceModel(LBMModelClassType** deviceModel)
+{
+    createDeviceModel<T, LBMModelClassType><<<1, 1>>>(deviceModel);
+    cudaErrorCheck(cudaDeviceSynchronize());
+}
+template void launchCreateDeviceModel<float, D2Q9<float>>(D2Q9<float>**);
+template void launchCreateDeviceModel<double, D2Q9<double>>(D2Q9<double>**);
+
+template<typename T, typename LBMModelClassType>
+__global__ void createDeviceModel(LBMModelClassType** deviceModel)
+{
+    printf("test\n");
+    //printf("Before assignment: *deviceModel = %p\n", *deviceModel);
+    
+    // Allocate memory for the device-side object
+    LBMModelClassType* obj = new LBMModelClassType;
+    printf("cix = %d\n",obj->getCX(0));
+
+    // Assign the object to the deviceModel pointer
+    *deviceModel = obj;
+    
+    printf("After assignment: *deviceModel = %p\n", *deviceModel);
+}
+template __global__  void createDeviceModel<float, D2Q9<float>>(D2Q9<float>**);
+template __global__  void createDeviceModel<double, D2Q9<double>>(D2Q9<double>**);
+
+template<typename T, typename LBMModelClassType>
+void test1(LBMModelClassType* lbmModel)
+{
+    useClass<T,LBMModelClassType><<<1,1>>>(lbmModel);
+    cudaErrorCheck(cudaDeviceSynchronize());
+}
+template void test1<float, D2Q9<float>>(D2Q9<float>*);
+template void test1<double, D2Q9<double>>(D2Q9<double>*);
+
+template<typename T, typename LBMModelClassType>
+__global__ void useClass(LBMModelClassType* lbmModel)
 {
     unsigned int Q = lbmModel->getQ();
     unsigned int D = lbmModel->getD();
     printf("Q = %d, D = %d\n",Q,D);
     int cix,ciy;
-    for(unsigned int i=0; i<Q; i++)
+    T w;
+    for(unsigned int i=0; i<Q; ++i)
     {
-        //cix = lbmModel->LATTICE_VELOCITIES[i*2];
-        //ciy = lbmModel->LATTICE_VELOCITIES[i*2+1];        
-        cix = lbmModel->getCX(i);
-        ciy = lbmModel->getCY(i);
-        printf("cix = %d, ciy = %d\n",cix,ciy);
+        cix = lbmModel->LATTICE_VELOCITIES[i*2];
+        ciy = lbmModel->LATTICE_VELOCITIES[i*2+1];
+        w = lbmModel->LATTICE_WEIGHTS[i];
+        //w = 5.;     
+        //cix = lbmModel->getCX(i);
+        //ciy = lbmModel->getCY(i);
+        printf("cix = %d, ciy = %d, w = %g\n",cix,ciy,w);
     }
 }
-template __global__ void useClass<float>(LBMModel<float>* lbmModel);
-template __global__ void useClass<double>(LBMModel<double>* lbmModel);
+template __global__ void useClass<float, D2Q9<float>>(D2Q9<float>* lbmModel);
+template __global__ void useClass<double, D2Q9<double>>(D2Q9<double>* lbmModel);
 
-template<typename T>
-__global__ void testKernel(T* test)
-{
-    for(int i=0; i<9; i++)
-    {
-        printf("%g\n",test[i]);
-    }
-}
-template __global__ void testKernel<float>(float* test);
-template __global__ void testKernel<double>(double* lbtestmModel);
-
-template<typename T>
-void test1(LBMModel<T>* lbmModel)
-{
-    printf("before\n");
-    useClass<T><<<1,1>>>(lbmModel);
-    cudaDeviceSynchronize();
-    T a = 1.0;
-    //testKernel<T><<<1,1>>>(a);
-    cudaDeviceSynchronize();
-    printf("after\n");
-}
-template void test1<float>(LBMModel<float>*);
-template void test1<double>(LBMModel<double>*);
-
-template<typename T>
-void test2(T* test)
-{
-    printf("before\n");
-    testKernel<<<1,1>>>(test);
-    cudaDeviceSynchronize();
-    //testKernel<T><<<1,1>>>(a);
-    printf("after\n");
-}
-template void test2<float>(float*);
-template void test2<double>(double*);
-
-
-template<typename T>
-__global__ void initializeLBMDistributions(T* Collide, LBMModel<T>* lbmModel, GridGeometry2D<T>* gridGeometry)
+template<typename T, typename LBMModelClassType>
+__global__ void initializeLBMDistributions(T* Collide, LBMModelClassType* lbmModel, GridGeometry2D<T>* gridGeometry)
 {
 #define pos(x,y)		(Nx*(y)+(x))
     const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -105,11 +100,11 @@ __global__ void initializeLBMDistributions(T* Collide, LBMModel<T>* lbmModel, Gr
 		Collide[Q*pos(i,j)+l] = 1.0;
 	}
 }
-template __global__ void initializeLBMDistributions<float>(float*, LBMModel<float>*, GridGeometry2D<float>*);
-template __global__ void initializeLBMDistributions<double>(double*, LBMModel<double>*, GridGeometry2D<double>*);
+template __global__ void initializeLBMDistributions<float>(float*, D2Q9<float>*, GridGeometry2D<float>*);
+template __global__ void initializeLBMDistributions<double>(double*, D2Q9<double>*, GridGeometry2D<double>*);
 
-template<typename T>
-void KERNEL_CALLER_initializeLBMDistributions(T* Collide, LBMModelWrapper<T>* lbmModel, GridGeometry2DWrapper<T>* gridGeometry)
+template<typename T, typename LBMModelClassType>
+void KERNEL_CALLER_initializeLBMDistributions(T* Collide, LBMModelWrapper<T, LBMModelClassType>* lbmModel, GridGeometry2DWrapper<T>* gridGeometry)
 {
     /// Call CUDA kernel
     unsigned int blockDimX = 16;
@@ -119,5 +114,5 @@ void KERNEL_CALLER_initializeLBMDistributions(T* Collide, LBMModelWrapper<T>* lb
 
     initializeLBMDistributions<T><<<gridDim,blockDim>>>(Collide, lbmModel->getDeviceModel(), gridGeometry->getDeviceGridGeometry());
 }
-template void KERNEL_CALLER_initializeLBMDistributions<float>(float*, LBMModelWrapper<float>*, GridGeometry2DWrapper<float>*);
-template void KERNEL_CALLER_initializeLBMDistributions<double>(double*, LBMModelWrapper<double>*, GridGeometry2DWrapper<double>*);
+template void KERNEL_CALLER_initializeLBMDistributions<float>(float*, LBMModelWrapper<float, D2Q9<float>>*, GridGeometry2DWrapper<float>*);
+template void KERNEL_CALLER_initializeLBMDistributions<double>(double*, LBMModelWrapper<double, D2Q9<float>>*, GridGeometry2DWrapper<double>*);

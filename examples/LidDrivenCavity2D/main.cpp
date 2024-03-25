@@ -22,8 +22,8 @@ SetDevice();
 // ========================
 D2Q9<T> lbmModel;
 lbmModel.print();
-LBMModelWrapper<T> lbmWrap(&lbmModel);
-lbmWrap.allocateAndCopyToDevice();
+LBMModelWrapper<T, D2Q9<T>> lbmWrap(&lbmModel);
+//lbmWrap.allocateAndCopyToDevice();
 
 // ===============================
 // === Prepare domain geometry ===

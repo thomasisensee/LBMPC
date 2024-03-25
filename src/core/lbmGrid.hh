@@ -7,16 +7,16 @@
 #include "cuda/cudaKernels.h"
 #include "cuda/cudaErrorHandler.h"
 
-template<typename T>
-LBMGrid<T>::LBMGrid(LBMModelWrapper<T>* lbmModel, GridGeometry2DWrapper<T>* gridGeometry, bool GPU) : lbmModel(lbmModel), gridGeometry(gridGeometry)
+template<typename T, typename LBMModelWrapperClassType>
+LBMGrid<T, LBMModelWrapperClassType>::LBMGrid(LBMModelWrapperClassType* lbmModel, GridGeometry2DWrapper<T>* gridGeometry, bool GPU) : lbmModel(lbmModel), gridGeometry(gridGeometry)
 {
     GPU_ENABLED = GPU;
     unsigned int gridSize = lbmModel->getHostModel()->getQ() * gridGeometry->getHostGridGeometry()->getGhostVolume();
     collision = new T[gridSize];
 }
 
-template<typename T>
-LBMGrid<T>::~LBMGrid()
+template<typename T, typename LBMModelWrapperClassType>
+LBMGrid<T, LBMModelWrapperClassType>::~LBMGrid()
 {
     delete[] collision;
     if(GPU_ENABLED)
@@ -26,8 +26,8 @@ LBMGrid<T>::~LBMGrid()
     }
 }
 
-template<typename T>
-void LBMGrid<T>::initializeLBMDistributionsCPU(T* h_data)
+template<typename T, typename LBMModelWrapperClassType>
+void LBMGrid<T, LBMModelWrapperClassType>::initializeLBMDistributionsCPU(T* h_data)
 {
 #define pos(x,y)		(Nx*(y)+(x))
 
@@ -53,26 +53,26 @@ void LBMGrid<T>::initializeLBMDistributionsCPU(T* h_data)
 
 }
 
-template<typename T>
-T* LBMGrid<T>::getDeviceCollisionPtr()
+template<typename T, typename LBMModelWrapperClassType>
+T* LBMGrid<T, LBMModelWrapperClassType>::getDeviceCollisionPtr()
 {
     return collision;
 }
 
-template<typename T>
-T* LBMGrid<T>::getDeviceStreamingPtr()
+template<typename T, typename LBMModelWrapperClassType>
+T* LBMGrid<T, LBMModelWrapperClassType>::getDeviceStreamingPtr()
 {
     return d_streaming;
 }
 
-template<typename T>
-LBMGridWrapper<T>::LBMGridWrapper(LBMGrid<T>* lbmGrid) : hostLBMGrid(lbmGrid), deviceLBMGrid(nullptr)
+template<typename T, typename LBMGridClassType>
+LBMGridWrapper<T, LBMGridClassType>::LBMGridWrapper(LBMGridClassType* lbmGrid) : hostLBMGrid(lbmGrid), deviceLBMGrid(nullptr)
 {
     allocateOnDevice();  
 }
 
-template<typename T>
-LBMGridWrapper<T>::~LBMGridWrapper()
+template<typename T, typename LBMGridClassType>
+LBMGridWrapper<T, LBMGridClassType>::~LBMGridWrapper()
 {
     if(deviceLBMGrid)
     {
@@ -82,12 +82,12 @@ LBMGridWrapper<T>::~LBMGridWrapper()
     }
 }
 
-template<typename T>
-void LBMGridWrapper<T>::allocateOnDevice()
+template<typename T, typename LBMGridClassType>
+void LBMGridWrapper<T, LBMGridClassType>::allocateOnDevice()
 {
     // Allocate device version of LBMGrid object and copy data
-    cudaErrorCheck(cudaMalloc(&deviceLBMGrid, sizeof(LBMGrid<T>)));
-    cudaErrorCheck(cudaMemcpy(deviceLBMGrid, hostLBMGrid, sizeof(LBMGrid<T>), cudaMemcpyHostToDevice));
+    cudaErrorCheck(cudaMalloc(&deviceLBMGrid, sizeof(LBMGridClassType)));
+    cudaErrorCheck(cudaMemcpy(deviceLBMGrid, hostLBMGrid, sizeof(LBMGridClassType), cudaMemcpyHostToDevice));
 
     // Allocate device memory for collision and streaming fields
     size_t gridSize = sizeof(T)*hostLBMGrid->gridGeometry->getHostGridGeometry()->getGhostVolume();
@@ -97,14 +97,14 @@ void LBMGridWrapper<T>::allocateOnDevice()
     cudaErrorCheck(cudaMalloc(&(StreamingPtr), gridSize));
 }
 
-template<typename T>
-LBMGrid<T>* LBMGridWrapper<T>::getHostGrid() const
+template<typename T, typename LBMGridClassType>
+LBMGridClassType* LBMGridWrapper<T, LBMGridClassType>::getHostGrid() const
 {
     return hostLBMGrid;
 }
 
-template<typename T>
-LBMGrid<T>* LBMGridWrapper<T>::getDeviceGrid() const
+template<typename T, typename LBMGridClassType>
+LBMGridClassType* LBMGridWrapper<T, LBMGridClassType>::getDeviceGrid() const
 {
     return deviceLBMGrid;
 }

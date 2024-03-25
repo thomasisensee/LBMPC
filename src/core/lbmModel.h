@@ -26,8 +26,8 @@ public:
     __host__ __device__ virtual int getCY(unsigned int i) const = 0;
     /// get the lattice weight corresponding to index i
     __host__ __device__ virtual T getWEIGHT(unsigned int i) const = 0;
-    __host__  int* getLatticeVelocitiesPtr() const;
-    __host__  T* getLatticeWeightsPtr() const;
+    __host__ __device__  int* getLatticeVelocitiesPtr() const;
+    __host__  __device__ T* getLatticeWeightsPtr() const;
     /// Prints LBM model details
     void print() const;
     /// Provides access to the specific derived class type
@@ -39,9 +39,9 @@ class D2Q9 : public LBMModel<T>
 {
 public:
     // Constructor
-    D2Q9();
+    __host__ __device__ D2Q9();
     // Destructor
-    ~D2Q9();
+    __host__ __device__ ~D2Q9();
     /// get the lattice velocity x-component corresponding to index i
     __host__ __device__ virtual int getCX(unsigned int i) const override;
     /// get the lattice velocity y-component corresponding to index i
@@ -53,18 +53,18 @@ public:
 };
 
 /// Wrapper class for duplication on GPU
-template<typename T>
+template<typename T, typename LBMModelClassType>
 class LBMModelWrapper
 {
 private:
     /// Host-side LBMModel object
-    LBMModel<T>* hostModel;
+    LBMModelClassType* hostModel;
     /// Device-side LBMModel object
-    LBMModel<T>* deviceModel;
+    LBMModelClassType* deviceModel;
 
 public:
     // Constructor
-    LBMModelWrapper(LBMModel<T>* lbmModel);
+    LBMModelWrapper(LBMModelClassType* lbmModel);
 
     // Destructor
     ~LBMModelWrapper();
@@ -73,13 +73,13 @@ public:
     void allocateAndCopyToDevice();
     
     /// Get pointer to the host LBMModel object
-    LBMModel<T>* getHostModel() const;
+    LBMModelClassType* getHostModel() const;
     
     /// Get pointer to the device LBMModel object
-    LBMModel<T>* getDeviceModel() const;
+    LBMModelClassType* getDeviceModel() const;
     
     /// Provides access to the specific derived class type
-    LBMModel<T>* getDerivedDeviceModel() const;
+    LBMModelClassType* getDerivedDeviceModel() const;
 };
 
 #include "lbmModel.hh"
