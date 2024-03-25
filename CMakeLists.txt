@@ -21,6 +21,8 @@ set(SOURCES
     src/core/lbmGrid.hh
     src/core/lbmModel.h
     src/core/lbmModel.hh
+    src/core/collisionModel.h
+    src/core/collisionModel.hh
     src/core/simulation.h
     src/core/simulation.hh
     src/cuda/cudaErrorHandler.h

@@ -52,36 +52,6 @@ public:
     __host__ virtual LBMModel<T>* getDerivedModel() const override;
 };
 
-/// Wrapper class for duplication on GPU
-template<typename T, typename LBMModelClassType>
-class LBMModelWrapper
-{
-private:
-    /// Host-side LBMModel object
-    LBMModelClassType* hostModel;
-    /// Device-side LBMModel object
-    LBMModelClassType* deviceModel;
-
-public:
-    // Constructor
-    LBMModelWrapper(LBMModelClassType* lbmModel);
-
-    // Destructor
-    ~LBMModelWrapper();
-
-    // Allocate device memory and copy data
-    void allocateAndCopyToDevice();
-    
-    /// Get pointer to the host LBMModel object
-    LBMModelClassType* getHostModel() const;
-    
-    /// Get pointer to the device LBMModel object
-    LBMModelClassType* getDeviceModel() const;
-    
-    /// Provides access to the specific derived class type
-    LBMModelClassType* getDerivedDeviceModel() const;
-};
-
 #include "lbmModel.hh"
 
 #endif

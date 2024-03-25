@@ -7,30 +7,28 @@
 #include "gridGeometry.h"
 //#include "cudaKernels.h"
 
-template<typename T, typename LBMModelWrapperClassType>
+template<typename T>
 class LBMGrid
 {
 private:
-    bool GPU_ENABLED;
     /// Distribution functions f, i.e., a grid of cells
     T* collision=nullptr;
-    T* d_streaming=nullptr;
+    T* streaming=nullptr;
     
 public:
     /// LBM model providing dimensionality, velocity set, and weights
-    LBMModelWrapperClassType* lbmModel;
+    LBMModel<T>* lbmModel;
     /// Grid geometry (spacing, Nx, Ny, etc.)
-    GridGeometry2DWrapper<T>* gridGeometry;
+    GridGeometry2D<T>* gridGeometry;
 
     /// Constructor
-    LBMGrid(LBMModelWrapperClassType* lbmModel,GridGeometry2DWrapper<T>* gridGeometry, bool GPU=true);
+    LBMGrid(LBMModel<T>* lbmModel,GridGeometry2D<T>* gridGeometry);
     /// Destructor
     ~LBMGrid();
     T* getDeviceCollisionPtr();
     T* getDeviceStreamingPtr();
     
-    void initializeLBMDistributionsCPU(T* h_data);
-    void initializeLBMDistributionsGPU(T* h_data);
+    //void initializeLBMDistributions(T* h_data);
 };
 
 

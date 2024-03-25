@@ -38,32 +38,6 @@ public:
     void print() const;
 };
 
-/// Wrapper class for duplication on GPU
-template<typename T>
-class GridGeometry2DWrapper {
-private:
-    /// Host-side LBMModel object
-    GridGeometry2D<T>* hostGridGeometry;
-    /// Device-side LBMModel object
-    GridGeometry2D<T>* deviceGridGeometry;
-
-public:
-    /// Constructor
-    GridGeometry2DWrapper(GridGeometry2D<T>* gridGeometry);
-
-    /// Destructor
-    ~GridGeometry2DWrapper();
-
-    /// Allocate device memory and copy data
-    void allocateAndCopyToDevice();
-    
-    /// Get pointer to the host GridGeometry2D object
-    GridGeometry2D<T>* getHostGridGeometry() const;
-    
-    /// Get pointer to the device GridGeometry2D object
-    GridGeometry2D<T>* getDeviceGridGeometry() const;
-};
-
 #include "gridGeometry.hh"
 
 #endif

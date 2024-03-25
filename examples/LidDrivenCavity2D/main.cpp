@@ -22,18 +22,14 @@ SetDevice();
 // ========================
 D2Q9<T> lbmModel;
 lbmModel.print();
-LBMModelWrapper<T, D2Q9<T>> lbmWrap(&lbmModel);
-//lbmWrap.allocateAndCopyToDevice();
 
 // ===============================
 // === Prepare domain geometry ===
 // ===============================
-//GridGeometry2D<T> grid2D(0.,0.,.1,14,14);
-//GridGeometry2DWrapper<T> grid2DWrap(&grid2D);
-//grid2D.print();
+GridGeometry2D<T> grid2D(0.,0.,.1,14,14);
+grid2D.print();
 
-//LBMGrid<T> latticeGrid(&lbmWrap,&grid2DWrap);
-//LBMGridWrapper<T> latticeGridWrap(&latticeGrid);
+LBMGrid<T> latticeGrid(&lbmModel,&grid2D);
 
 //LBMFluidSimulation<T> sim(&latticeGridWrap);
 

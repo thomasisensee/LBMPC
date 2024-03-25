@@ -7,62 +7,31 @@
 #include "cuda/cudaKernels.h"
 #include "cuda/cudaErrorHandler.h"
 
-template<typename T, typename LBMModelWrapperClassType>
-LBMGrid<T, LBMModelWrapperClassType>::LBMGrid(LBMModelWrapperClassType* lbmModel, GridGeometry2DWrapper<T>* gridGeometry, bool GPU) : lbmModel(lbmModel), gridGeometry(gridGeometry)
+template<typename T>
+LBMGrid<T>::LBMGrid(LBMModel<T>* lbmModel, GridGeometry2D<T>* gridGeometry) : lbmModel(lbmModel), gridGeometry(gridGeometry)
 {
-    GPU_ENABLED = GPU;
-    unsigned int gridSize = lbmModel->getHostModel()->getQ() * gridGeometry->getHostGridGeometry()->getGhostVolume();
+    unsigned int gridSize = lbmModel->getQ() * gridGeometry->getGhostVolume();
     collision = new T[gridSize];
 }
 
-template<typename T, typename LBMModelWrapperClassType>
-LBMGrid<T, LBMModelWrapperClassType>::~LBMGrid()
+template<typename T>
+LBMGrid<T>::~LBMGrid()
 {
     delete[] collision;
-    if(GPU_ENABLED)
-    {
-        cudaErrorCheck(cudaFree(collision));
-        cudaErrorCheck(cudaFree(d_streaming));
-    }
+    //cudaErrorCheck(cudaFree(collision));
+    //cudaErrorCheck(cudaFree(streaming));
 }
 
-template<typename T, typename LBMModelWrapperClassType>
-void LBMGrid<T, LBMModelWrapperClassType>::initializeLBMDistributionsCPU(T* h_data)
-{
-#define pos(x,y)		(Nx*(y)+(x))
-
-    unsigned int Q = lbmModel->getHostModel()->getQ();
-    unsigned int Nx = gridGeometry->getHostGridGeometry()->getGhostNx();
-    unsigned int Ny = gridGeometry->getHostGridGeometry()->getGhostNy();
-	T firstOrder, secondOrder, thirdOrder, fourthOrder;
-
-	for(int l=0; l<Q; l++)
-	{
-	    for(int i=0; i<Nx; i++)
-	    {
-	        for(int j=0; j<Ny; j++)
-	        {
-                firstOrder = 0.;
-                secondOrder = 0.;
-                thirdOrder = 0.;
-                fourthOrder = 0.;
-   		        h_data[Q*pos(i,j)+l] = lbmModel->getHostModel()->getWEIGHT(l)*(1. + firstOrder + secondOrder + thirdOrder + fourthOrder);
-		    }
-		}
-	}
-
-}
-
-template<typename T, typename LBMModelWrapperClassType>
-T* LBMGrid<T, LBMModelWrapperClassType>::getDeviceCollisionPtr()
+template<typename T>
+T* LBMGrid<T>::getDeviceCollisionPtr()
 {
     return collision;
 }
 
-template<typename T, typename LBMModelWrapperClassType>
-T* LBMGrid<T, LBMModelWrapperClassType>::getDeviceStreamingPtr()
+template<typename T>
+T* LBMGrid<T>::getDeviceStreamingPtr()
 {
-    return d_streaming;
+    return streaming;
 }
 
 template<typename T, typename LBMGridClassType>
