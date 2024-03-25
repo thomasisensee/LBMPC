@@ -23,6 +23,8 @@ set(SOURCES
     src/core/lbmModel.hh
     src/core/collisionModel.h
     src/core/collisionModel.hh
+    src/core/boundaryConditions.hh
+    src/core/boundaryConditions.hh
     src/core/simulation.h
     src/core/simulation.hh
     src/cuda/cudaErrorHandler.h

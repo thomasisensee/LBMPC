@@ -3,36 +3,19 @@
 
 #include <stdio.h>
 
+#include "lbmModel.h"
 #include "lbmGrid.h"
 #include "cuda/cudaKernels.h"
 #include "cuda/cudaErrorHandler.h"
 
 template<typename T>
-LBMGrid<T>::LBMGrid(LBMModel<T>* lbmModel, GridGeometry2D<T>* gridGeometry) : lbmModel(lbmModel), gridGeometry(gridGeometry)
-{
-    unsigned int gridSize = lbmModel->getQ() * gridGeometry->getGhostVolume();
-    collision = new T[gridSize];
-}
+LBMGrid<T>::LBMGrid(
+        std::unique_ptr<LBMModel<T>>&& model, 
+        std::unique_ptr<GridGeometry2D<T>>&& geometry, 
+        std::unique_ptr<BoundaryConditionManager<T>>&& boundaryConditions
+) : model(std::move(model)), gridGeometry(std::move(geometry)), boundaryConditionManager(std::move(boundaryConditions)) {}
 
-template<typename T>
-LBMGrid<T>::~LBMGrid()
-{
-    delete[] collision;
-    //cudaErrorCheck(cudaFree(collision));
-    //cudaErrorCheck(cudaFree(streaming));
-}
 
-template<typename T>
-T* LBMGrid<T>::getDeviceCollisionPtr()
-{
-    return collision;
-}
-
-template<typename T>
-T* LBMGrid<T>::getDeviceStreamingPtr()
-{
-    return streaming;
-}
 
 template<typename T, typename LBMGridClassType>
 LBMGridWrapper<T, LBMGridClassType>::LBMGridWrapper(LBMGridClassType* lbmGrid) : hostLBMGrid(lbmGrid), deviceLBMGrid(nullptr)

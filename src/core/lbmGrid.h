@@ -8,27 +8,23 @@
 //#include "cudaKernels.h"
 
 template<typename T>
-class LBMGrid
-{
+class LBMGrid {
 private:
-    /// Distribution functions f, i.e., a grid of cells
-    T* collision=nullptr;
-    T* streaming=nullptr;
-    
-public:
-    /// LBM model providing dimensionality, velocity set, and weights
-    LBMModel<T>* lbmModel;
-    /// Grid geometry (spacing, Nx, Ny, etc.)
-    GridGeometry2D<T>* gridGeometry;
+    std::unique_ptr<LBMModel<T>> model;
+    std::unique_ptr<GridGeometry2D<T>> gridGeometry;
+    std::unique_ptr<BoundaryConditionManager<T>> boundaryConditionManager;
 
+    /// Distribution functions f
+    T* collision;
+    T* streaming;
+
+public:
     /// Constructor
-    LBMGrid(LBMModel<T>* lbmModel,GridGeometry2D<T>* gridGeometry);
-    /// Destructor
-    ~LBMGrid();
-    T* getDeviceCollisionPtr();
-    T* getDeviceStreamingPtr();
-    
-    //void initializeLBMDistributions(T* h_data);
+    LBMGrid(
+        std::unique_ptr<LBMModel<T>>&& model, 
+        std::unique_ptr<GridGeometry2D<T>>&& geometry, 
+        std::unique_ptr<BoundaryConditionManager<T>>&& boundaryConditions
+    );
 };
 
 
