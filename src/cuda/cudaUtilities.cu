@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "cudaErrorHandler.h"
-#include "cudaUtilities.h"
+#include "cudaErrorHandler.cuh"
+#include "cudaUtilities.cuh"
 
 void DisplayDeviceProperties()
 {

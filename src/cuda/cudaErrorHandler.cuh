@@ -1,5 +1,5 @@
-#ifndef CUDA_ERROR_HANDLER_H
-#define CUDA_ERROR_HANDLER_H
+#ifndef CUDA_ERROR_HANDLER_CUH
+#define CUDA_ERROR_HANDLER_CUH
 
 #include <stdio.h>
 #include <stdexcept>

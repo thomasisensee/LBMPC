@@ -27,10 +27,10 @@ set(SOURCES
     src/core/boundaryConditions.hh
     src/core/simulation.h
     src/core/simulation.hh
-    src/cuda/cudaErrorHandler.h
-    src/cuda/cudaKernels.h
+    src/cuda/cudaErrorHandler.cuh
+    src/cuda/cudaKernels.cuh
     src/cuda/cudaKernels.cu
-    src/cuda/cudaUtilities.h
+    src/cuda/cudaUtilities.cuh
     src/cuda/cudaUtilities.cu
 )
 

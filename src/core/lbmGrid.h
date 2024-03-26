@@ -2,56 +2,50 @@
 #define LatticeGrid_H
 
 #include <stdio.h>
+#include <vector>
 
 #include "lbmModel.h"
 #include "gridGeometry.h"
-//#include "cudaKernels.h"
+#include "simulationParams.h"
 
 template<typename T>
 class LBMGrid {
 private:
-    std::unique_ptr<LBMModel<T>> model;
+    std::unique_ptr<LBMModel<T>> lbmModel;
+    std::unique_ptr<CollisionModel<T>> collisionModel;
     std::unique_ptr<GridGeometry2D<T>> gridGeometry;
     std::unique_ptr<BoundaryConditionManager<T>> boundaryConditionManager;
 
     /// Distribution functions f
-    T* collision;
-    T* streaming;
+    std::vector<T> hostDistributions;
+    T* deviceCollision = nullptr;
+    T* deviceStreaming = nullptr;
+    
+    
+    /// Parameters to pass to cuda kernels
+    FluidParams<T> hostParams;
+    FluidParams<T>* deviceParams = nullptr;
 
 public:
     /// Constructor
     LBMGrid(
-        std::unique_ptr<LBMModel<T>>&& model, 
+        std::unique_ptr<LBMModel<T>>&& model,
+        std::unique_ptr<CollisionModel<T>>&& collision, 
         std::unique_ptr<GridGeometry2D<T>>&& geometry, 
-        std::unique_ptr<BoundaryConditionManager<T>>&& boundaryConditions
+        std::unique_ptr<BoundaryConditionManager<T>>&& boundary
     );
-};
-
-
-/// Wrapper class for duplication on GPU
-template<typename T, typename LBMGridClassType>
-class LBMGridWrapper {
-private:
-    /// Host-side LBMModel object
-    LBMGridClassType* hostLBMGrid;
-    /// Device-side LBMModel object
-    LBMGridClassType* deviceLBMGrid;
-
-public:
-    // Constructor
-    LBMGridWrapper(LBMGridClassType* lbmGrid);
-
-    // Destructor
-    ~LBMGridWrapper();
-
-    // Allocate device memory and copy data
-    void allocateOnDevice();
-    
-    /// Get pointer to the host LBMModel object
-    LBMGridClassType* getHostGrid() const;
-    
-    /// Get pointer to the device LBMModel object
-    LBMGridClassType* getDeviceGrid() const;
+    /// Destructor
+    ~LBMGrid();
+    void allocateHostData();
+    void allocateDeviceData();
+    void prepareKernelParams(FluidParams<T> &paramsHost);
+    void copyKernelParamsToDevice(const FluidParams<T> &paramsHost, FluidParams<T>* &paramsDevice);
+    void initializeDistributions();
+    void copyToDevice();
+    void copyToHost();
+    void performCollisionStep();
+    void performStreamingStep();
+    static unsigned int pos(unsigned int i, unsigned int j, unsigned int Nx);
 };
 
 #include "lbmGrid.hh"

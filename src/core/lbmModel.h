@@ -17,21 +17,21 @@ public:
     T* LATTICE_WEIGHTS;
 public:
     /// get the dimension (D)
-    __host__ __device__ unsigned int getD() const;
+    unsigned int getD() const;
     /// get the number of velocities in velocity set (Q)
-    __host__ __device__ unsigned int getQ() const;
+    unsigned int getQ() const;
     /// get the lattice velocity x-component corresponding to index i
-    __host__ __device__ virtual int getCX(unsigned int i) const = 0;
+    virtual int getCX(unsigned int i) const = 0;
     /// get the lattice velocity y-component corresponding to index i
-    __host__ __device__ virtual int getCY(unsigned int i) const = 0;
+    virtual int getCY(unsigned int i) const = 0;
     /// get the lattice weight corresponding to index i
-    __host__ __device__ virtual T getWEIGHT(unsigned int i) const = 0;
-    __host__ __device__  int* getLatticeVelocitiesPtr() const;
-    __host__  __device__ T* getLatticeWeightsPtr() const;
+    virtual T getWEIGHT(unsigned int i) const = 0;
+    int* getLatticeVelocitiesPtr() const;
+    T* getLatticeWeightsPtr() const;
     /// Prints LBM model details
     void print() const;
     /// Provides access to the specific derived class type
-    __host__  virtual LBMModel<T>* getDerivedModel() const = 0;
+    virtual LBMModel<T>* getDerivedModel() const = 0;
 };
 
 template<typename T>
@@ -39,17 +39,17 @@ class D2Q9 : public LBMModel<T>
 {
 public:
     // Constructor
-    __host__ __device__ D2Q9();
+    D2Q9();
     // Destructor
-    __host__ __device__ ~D2Q9();
+    ~D2Q9();
     /// get the lattice velocity x-component corresponding to index i
-    __host__ __device__ virtual int getCX(unsigned int i) const override;
+    virtual int getCX(unsigned int i) const override;
     /// get the lattice velocity y-component corresponding to index i
-    __host__ __device__ virtual int getCY(unsigned int i) const override;
+    virtual int getCY(unsigned int i) const override;
     /// get the lattice weight corresponding to index i
-    __host__ __device__ virtual T getWEIGHT(unsigned int i) const override;
+    virtual T getWEIGHT(unsigned int i) const override;
     /// Provides access to the specific derived class type
-    __host__ virtual LBMModel<T>* getDerivedModel() const override;
+    virtual LBMModel<T>* getDerivedModel() const override;
 };
 
 #include "lbmModel.hh"

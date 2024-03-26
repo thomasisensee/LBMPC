@@ -1,39 +1,35 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-#include "gridGeometry.h"
+#include <stdio.h>
+//#include <memory> // For std::unique_ptr and std::make_unique
+
 #include "lbmGrid.h"
 
 template<typename T>
-class Simulation
-{
+class Simulation {
 protected:
-    LBMGridWrapper<T>* lbmGrid;
-    bool GPU_ENABLED;
+    unsigned int totalIter;
+    unsigned int outputFrequency;
+    std::unique_ptr<LBMGrid<T>> lbmGrid; // For a single grid
+    // std::vector<std::unique_ptr<LBMGrid<T>>> lbmGrids; // For multiple grids
 
 public:
   /// Constructor
-  Simulation(LBMGridWrapper<T>* lbmGrid, bool GPU=true);
+  Simulation(std::unique_ptr<LBMGrid<T>>&& lbmgrid);
   /// Destructor
   //~Simulation();
   /// Time loop
-  virtual void performTimeStep() = 0;
-  virtual void streamingStep() = 0;
-  virtual void collisionStep() = 0;
+  virtual void run() = 0;
 };
 
 template<typename T>
-class LBMFluidSimulation : public Simulation<T>
-{
+class LBMFluidSimulation : public Simulation<T> {
 public:
     /// Constructor
-    LBMFluidSimulation(LBMGridWrapper<T>* lbmGrid, bool GPU=true);
-    /// One time step
-    void performTimeStep();
-    /// Streaming of populations
-    void streamingStep();
+    LBMFluidSimulation(std::unique_ptr<LBMGrid<T>>&& lbmgrid);
     /// Collision step
-    void collisionStep();
+    void run();
 };
 
 #include "simulation.hh"

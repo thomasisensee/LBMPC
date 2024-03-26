@@ -4,34 +4,21 @@
 #include "simulation.h"
 
 template<typename T>
-Simulation<T>::Simulation(LBMGridWrapper<T>* lbmGrid, bool GPU) : lbmGrid(lbmGrid), GPU_ENABLED(GPU) {}
+Simulation<T>::Simulation(std::unique_ptr<LBMGrid<T>>&& lbmgrid) : totalIter(0), outputFrequency(1), lbmGrid(std::move(lbmgrid))  { }
 
 template<typename T>
-LBMFluidSimulation<T>::LBMFluidSimulation(LBMGridWrapper<T>* lbmGrid, bool GPU) : Simulation<T>(lbmGrid, GPU) {}
+LBMFluidSimulation<T>::LBMFluidSimulation(std::unique_ptr<LBMGrid<T>>&& lbmgrid) : Simulation<T>(std::move(lbmgrid)) { }
 
 template<typename T>
-void LBMFluidSimulation<T>::performTimeStep()
-{
+void LBMFluidSimulation<T>::run() {
+    for (unsigned int iter = 0; iter < this->totalIter; ++iter) {
+        this->lbmGrid->performStreamingStep();
+        this->lbmGrid->performCollisionStep();
+    }
 
 }
 
-template<typename T>
-void LBMFluidSimulation<T>::streamingStep()
-{
 
-}
-
-template<typename T>
-void LBMFluidSimulation<T>::collisionStep()
-{
-#define pos(x,y)		(Nx*(y)+(x))
-
-    //unsigned int Q = this->latGrid->lbmModel->getQ();
-    //unsigned int Nx = this->latGrid->gridGeometry->getGhostNx();
-    //unsigned int Ny = this->latGrid->gridGeometry->getGhostNy();
-    
-    
-}
 
 #endif
 

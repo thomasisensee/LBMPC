@@ -2,32 +2,30 @@
 #define LBM_Model_HH
 
 #include <iostream>
-#include <cuda_runtime.h>
 
 #include "lbmModel.h"
-#include "cuda/cudaErrorHandler.h"
-#include "cuda/cudaKernels.h"
+
 
 template<typename T>
-__host__ __device__ unsigned int LBMModel<T>::getD() const
+unsigned int LBMModel<T>::getD() const
 {
     return D;
 }
 
 template<typename T>
-__host__ __device__ unsigned int LBMModel<T>::getQ() const
+unsigned int LBMModel<T>::getQ() const
 {
     return Q;
 }
 
 template<typename T>
-__host__ __device__ int* LBMModel<T>::getLatticeVelocitiesPtr() const
+int* LBMModel<T>::getLatticeVelocitiesPtr() const
 {
     return LATTICE_VELOCITIES;
 }
 
 template<typename T>
-__host__ __device__ T* LBMModel<T>::getLatticeWeightsPtr() const
+T* LBMModel<T>::getLatticeWeightsPtr() const
 {
     return LATTICE_WEIGHTS;
 }
@@ -44,7 +42,7 @@ void LBMModel<T>::print() const
 }
 
 template<typename T>
-__host__ __device__ D2Q9<T>::D2Q9()
+D2Q9<T>::D2Q9()
 {
     this->D = 2;
     this->Q = 9;
@@ -69,26 +67,26 @@ __host__ __device__ D2Q9<T>::D2Q9()
 }
 
 template<typename T>
-__host__ __device__ D2Q9<T>::~D2Q9()
+D2Q9<T>::~D2Q9()
 {
     delete[] this->LATTICE_VELOCITIES;
     delete[] this->LATTICE_WEIGHTS;
 }
 
 template<typename T>
-__host__ __device__ int D2Q9<T>::getCX(unsigned int i) const 
+int D2Q9<T>::getCX(unsigned int i) const 
 {
     return this->LATTICE_VELOCITIES[i*2];
 }
 
 template<typename T>
-__host__ __device__ int D2Q9<T>::getCY(unsigned int i) const 
+int D2Q9<T>::getCY(unsigned int i) const 
 {
     return this->LATTICE_VELOCITIES[i*2+1];
 }
 
 template<typename T>
-__host__ __device__ T D2Q9<T>::getWEIGHT(unsigned int i) const 
+T D2Q9<T>::getWEIGHT(unsigned int i) const 
 {
     return this->LATTICE_WEIGHTS[i];
 }
