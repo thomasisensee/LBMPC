@@ -28,12 +28,12 @@ BoundaryConditionManager<T>::BoundaryConditionManager() {
 }
 
 template<typename T>
-void BoundaryConditionManager<T>::addBoundaryCondition(BoundaryType boundary, const std::string& name, std::unique_ptr<BoundaryCondition<T>> condition) {
+void BoundaryConditionManager<T>::addBoundaryCondition(BoundaryLocation boundary, const std::string& name, std::unique_ptr<BoundaryCondition<T>> condition) {
     boundaryConditions[boundary][name] = std::move(condition);
 }
 
 template<typename T>
-void BoundaryConditionManager<T>::apply(BoundaryType boundary/*,grid*/) {
+void BoundaryConditionManager<T>::apply(BoundaryLocation boundary/*,grid*/) {
 /*
         auto& conditions = boundaryConditions[boundary];
         for (auto& conditionPair : conditions) {

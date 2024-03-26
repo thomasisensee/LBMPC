@@ -7,8 +7,8 @@
 #include <memory>       // For std::unique_ptr
 #include <string>       // Also include this if you're using std::string
 
-enum class BoundaryType {
-    North, South, East, West, Top, Bottom
+enum class BoundaryLocation {
+    EAST, WEST, SOUTH, NORTH
 };
 
 template<typename T>
@@ -40,14 +40,14 @@ public:
 
 template<typename T>
 class BoundaryConditionManager {
-    std::map<BoundaryType, std::map<std::string, std::unique_ptr<BoundaryCondition<T>>>> boundaryConditions;
+    std::map<BoundaryLocation, std::map<std::string, std::unique_ptr<BoundaryCondition<T>>>> boundaryConditions;
     //LBMGrid& grid;
 
 public:
     /// Constructor
     BoundaryConditionManager();
-    void addBoundaryCondition(BoundaryType boundary, const std::string& name, std::unique_ptr<BoundaryCondition<T>> condition);
-    void apply(BoundaryType boundary/*,grid*/);
+    void addBoundaryCondition(BoundaryLocation boundary, const std::string& name, std::unique_ptr<BoundaryCondition<T>> condition);
+    void apply(BoundaryLocation boundary/*,grid*/);
     void print() const;
 };
 
