@@ -1,0 +1,6 @@
+#ifndef CUDA_CONSTANTS_CUH
+#define CUDA_CONSTANTS_CUH
+
+#define THREADS_PER_BLOCK_DIMENSION (16)
+
+#endif

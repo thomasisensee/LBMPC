@@ -6,6 +6,7 @@
 
 #include "lbmModel.h"
 #include "lbmGrid.h"
+#include "cuda/cudaConstants.cuh"
 #include "cuda/cudaKernels.cuh"
 #include "cuda/cudaErrorHandler.cuh"
 
@@ -84,9 +85,7 @@ void LBMGrid<T>::copyKernelParamsToDevice(const FluidParams<T> &hostParams, Flui
 
 template<typename T>
 void LBMGrid<T>::initializeDistributions() {
-
-    const unsigned int threadsPerBlockSide = 16; // A common choice is to use a square block of 16x16 threads = 256 threads
-    dim3 threadsPerBlock(threadsPerBlockSide, threadsPerBlockSide);
+    dim3 threadsPerBlock(THREADS_PER_BLOCK_DIMENSION, THREADS_PER_BLOCK_DIMENSION);
     dim3 numBlocks((gridGeometry->getGhostNx() + threadsPerBlock.x - 1) / threadsPerBlock.x, (gridGeometry->getGhostNy() + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
     initializeDistributionsCaller(deviceCollision, deviceParams, numBlocks, threadsPerBlock);
@@ -104,12 +103,16 @@ void LBMGrid<T>::copyToHost() {
 
 template<typename T>
 void LBMGrid<T>::performCollisionStep() {
-
+    dim3 threadsPerBlock(THREADS_PER_BLOCK_DIMENSION, THREADS_PER_BLOCK_DIMENSION);
+    dim3 numBlocks((gridGeometry->getGhostNx() + threadsPerBlock.x - 1) / threadsPerBlock.x, (gridGeometry->getGhostNy() + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    doCollision(deviceCollision, deviceParams, numBlocks, threadsPerBlock);
 }
 
 template<typename T>
 void LBMGrid<T>::performStreamingStep() {
-
+    dim3 threadsPerBlock(THREADS_PER_BLOCK_DIMENSION, THREADS_PER_BLOCK_DIMENSION);
+    dim3 numBlocks((gridGeometry->getGhostNx() + threadsPerBlock.x - 1) / threadsPerBlock.x, (gridGeometry->getGhostNy() + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    doStreaming(deviceCollision, deviceStreaming, swap, deviceParams, numBlocks, threadsPerBlock);
 }
 
 template<typename T>

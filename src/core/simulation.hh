@@ -14,6 +14,7 @@ void LBMFluidSimulation<T>::run() {
     for (unsigned int iter = 0; iter < this->totalIter; ++iter) {
         this->lbmGrid->performStreamingStep();
         this->lbmGrid->performCollisionStep();
+        //apply boundary conditions
     }
 
 }
@@ -21,4 +22,3 @@ void LBMFluidSimulation<T>::run() {
 
 
 #endif
-

@@ -11,21 +11,23 @@
 template<typename T>
 class LBMGrid {
 private:
+    /// Required model objects
     std::unique_ptr<LBMModel<T>> lbmModel;
     std::unique_ptr<CollisionModel<T>> collisionModel;
     std::unique_ptr<GridGeometry2D<T>> gridGeometry;
     std::unique_ptr<BoundaryConditionManager<T>> boundaryConditionManager;
 
-    /// Distribution functions f
+    /// Distribution function
     std::vector<T> hostDistributions;
     T* deviceCollision = nullptr;
     T* deviceStreaming = nullptr;
-    
-    
+
+    /// swap pointer for switching streaming and collision device arrays
+    T* swap = nullptr;
+
     /// Parameters to pass to cuda kernels
     FluidParams<T> hostParams;
     FluidParams<T>* deviceParams = nullptr;
-
 public:
     /// Constructor
     LBMGrid(

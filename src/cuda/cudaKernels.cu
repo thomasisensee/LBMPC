@@ -46,7 +46,6 @@ void initializeDistributionsCaller(T* deviceCollision, const FluidParams<T>* con
 template void initializeDistributionsCaller<float>(float* deviceCollision, const FluidParams<float>* const params, dim3 gridSize, dim3 blockSize);
 template void initializeDistributionsCaller<double>(double* deviceCollision, const FluidParams<double>* const params, dim3 gridSize, dim3 blockSize);
 
-
 template<typename T>
 __global__ void doStreamingKernel(const T *const collision, T *streaming, const FluidParams<T>* const params) {
 
@@ -64,9 +63,30 @@ __global__ void doStreamingKernel(const T *const collision, T *streaming, const 
 }
 
 template<typename T>
-void doStreaming(T* deviceCollision, T* deviceStreaming, const FluidParams<T>* const params, dim3 gridSize, dim3 blockSize) {
+void doStreaming(T* deviceCollision, T* deviceStreaming, T* swap, const FluidParams<T>* const params, dim3 gridSize, dim3 blockSize) {
     doStreamingKernel<<<gridSize, blockSize>>>(deviceCollision, deviceStreaming, params);
     cudaErrorCheck(cudaDeviceSynchronize());
+    swap = deviceCollision; deviceCollision = deviceStreaming; deviceStreaming = swap;
 }
-template void doStreaming<float>(float* deviceCollision, float* deviceStreaming, const FluidParams<float>* const params, dim3 gridSize, dim3 blockSize);
-template void doStreaming<double>(double* deviceCollision, double* deviceStreaming, const FluidParams<double>* const params, dim3 gridSize, dim3 blockSize);
+template void doStreaming<float>(float* deviceCollision, float* deviceStreaming, float* swap, const FluidParams<float>* const params, dim3 gridSize, dim3 blockSize);
+template void doStreaming<double>(double* deviceCollision, double* deviceStreaming, double* swap, const FluidParams<double>* const params, dim3 gridSize, dim3 blockSize);
+
+
+template<typename T>
+__global__ void doCollisionKernel(const T *const collision, const FluidParams<T>* const params) {
+
+    unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+    unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
+    unsigned int idx = pos(i, j, params->Nx);
+
+    if(i>params->Nx || j > params->Ny) { return; }
+    
+}
+
+template<typename T>
+void doCollision(T* deviceCollision, const FluidParams<T>* const params, dim3 gridSize, dim3 blockSize) {
+    doCollisionKernel<<<gridSize, blockSize>>>(deviceCollision, params);
+    cudaErrorCheck(cudaDeviceSynchronize());
+}
+template void doCollision<float>(float* deviceCollision, const FluidParams<float>* const params, dim3 gridSize, dim3 blockSize);
+template void doCollision<double>(double* deviceCollision, const FluidParams<double>* const params, dim3 gridSize, dim3 blockSize);
