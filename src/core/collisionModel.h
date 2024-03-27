@@ -21,7 +21,7 @@ public:
     virtual ~CollisionModel() = default;
     void setOmegaShear(T omegaShear);
     T getOmegaShear() const;
-    virtual void prepareKernelParams(LBMParams<T>* gridParams) = 0;
+    virtual void prepareKernelParams(LBMParams<T>* lbmParams) = 0;
     virtual void copyKernelParamsToDevice() = 0;
     virtual void doCollision(T* distribution) = 0;
     virtual void print() = 0;
@@ -39,7 +39,7 @@ private:
     CollisionParamsBGK<T> hostParams;
     CollisionParamsBGK<T>* deviceParams = nullptr;
 public:
-    virtual void prepareKernelParams(LBMParams<T>* gridParams);
+    virtual void prepareKernelParams(LBMParams<T>* lbmParams);
     virtual void copyKernelParamsToDevice();
     virtual void doCollision(T* distribution) override;
     virtual void print();
@@ -58,7 +58,7 @@ public:
     CollisionCHM(T omegaS, T omegaB);
     void setOmegaBulk(T omegaBulk);
     T getOmegaBulk() const;
-    virtual void prepareKernelParams(LBMParams<T>* gridParams);
+    virtual void prepareKernelParams(LBMParams<T>* lbmParams);
     virtual void copyKernelParamsToDevice();
     virtual void doCollision(T* distribution) override;
     virtual void print() override;

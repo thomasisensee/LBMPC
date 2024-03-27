@@ -19,12 +19,12 @@ LBMFluidSimulation<T>::LBMFluidSimulation(std::unique_ptr<LBMGrid<T>>&& lbmgrid)
 
 template<typename T>
 void LBMFluidSimulation<T>::run() {
+	
     for (unsigned int iter = 0; iter < this->totalIter; ++iter) {
         this->lbmGrid->performStreamingStep();
         this->lbmGrid->performCollisionStep();
         this->lbmGrid->applyBoundaryConditions();
     }
-
 }
 
 

@@ -18,7 +18,7 @@ LBMGrid<T>::LBMGrid(
         std::unique_ptr<BoundaryConditionManager<T>>&& boundary
 ) : lbmModel(std::move(model)), collisionModel(std::move(collision)), gridGeometry(std::move(geometry)), boundaryConditionManager(std::move(boundary)) {
     prepareKernelParams();
-    copyKernelParamsToDevice(hostParams, deviceParams);
+    copyKernelParamsToDevice();
     allocateHostData();
     allocateDeviceData();
     initializeDistributions();
@@ -64,7 +64,7 @@ void LBMGrid<T>::prepareKernelParams() {
 }
 
 template<typename T>
-void LBMGrid<T>::copyKernelParamsToDevice(const LBMParams<T> &hostParams, LBMParams<T>* &deviceParams) {
+void LBMGrid<T>::copyKernelParamsToDevice() {
     // Allocate device memory for lattice velocities and copy data
     int* deviceLatticeVelocities;
     size_t sizeLatticeVelocities = lbmModel->getQ() * lbmModel->getD() * sizeof(int);

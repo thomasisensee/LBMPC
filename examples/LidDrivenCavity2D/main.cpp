@@ -48,7 +48,6 @@ boundaryConditionManager->addBoundaryCondition(BoundaryLocation::SOUTH, "bounceB
 boundaryConditionManager->addBoundaryCondition(BoundaryLocation::NORTH, "fixedVelocity", std::make_unique<FixedVelocityBoundary<T>>(wallVelocity));
 boundaryConditionManager->print();
 
-
 // ======================
 // === Setup LBM Grid ===
 // ======================

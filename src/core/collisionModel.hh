@@ -30,14 +30,14 @@ T CollisionModel<T>::getOmegaShear() const {
 /***** Derived classes *****/
 /***************************/
 template<typename T>
-void CollisionBGK<T>::prepareKernelParams(LBMParams<T>* gridParams) {
-    this->hostParams.D = gridParams->D;
-    this->hostParams.Nx = gridParams->Nx;
-    this->hostParams.Ny = gridParams->Ny;
-    this->hostParams.Q = gridParams->Q;
-    this->hostParams.LATTICE_VELOCITIES = gridParams->LATTICE_VELOCITIES;
-    this->hostParams.LATTICE_WEIGHTS = gridParams->LATTICE_WEIGHTS;    
-    this->hostParams.omegaShear = this->omegaShear;
+void CollisionBGK<T>::prepareKernelParams(LBMParams<T>* lbmParams) {
+    this->hostParams.D                  = lbmParams->D;
+    this->hostParams.Nx                 = lbmParams->Nx;
+    this->hostParams.Ny                 = lbmParams->Ny;
+    this->hostParams.Q                  = lbmParams->Q;
+    this->hostParams.LATTICE_VELOCITIES = lbmParams->LATTICE_VELOCITIES;
+    this->hostParams.LATTICE_WEIGHTS    = lbmParams->LATTICE_WEIGHTS;    
+    this->hostParams.omegaShear         = this->omegaShear;
 }
 
 
@@ -96,15 +96,15 @@ T CollisionCHM<T>::getOmegaBulk() const {
 }
 
 template<typename T>
-void CollisionCHM<T>::prepareKernelParams(LBMParams<T>* gridParams) {
-    this->hostParams.D = gridParams->D;
-    this->hostParams.Nx = gridParams->Nx;
-    this->hostParams.Ny = gridParams->Ny;
-    this->hostParams.Q = gridParams->Q;
-    this->hostParams.LATTICE_VELOCITIES = gridParams->LATTICE_VELOCITIES;
-    this->hostParams.LATTICE_WEIGHTS = gridParams->LATTICE_WEIGHTS;    
-    this->hostParams.omegaShear = this->omegaShear;
-    this->hostParams.omegaBulk = this->omegaBulk;
+void CollisionCHM<T>::prepareKernelParams(LBMParams<T>* lbmParams) {
+    this->hostParams.D                  = lbmParams->D;
+    this->hostParams.Nx                 = lbmParams->Nx;
+    this->hostParams.Ny                 = lbmParams->Ny;
+    this->hostParams.Q                  = lbmParams->Q;
+    this->hostParams.LATTICE_VELOCITIES = lbmParams->LATTICE_VELOCITIES;
+    this->hostParams.LATTICE_WEIGHTS    = lbmParams->LATTICE_WEIGHTS;    
+    this->hostParams.omegaShear         = this->omegaShear;
+    this->hostParams.omegaBulk          = this->omegaBulk;
 }
 
 template<typename T>

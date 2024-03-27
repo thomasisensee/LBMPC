@@ -14,15 +14,18 @@ struct BaseParams {
 
 template<typename T>
 struct LBMParams : public BaseParams<T> {
-    // LBM
     unsigned int Q;
     int *LATTICE_VELOCITIES;
     T* LATTICE_WEIGHTS;
+    /*
+    ~LBMParams() override {
+        delete[] LATTICE_VELOCITIES; // Derived-specific cleanup
+        // BaseParams' destructor is automatically called after
+    }*/
 };
 
 template<typename T>
 struct CollisionParamsBGK : public LBMParams<T> {
-    // LBM
     unsigned int Q;
     int *LATTICE_VELOCITIES;
     T* LATTICE_WEIGHTS;
@@ -31,7 +34,6 @@ struct CollisionParamsBGK : public LBMParams<T> {
 
 template<typename T>
 struct CollisionParamsCHM : public CollisionParamsBGK<T> {
-    // LBM
     unsigned int Q;
     int *LATTICE_VELOCITIES;
     T* LATTICE_WEIGHTS;
@@ -41,10 +43,10 @@ struct CollisionParamsCHM : public CollisionParamsBGK<T> {
 
 template<typename T>
 struct BoundaryParams : public BaseParams<T> {
-    // LBM
     unsigned int Q;
     int *LATTICE_VELOCITIES;
     T* LATTICE_WEIGHTS;
+    T* wallVelocity;
 };
 
 #endif // KERNEL_PARAMS_H

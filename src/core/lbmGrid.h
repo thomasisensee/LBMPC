@@ -41,7 +41,7 @@ public:
     void allocateHostData();
     void allocateDeviceData();
     void prepareKernelParams();
-    void copyKernelParamsToDevice(const LBMParams<T> &paramsHost, LBMParams<T>* &paramsDevice);
+    void copyKernelParamsToDevice();
     void initializeDistributions();
     void copyToDevice();
     void copyToHost();
