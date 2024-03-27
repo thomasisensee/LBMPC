@@ -11,9 +11,9 @@
 /**********************/
 template<typename T>
 BoundaryCondition<T>::~BoundaryCondition() {
-/*
     if (deviceParams != nullptr) {
-        cudaErrorCheck(cudaFree(deviceParams));*/
+        cudaErrorCheck(cudaFree(deviceParams));
+    }
 }
 
 template<typename T>
