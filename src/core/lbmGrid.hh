@@ -17,7 +17,7 @@ LBMGrid<T>::LBMGrid(
         std::unique_ptr<GridGeometry2D<T>>&& geometry,
         std::unique_ptr<BoundaryConditionManager<T>>&& boundary
 ) : lbmModel(std::move(model)), collisionModel(std::move(collision)), gridGeometry(std::move(geometry)), boundaryConditionManager(std::move(boundary)) {
-    prepareKernelParams(hostParams);
+    prepareKernelParams();
     copyKernelParamsToDevice(hostParams, deviceParams);
     allocateHostData();
     allocateDeviceData();
@@ -26,9 +26,15 @@ LBMGrid<T>::LBMGrid(
 
 template<typename T>
 LBMGrid<T>::~LBMGrid() {
-   cudaErrorCheck(cudaFree(deviceCollision));
-   cudaErrorCheck(cudaFree(deviceStreaming));
-   cudaErrorCheck(cudaFree(deviceParams));
+    if (deviceCollision != nullptr) {
+        cudaErrorCheck(cudaFree(deviceCollision));
+    }
+    if (deviceCollision != nullptr) {
+        cudaErrorCheck(cudaFree(deviceStreaming));
+    }
+    if (deviceParams != nullptr) {
+        cudaErrorCheck(cudaFree(deviceParams));
+    }
 }
 
 template<typename T>
@@ -43,44 +49,46 @@ void LBMGrid<T>::allocateDeviceData() {
 }
 
 template<typename T>
-void LBMGrid<T>::prepareKernelParams(FluidParams<T> &paramsHost) {
-    paramsHost.Nx = gridGeometry->getGhostNx();
-    paramsHost.Ny = gridGeometry->getGhostNy();
-    paramsHost.Q = lbmModel->getQ();
-    paramsHost.omegaShear = 0.7;
-    paramsHost.LATTICE_VELOCITIES = lbmModel->getLatticeVelocitiesPtr();
-    paramsHost.LATTICE_WEIGHTS = lbmModel->getLatticeWeightsPtr();    
+void LBMGrid<T>::prepareKernelParams() {
+    // Own kernel parameters
+    this->hostParams.D = this->lbmModel->getQ();
+    this->hostParams.Nx = this->gridGeometry->getGhostNx();
+    this->hostParams.Ny = this->gridGeometry->getGhostNy();
+    this->hostParams.Q = this->lbmModel->getQ();
+    this->hostParams.LATTICE_VELOCITIES = this->lbmModel->getLatticeVelocitiesPtr();
+    this->hostParams.LATTICE_WEIGHTS = this->lbmModel->getLatticeWeightsPtr();
+
+    // Kernel parameters of collision model
+    this->collisionModel->prepareKernelParams(&(this->hostParams));
+    this->collisionModel->copyKernelParamsToDevice();
 }
 
 template<typename T>
-void LBMGrid<T>::copyKernelParamsToDevice(const FluidParams<T> &hostParams, FluidParams<T>* &deviceParams) {
-
-    // Allocate device memory for arrays and copy data
+void LBMGrid<T>::copyKernelParamsToDevice(const LBMParams<T> &hostParams, LBMParams<T>* &deviceParams) {
+    // Allocate device memory for lattice velocities and copy data
     int* deviceLatticeVelocities;
     size_t sizeLatticeVelocities = lbmModel->getQ() * lbmModel->getD() * sizeof(int);
-    cudaErrorCheck(cudaMalloc(&deviceLatticeVelocities,sizeLatticeVelocities));
+    cudaErrorCheck(cudaMalloc(&deviceLatticeVelocities, sizeLatticeVelocities));
     cudaErrorCheck(cudaMemcpy(deviceLatticeVelocities, hostParams.LATTICE_VELOCITIES, sizeLatticeVelocities, cudaMemcpyHostToDevice));
 
+    // Allocate device memory for lattice weights and copy data
     T* deviceLatticeWeights;
     size_t sizeLatticeWeights = lbmModel->getQ() * sizeof(T);
-    cudaErrorCheck(cudaMalloc(&deviceLatticeWeights,sizeLatticeWeights));
+    cudaErrorCheck(cudaMalloc(&deviceLatticeWeights, sizeLatticeWeights));
     cudaErrorCheck(cudaMemcpy(deviceLatticeWeights, hostParams.LATTICE_WEIGHTS, sizeLatticeWeights, cudaMemcpyHostToDevice));
 
+    // Prepare the host-side copy of LBMParams with device pointers
+    LBMParams<T> paramsTemp = hostParams; // Use a temporary host copy
+    paramsTemp.LATTICE_VELOCITIES = deviceLatticeVelocities;
+    paramsTemp.LATTICE_WEIGHTS = deviceLatticeWeights;
 
-    // Prepare a device-side KernelParams struct with device pointers
-    FluidParams<T> deviceParamsTemp = hostParams; // Copy host params to a temp
-    deviceParamsTemp.LATTICE_VELOCITIES = deviceLatticeVelocities; // Set to device pointer
-    deviceParamsTemp.LATTICE_WEIGHTS = deviceLatticeWeights; // Set to device pointer
+    // Allocate memory for the LBMParams struct on the device if not already allocated
+    if (deviceParams == nullptr) {
+        cudaErrorCheck(cudaMalloc(&deviceParams, sizeof(LBMParams<T>)));
+    }
 
-    // Allocate memory for the KernelParams struct on the device
-    cudaErrorCheck(cudaMalloc(&deviceParams, sizeof(FluidParams<T>)));
-
-    // Copy the prepared KernelParams (with device pointers) to the device
-    cudaErrorCheck(cudaMemcpy(deviceParams, &deviceParamsTemp, sizeof(FluidParams<T>), cudaMemcpyHostToDevice));
-    
-    // Free obsolete memory
-    cudaErrorCheck(cudaFree(deviceParamsTemp.LATTICE_VELOCITIES));
-    cudaErrorCheck(cudaFree(deviceParamsTemp.LATTICE_WEIGHTS));
+    // Copy the prepared LBMParams (with device pointers) from the temporary host copy to the device
+    cudaErrorCheck(cudaMemcpy(deviceParams, &paramsTemp, sizeof(LBMParams<T>), cudaMemcpyHostToDevice));
 }
 
 template<typename T>
@@ -103,17 +111,21 @@ void LBMGrid<T>::copyToHost() {
 
 template<typename T>
 void LBMGrid<T>::performCollisionStep() {
-    dim3 threadsPerBlock(THREADS_PER_BLOCK_DIMENSION, THREADS_PER_BLOCK_DIMENSION);
-    dim3 numBlocks((gridGeometry->getGhostNx() + threadsPerBlock.x - 1) / threadsPerBlock.x, (gridGeometry->getGhostNy() + threadsPerBlock.y - 1) / threadsPerBlock.y);
-    doCollision(deviceCollision, deviceParams, numBlocks, threadsPerBlock);
+    this->collisionModel->doCollision(deviceCollision);
 }
 
 template<typename T>
 void LBMGrid<T>::performStreamingStep() {
     dim3 threadsPerBlock(THREADS_PER_BLOCK_DIMENSION, THREADS_PER_BLOCK_DIMENSION);
     dim3 numBlocks((gridGeometry->getGhostNx() + threadsPerBlock.x - 1) / threadsPerBlock.x, (gridGeometry->getGhostNy() + threadsPerBlock.y - 1) / threadsPerBlock.y);
-    doStreaming(deviceCollision, deviceStreaming, swap, deviceParams, numBlocks, threadsPerBlock);
+    doStreamingCaller(deviceCollision, deviceStreaming, swap, deviceParams, numBlocks, threadsPerBlock);
 }
+
+template<typename T>
+void LBMGrid<T>::applyBoundaryConditions() {
+    this->boundaryConditionManager->apply(deviceCollision);
+}
+
 
 template<typename T>
 unsigned int LBMGrid<T>::pos(unsigned int i, unsigned int j, unsigned int Nx) {

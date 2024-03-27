@@ -3,9 +3,12 @@
 
 #include <cuda_runtime.h>
 
+
+/**********************/
+/***** Base class *****/
+/**********************/
 template<typename T>
-class LBMModel
-{
+class LBMModel {
 public:
     /// Dimension
     unsigned int D;
@@ -34,9 +37,12 @@ public:
     virtual LBMModel<T>* getDerivedModel() const = 0;
 };
 
+
+/***************************/
+/***** Derived classes *****/
+/***************************/
 template<typename T>
-class D2Q9 : public LBMModel<T>
-{
+class D2Q9 : public LBMModel<T> {
 public:
     // Constructor
     D2Q9();

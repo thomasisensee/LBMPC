@@ -27,6 +27,7 @@ set(SOURCES
     src/core/boundaryConditions.hh
     src/core/simulation.h
     src/core/simulation.hh
+    src/core/kernelParams.h
     src/cuda/cudaErrorHandler.cuh
     src/cuda/cudaKernels.cuh
     src/cuda/cudaKernels.cu

@@ -6,6 +6,10 @@
 
 #include "lbmGrid.h"
 
+
+/**********************/
+/***** Base class *****/
+/**********************/
 template<typename T>
 class Simulation {
 protected:
@@ -17,12 +21,14 @@ protected:
 public:
   /// Constructor
   Simulation(std::unique_ptr<LBMGrid<T>>&& lbmgrid);
-  /// Destructor
-  //~Simulation();
   /// Time loop
   virtual void run() = 0;
 };
 
+
+/***************************/
+/***** Derived classes *****/
+/***************************/
 template<typename T>
 class LBMFluidSimulation : public Simulation<T> {
 public:
@@ -34,4 +40,4 @@ public:
 
 #include "simulation.hh"
 
-#endif
+#endif // SIMULATION_H

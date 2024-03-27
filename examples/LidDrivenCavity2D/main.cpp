@@ -26,7 +26,9 @@ SetDevice();
 auto lbmModel = std::make_unique<D2Q9<T>>(); // Create instances of the components. Since we're passing these to LBMGrid which takes ownership, we use std::make_unique to create unique_ptr instances.
 lbmModel->print();
 
-auto collisionModel = std::make_unique<MRTCHMCollisionModel<T>>();
+T omegaShear = 0.7;
+T omegaBulk = omegaShear;
+auto collisionModel = std::make_unique<CollisionCHM<T>>(omegaShear,omegaBulk);
 collisionModel->print();
 
 // ===============================
@@ -47,15 +49,22 @@ boundaryConditionManager->addBoundaryCondition(BoundaryLocation::NORTH, "fixedVe
 boundaryConditionManager->print();
 
 
-// ========================
-// === Setup simulation ===
-// ========================
+// ======================
+// === Setup LBM Grid ===
+// ======================
 auto lbmGrid = std::make_unique<LBMGrid<T>>(
     std::move(lbmModel),
     std::move(collisionModel), 
     std::move(gridGeometry), 
     std::move(boundaryConditionManager)
 );
+
+// ========================
+// === Setup simulation ===
+// ========================
+LBMFluidSimulation simulation = LBMFluidSimulation<T>(std::move(lbmGrid));
+
+simulation.run();
 
 
 return 0;

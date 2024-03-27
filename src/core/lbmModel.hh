@@ -6,33 +6,31 @@
 #include "lbmModel.h"
 
 
+/**********************/
+/***** Base class *****/
+/**********************/
 template<typename T>
-unsigned int LBMModel<T>::getD() const
-{
+unsigned int LBMModel<T>::getD() const {
     return D;
 }
 
 template<typename T>
-unsigned int LBMModel<T>::getQ() const
-{
+unsigned int LBMModel<T>::getQ() const {
     return Q;
 }
 
 template<typename T>
-int* LBMModel<T>::getLatticeVelocitiesPtr() const
-{
+int* LBMModel<T>::getLatticeVelocitiesPtr() const {
     return LATTICE_VELOCITIES;
 }
 
 template<typename T>
-T* LBMModel<T>::getLatticeWeightsPtr() const
-{
+T* LBMModel<T>::getLatticeWeightsPtr() const {
     return LATTICE_WEIGHTS;
 }
 
 template<typename T>
-void LBMModel<T>::print() const
-{
+void LBMModel<T>::print() const {
     std::cout << "============================== LBM Model Details ==============================" << std::endl;
     std::cout << "==                                   D" << getD() << "Q" << getQ() << "                                    ==" << std::endl;
     std::cout << "== Cx ="; for(int i=0; i<Q; ++i) {std::cout << "\t" << LATTICE_VELOCITIES[i*D]; } std::cout << "    ==" << std::endl;
@@ -41,9 +39,12 @@ void LBMModel<T>::print() const
     std::cout << "===============================================================================\n" << std::endl;
 }
 
+
+/***************************/
+/***** Derived classes *****/
+/***************************/
 template<typename T>
-D2Q9<T>::D2Q9()
-{
+D2Q9<T>::D2Q9() {
     this->D = 2;
     this->Q = 9;
     this->LATTICE_WEIGHTS = new T[9];
@@ -67,33 +68,28 @@ D2Q9<T>::D2Q9()
 }
 
 template<typename T>
-D2Q9<T>::~D2Q9()
-{
+D2Q9<T>::~D2Q9() {
     delete[] this->LATTICE_VELOCITIES;
     delete[] this->LATTICE_WEIGHTS;
 }
 
 template<typename T>
-int D2Q9<T>::getCX(unsigned int i) const 
-{
+int D2Q9<T>::getCX(unsigned int i) const  {
     return this->LATTICE_VELOCITIES[i*2];
 }
 
 template<typename T>
-int D2Q9<T>::getCY(unsigned int i) const 
-{
+int D2Q9<T>::getCY(unsigned int i) const  {
     return this->LATTICE_VELOCITIES[i*2+1];
 }
 
 template<typename T>
-T D2Q9<T>::getWEIGHT(unsigned int i) const 
-{
+T D2Q9<T>::getWEIGHT(unsigned int i) const  {
     return this->LATTICE_WEIGHTS[i];
 }
 
 template<typename T>
-__host__ LBMModel<T>* D2Q9<T>::getDerivedModel() const
-{
+__host__ LBMModel<T>* D2Q9<T>::getDerivedModel() const {
     return new D2Q9<T>(*this); // Return a pointer to a new D2Q9 object
 }
 

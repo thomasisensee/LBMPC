@@ -1,12 +1,12 @@
-#ifndef LatticeGrid_H
-#define LatticeGrid_H
+#ifndef LATTICE_GRID_H
+#define LATTICE_GRID_H
 
 #include <stdio.h>
 #include <vector>
 
 #include "lbmModel.h"
 #include "gridGeometry.h"
-#include "simulationParams.h"
+#include "kernelParams.h"
 
 template<typename T>
 class LBMGrid {
@@ -26,8 +26,8 @@ private:
     T* swap = nullptr;
 
     /// Parameters to pass to cuda kernels
-    FluidParams<T> hostParams;
-    FluidParams<T>* deviceParams = nullptr;
+    LBMParams<T> hostParams;
+    LBMParams<T>* deviceParams = nullptr;
 public:
     /// Constructor
     LBMGrid(
@@ -40,16 +40,17 @@ public:
     ~LBMGrid();
     void allocateHostData();
     void allocateDeviceData();
-    void prepareKernelParams(FluidParams<T> &paramsHost);
-    void copyKernelParamsToDevice(const FluidParams<T> &paramsHost, FluidParams<T>* &paramsDevice);
+    void prepareKernelParams();
+    void copyKernelParamsToDevice(const LBMParams<T> &paramsHost, LBMParams<T>* &paramsDevice);
     void initializeDistributions();
     void copyToDevice();
     void copyToHost();
     void performCollisionStep();
     void performStreamingStep();
+    void applyBoundaryConditions();
     static unsigned int pos(unsigned int i, unsigned int j, unsigned int Nx);
 };
 
 #include "lbmGrid.hh"
 
-#endif
+#endif // LATTICE_GRID_H

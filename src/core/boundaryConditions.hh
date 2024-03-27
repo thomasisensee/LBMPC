@@ -3,9 +3,12 @@
 
 #include "boundaryConditions.h"
 
+
+/***************************/
+/***** Derived classes *****/
+/***************************/
 template<typename T>
-void BounceBack<T>::applyBoundaryCondition(int x, int y)
-{
+void BounceBack<T>::apply(T* lbmField) {
 
 }
 
@@ -13,15 +16,19 @@ template<typename T>
 FixedVelocityBoundary<T>::FixedVelocityBoundary(const std::vector<T>& velocity) : velocity(velocity) {}
 
 template<typename T>
-void FixedVelocityBoundary<T>::applyBoundaryCondition(int x, int y) {
+void FixedVelocityBoundary<T>::apply(T* lbmField) {
 
 }
 
 template<typename T>
-void PeriodicBoundary<T>::applyBoundaryCondition(int x, int y) {
+void PeriodicBoundary<T>::apply(T* lbmField) {
 
 }
 
+
+/*************************/
+/***** Wrapper class *****/
+/*************************/
 template<typename T>
 BoundaryConditionManager<T>::BoundaryConditionManager() {
 
@@ -33,27 +40,29 @@ void BoundaryConditionManager<T>::addBoundaryCondition(BoundaryLocation boundary
 }
 
 template<typename T>
-void BoundaryConditionManager<T>::apply(BoundaryLocation boundary/*,grid*/) {
-/*
-        auto& conditions = boundaryConditions[boundary];
-        for (auto& conditionPair : conditions) {
-            conditionPair.second->apply(grid);
+void BoundaryConditionManager<T>::apply(T* lbmField) {
+    // Iterate over each boundary location
+    for (auto& boundaryConditionsPair : boundaryConditions) {
+        // Now iterate over each condition for this boundary
+        for (auto& conditionPair : boundaryConditionsPair.second) {
+            // Apply the boundary condition
+            conditionPair.second->apply(lbmField);
         }
-*/
+    }
 }
 
 template<typename T>
 void BoundaryConditionManager<T>::print() const {
-    std::cout << "====== Boundary Conditions ======" << std::endl;
-    for (const auto& boundaryPair : boundaryConditions) {
-        std::cout << "Boundary " << static_cast<int>(boundaryPair.first) << " Conditions:\n";
-        for (const auto& conditionPair : boundaryPair.second) {
-            std::cout << "- " << conditionPair.first << "\n";
+    std::cout << "====== Boundary conditions =======" << std::endl;
+    for (const auto& boundaryConditionsPair : boundaryConditions) {
+        std::cout << "== Boundary Location: " << boundaryLocationToString(boundaryConditionsPair.first) << "\t==" << std::endl;
+        for (const auto& conditionPair : boundaryConditionsPair.second) {
+            std::cout << "== Condition: " << conditionPair.first << "\t=="  << std::endl;
+            std::cout << "==\t\t\t\t==\n";
+            // If your BoundaryCondition class has more details to print, you can do so here
+            // conditionPair.second->printDetails(); // Assuming such a method exists
         }
     }
-    std::cout << "==================================" << std::endl;
-    
-
+    std::cout << "==================================\n" << std::endl;
 }
-
 #endif

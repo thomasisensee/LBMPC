@@ -5,24 +5,24 @@
 
 //#include "core/lbmModel.h"
 //#include "core/gridGeometry.h"
-#include "core/simulationParams.h"
+#include "core/kernelParams.h"
 
 template<typename T>
-__global__ void initializeDistributionsKernel(T* collision, const FluidParams<T>* const params);
+__global__ void initializeDistributionsKernel(T* collision, const LBMParams<T>* const params);
 
 template<typename T>
-void initializeDistributionsCaller(T* deviceCollision, const FluidParams<T>* const params, dim3 gridSize, dim3 blockSize);
+void initializeDistributionsCaller(T* deviceCollision, const LBMParams<T>* const params, dim3 gridSize, dim3 blockSize);
 
 template<typename T>
-__global__ void doStreamingKernel(const T *const collision, T *streaming, T* swap, const FluidParams<T>* const params);
+__global__ void doStreamingKernel(const T *const collision, T *streaming, T* swap, const LBMParams<T>* const params);
 
 template<typename T>
-void doStreaming(T* deviceCollision, T* deviceStreaming, T* swap, const FluidParams<T>* const params, dim3 gridSize, dim3 blockSize);
+void doStreamingCaller(T* deviceCollision, T* deviceStreaming, T* swap, const LBMParams<T>* const params, dim3 gridSize, dim3 blockSize);
 
 template<typename T>
-__global__ void doCollisionKernel(const T *const collision, const FluidParams<T>* const params);
+__global__ void doCollisionCHMKernel(T* collision, const CollisionParamsCHM<T>* const params);
 
 template<typename T>
-void doCollision(T* deviceCollision, const FluidParams<T>* const params, dim3 gridSize, dim3 blockSize);
+void doCollisionCHMCaller(T* deviceCollision, const CollisionParamsCHM<T>* const params, dim3 gridSize, dim3 blockSize);
 
 #endif

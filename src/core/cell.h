@@ -1,26 +1,33 @@
-#ifndef Cell_H
-#define Cell_H
+#ifndef CELL_H
+#define CELL_H
 
-#include "lbmModel.h"
-
-template<typename T, typename lbmModelType>
-class Cell
-{
+template<typename T>
+class Cell {
 private:
-    /// LBM model providing dimensionality, velocity set, and weights
-    lbmModelType* lbmModel;
-
+    __device__ T computePopulation(unsigned int l, const LBMParams<T>*const params, T R, T U, T V) const;
 public:
-    // Constructor
-    Cell(lbmModelType* model);
     /// Computes the 0th moment (density)
-    T getZeroMoment(T* d_population) const;
+    __device__ T getZeroMoment(const T*const population, const LBMParams<T>*const params) const;
     /// Computes the 1st moment X
-    T getFirstMomentX(T* d_population) const;
+    __device__ T getFirstMomentX(const T*const population, const LBMParams<T>*const params) const;
     /// Computes the 1st moment Y
-    T getFirstMomentY(T* d_population) const;
+    __device__ T getFirstMomentY(const T*const population, const LBMParams<T>*const params) const;
+    /// Computes X-component of the macroscopic velocity
+    __device__ T getVelocityX(const T*const population, const LBMParams<T>*const params) const;
+    __device__ T getVelocityX(const T*const population, const LBMParams<T>*const params, T R) const;
+    /// Computes Y-component of the macroscopic velocity
+    __device__ T getVelocityY(const T*const population, const LBMParams<T>*const params) const;
+    __device__ T getVelocityY(const T*const population, const LBMParams<T>*const params, T R) const;
+    /// Computes the equilibrium distribution and writes in parsed array eqDistr
+    __device__ void getEquilibriumDistribution(const T*const population, T* eqDistr, const LBMParams<T>*const params, T R, T U, T V) const;
+    /// Computes the equilibrium distribution and writes in parsed populations
+    __device__ void setEquilibriumDistribution(T* population, const LBMParams<T>*const params, T R, T U, T V) const;
+    /// Computes the post-collision distribution via the BGK collision operator
+    __device__ void computePostCollisionDistributionBGK(T* population, const CollisionParamsBGK<T>*const params, T R, T U, T V) const;
+    /// Computes the post-collision distribution via the CHM MRT collision operator
+    __device__ void computePostCollisionDistributionCHM(T* population, const CollisionParamsCHM<T>*const params, T R, T U, T V) const;
 };
 
 #include "cell.hh"
 
-#endif
+#endif // CELL_H

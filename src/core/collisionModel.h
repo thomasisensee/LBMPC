@@ -1,51 +1,69 @@
-#ifndef LBM_COLLISION_MODEL_H
-#define LBM_COLLISION_MODEL_H
+#ifndef COLLISION_MODEL_H
+#define COLLISION_MODEL_H
 
 #include <stdio.h>
 #include <vector>
 
-template<typename T>
-struct CollisionProperties {
-    T density;
-    std::vector<T> velocity;
-    std::vector<T> force;
-    CollisionProperties(const std::vector<T>& velocity, T density, const std::vector<T>& force) : velocity(velocity), density(density), force(force) {}
-};
+#include "kernelParams.h"
 
+/**********************/
+/***** Base class *****/
+/**********************/
 template<typename T>
 class CollisionModel {
 protected:
     /// Relaxation parameter associated with shear viscosity
     T omegaShear;
 public:
+    /// Constructor
+    CollisionModel(T omega);
     /// Destructor
     virtual ~CollisionModel() = default;
     void setOmegaShear(T omegaShear);
     T getOmegaShear() const;
-    virtual void doCollision(T* distribution, const CollisionProperties<T>& properties) = 0;
+    virtual void prepareKernelParams(LBMParams<T>* gridParams) = 0;
+    virtual void copyKernelParamsToDevice() = 0;
+    virtual void doCollision(T* distribution) = 0;
     virtual void print() = 0;
 };
 
+
+
+/***************************/
+/***** Derived classes *****/
+/***************************/
 template<typename T>
-class BGKCollisionModel : public CollisionModel<T> {
+class CollisionBGK : public CollisionModel<T> {
+private:
+    /// Parameters to pass to cuda kernels
+    CollisionParamsBGK<T> hostParams;
+    CollisionParamsBGK<T>* deviceParams = nullptr;
 public:
-    virtual void doCollision(T* distribution, const CollisionProperties<T>& properties) override;
-    void doCollision(T* distribution, const CollisionProperties<T>& properties, T* equilibriumDistribution);
+    virtual void prepareKernelParams(LBMParams<T>* gridParams);
+    virtual void copyKernelParamsToDevice();
+    virtual void doCollision(T* distribution) override;
     virtual void print();
 };
 
 template<typename T>
-class MRTCHMCollisionModel : public CollisionModel<T> { // only implemented for D2Q9 lattices
-protected:
+class CollisionCHM : public CollisionModel<T> { // only implemented for D2Q9 lattices
+private:
     /// Relaxation parameter associated with bulk viscosity
     T omegaBulk;
+    /// Parameters to pass to cuda kernels
+    CollisionParamsCHM<T> hostParams;
+    CollisionParamsCHM<T>* deviceParams = nullptr;
 public:
-     void setOmegaBulk(T omegaBulk);
+    /// Constructor
+    CollisionCHM(T omegaS, T omegaB);
+    void setOmegaBulk(T omegaBulk);
     T getOmegaBulk() const;
-    virtual void doCollision(T* distribution, const CollisionProperties<T>& properties) override;
+    virtual void prepareKernelParams(LBMParams<T>* gridParams);
+    virtual void copyKernelParamsToDevice();
+    virtual void doCollision(T* distribution) override;
     virtual void print() override;
 };
 
 #include "collisionModel.hh"
 
-#endif
+#endif // COLLISION_MODEL_H

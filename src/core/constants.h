@@ -13,4 +13,4 @@
 #define C_S_POW6_INV    (27.0)
 #define C_S_POW8_INV    (81.0)
 
-#endif
+#endif // CONSTANTS_H

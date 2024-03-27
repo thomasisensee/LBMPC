@@ -1,10 +1,8 @@
-#ifndef GridGeometry_H
-#define GridGeometry_H
+#ifndef GRID_GEOMETRY_H
+#define GRID_GEOMETRY_H
 
 template<typename T>
-class GridGeometry2D
-{
-
+class GridGeometry2D {
 private:
     /// Global position of the left lower corner of the grid
     T _globPosX, _globPosY;
@@ -38,4 +36,4 @@ public:
 
 #include "gridGeometry.hh"
 
-#endif
+#endif // GRID_GEOMETRY_H
