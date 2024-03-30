@@ -34,7 +34,7 @@ collisionModel->print();
 // ===============================
 // === Prepare domain geometry ===
 // ===============================
-auto gridGeometry = std::make_unique<GridGeometry2D<T>>(0.0,0.0,0.00793650793,126,126);
+auto gridGeometry = std::make_unique<GridGeometry2D<T>>(0.00793650793,126,126);
 gridGeometry->print();
 
 // ===================================

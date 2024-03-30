@@ -6,28 +6,7 @@
 #include "gridGeometry.h"
 
 template<typename T>
-GridGeometry2D<T>::GridGeometry2D(T globPosX, T globPosY, T delta, int nX, int nY) {
-  init(globPosX, globPosY, delta, nX, nY);
-}
-
-template<typename T>
-void GridGeometry2D<T>::init(T globPosX, T globPosY, T delta, int nX, int nY) {
-    _globPosX = globPosX;
-    _globPosY = globPosY;
-    _delta    = delta;
-    _nX       = nX;
-    _nY       = nY;
-}
-
-template<typename T>
-T GridGeometry2D<T>::getGlobPosX() const {
-    return _globPosX;
-}
-
-template<typename T>
-T GridGeometry2D<T>::getGlobPosY() const {
-    return _globPosY;
-}
+GridGeometry2D<T>::GridGeometry2D(T delta, int nX, int nY) : _delta(delta), _nX(nX), _nY(nY) {}
 
 template<typename T>
 T GridGeometry2D<T>::getDelta() const {
@@ -62,7 +41,6 @@ unsigned int GridGeometry2D<T>::getGhostVolume() const {
 template<typename T>
 void GridGeometry2D<T>::print() const {
     std::cout << "============== Grid Details ==============" << std::endl;
-    std::cout << "==\tOrigin (x,y):" << "\t" << "(" << this->getGlobPosX() << "," << this->getGlobPosY() << ")" << "\t\t==" << std::endl;
     std::cout << "==\tExtent (Lx,Ly):"  << "\t" << "(" << this->getNx()*this->getDelta() << "/" << this->getNy()*this->getDelta() << ")" << "\t\t==" << std::endl;
     std::cout << "==\tExtent (Nx,Ny):"  << "\t" << "(" << this->getNx() << "/" << this->getNy() << ")" << "\t==" << std::endl;
     std::cout << "==\tΔx:" << "\t" << "\t" << this->getDelta() << "\t==" << std::endl;
