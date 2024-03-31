@@ -136,4 +136,4 @@ __device__ void Cell<T>::computePostCollisionDistributionCHM(T* population, cons
 	population[8] = 0.25*(-rm5 + rm6 - rm7 + rm8);
 }
 
-#endif
+#endif // CELL_HH

@@ -3,4 +3,4 @@
 
 #define THREADS_PER_BLOCK_DIMENSION (16)
 
-#endif
+#endif // CUDA_CONSTANTS_CUH

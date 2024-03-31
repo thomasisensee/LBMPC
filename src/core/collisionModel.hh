@@ -151,4 +151,4 @@ void CollisionCHM<T>::print() {
 }
 
 
-#endif
+#endif // LB_COLLISION_MODEL_HH

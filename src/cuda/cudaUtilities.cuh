@@ -6,4 +6,4 @@ void SetDevice();
 int getDevice();
 int getDeviceCount();
 
-#endif
+#endif // CUDA_UTILITIES_CUH

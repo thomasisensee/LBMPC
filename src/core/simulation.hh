@@ -1,5 +1,5 @@
-#ifndef Solver_HH
-#define Solver_HH
+#ifndef SIMULAITION_HH
+#define SIMULAITION_HH
 
 #include "simulation.h"
 
@@ -29,4 +29,4 @@ void LBFluidSimulation<T>::run() {
 
 
 
-#endif
+#endif // SIMULAITION_HH

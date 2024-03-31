@@ -26,4 +26,4 @@ void cudaCheckLastError()
 }
 */
 
-#endif
+#endif // CUDA_ERROR_HANDLER_CUH

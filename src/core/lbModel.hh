@@ -1,5 +1,5 @@
-#ifndef LB_Model_HH
-#define LB_Model_HH
+#ifndef LB_MODEL_HH
+#define LB_MODEL_HH
 
 #include <iostream>
 
@@ -93,4 +93,4 @@ __host__ LBModel<T>* D2Q9<T>::getDerivedModel() const {
     return new D2Q9<T>(*this); // Return a pointer to a new D2Q9 object
 }
 
-#endif
+#endif // LB_MODEL_HH

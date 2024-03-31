@@ -25,4 +25,4 @@ __global__ void doCollisionCHMKernel(T* collision, const CollisionParamsCHM<T>* 
 template<typename T>
 void doCollisionCHMCaller(T* deviceCollision, const CollisionParamsCHM<T>* const params, dim3 gridSize, dim3 blockSize);
 
-#endif
+#endif // CUDA_KERNELS_CUH

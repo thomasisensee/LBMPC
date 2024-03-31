@@ -122,4 +122,4 @@ void BoundaryConditionManager<T>::print() const {
     }
     std::cout << "==================================\n" << std::endl;
 }
-#endif
+#endif // BOUNDARY_CONDITIONS_HH
