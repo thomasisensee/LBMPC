@@ -12,7 +12,7 @@ __device__ unsigned int pos(unsigned int i, unsigned int j, unsigned int width) 
 }
 
 template<typename T>
-__global__ void initializeDistributionsKernel(T* collision, const LBMParams<T>* const params) {
+__global__ void initializeDistributionsKernel(T* collision, const LBParams<T>* const params) {
 
     unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
@@ -29,15 +29,15 @@ __global__ void initializeDistributionsKernel(T* collision, const LBMParams<T>* 
 }
 
 template<typename T>
-void initializeDistributionsCaller(T* deviceCollision, const LBMParams<T>* const params, dim3 gridSize, dim3 blockSize) {
+void initializeDistributionsCaller(T* deviceCollision, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
     initializeDistributionsKernel<<<gridSize, blockSize>>>(deviceCollision, params);
     cudaErrorCheck(cudaDeviceSynchronize());
 }
-template void initializeDistributionsCaller<float>(float* deviceCollision, const LBMParams<float>* const params, dim3 gridSize, dim3 blockSize);
-template void initializeDistributionsCaller<double>(double* deviceCollision, const LBMParams<double>* const params, dim3 gridSize, dim3 blockSize);
+template void initializeDistributionsCaller<float>(float* deviceCollision, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
+template void initializeDistributionsCaller<double>(double* deviceCollision, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
 
 template<typename T>
-__global__ void doStreamingKernel(const T *const collision, T *streaming, const LBMParams<T>* const params) {
+__global__ void doStreamingKernel(const T *const collision, T *streaming, const LBParams<T>* const params) {
 
     unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
@@ -53,13 +53,13 @@ __global__ void doStreamingKernel(const T *const collision, T *streaming, const 
 }
 
 template<typename T>
-void doStreamingCaller(T* deviceCollision, T* deviceStreaming, T* swap, const LBMParams<T>* const params, dim3 gridSize, dim3 blockSize) {
+void doStreamingCaller(T* deviceCollision, T* deviceStreaming, T* swap, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
     doStreamingKernel<<<gridSize, blockSize>>>(deviceCollision, deviceStreaming, params);
     cudaErrorCheck(cudaDeviceSynchronize());
     swap = deviceCollision; deviceCollision = deviceStreaming; deviceStreaming = swap;
 }
-template void doStreamingCaller<float>(float* deviceCollision, float* deviceStreaming, float* swap, const LBMParams<float>* const params, dim3 gridSize, dim3 blockSize);
-template void doStreamingCaller<double>(double* deviceCollision, double* deviceStreaming, double* swap, const LBMParams<double>* const params, dim3 gridSize, dim3 blockSize);
+template void doStreamingCaller<float>(float* deviceCollision, float* deviceStreaming, float* swap, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
+template void doStreamingCaller<double>(double* deviceCollision, double* deviceStreaming, double* swap, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
 
 
 template<typename T>

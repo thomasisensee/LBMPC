@@ -1,5 +1,5 @@
-#ifndef GridGeometry_HH
-#define GridGeometry_HH
+#ifndef GRID_GEOMETRY_HH
+#define GRID_GEOMETRY_HH
 
 #include <iostream>
 
@@ -47,4 +47,4 @@ void GridGeometry2D<T>::print() const {
     std::cout << "==========================================\n" << std::endl;
 }
 
-#endif
+#endif // GRID_GEOMETRY_HH

@@ -36,9 +36,9 @@ private:
 public:
     /// Destructor
     ~BoundaryCondition();
-    void prepareKernelParams(LBMParams<T>* lbmParams);
+    void prepareKernelParams(LBParams<T>* lbParams);
     void copyKernelParamsToDevice();
-    virtual void apply(T* lbmField) = 0;
+    virtual void apply(T* lbField) = 0;
 
 };
 
@@ -49,7 +49,7 @@ public:
 template<typename T>
 class BounceBack : public BoundaryCondition<T> {
 public:
-    void apply(T* lbmField) override;
+    void apply(T* lbField) override;
 };
 
 template<typename T>
@@ -57,14 +57,14 @@ class FixedVelocityBoundary : public BoundaryCondition<T> {
     std::vector<T> wallVelocity;
 public:
     FixedVelocityBoundary(const std::vector<T>& velocity);
-    void prepareKernelParams(LBMParams<T>* lbmParams);
-    void apply(T* lbmField) override;
+    void prepareKernelParams(LBParams<T>* lbParams);
+    void apply(T* lbField) override;
 };
 
 template<typename T>
 class PeriodicBoundary : public BoundaryCondition<T> {
 public:
-    void apply(T* lbmField) override;
+    void apply(T* lbField) override;
 };
 
 
@@ -79,7 +79,7 @@ public:
     BoundaryConditionManager();
     void addBoundaryCondition(BoundaryLocation boundary, const std::string& name, std::unique_ptr<BoundaryCondition<T>> condition);
     void prepareAndCopyKernelParamsToDevice();
-    void apply(T* lbmField);
+    void apply(T* lbField);
     void print() const;
 };
 

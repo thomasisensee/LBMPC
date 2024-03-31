@@ -13,19 +13,19 @@ struct BaseParams {
 };
 
 template<typename T>
-struct LBMParams : public BaseParams<T> {
+struct LBParams : public BaseParams<T> {
     unsigned int Q;
     int *LATTICE_VELOCITIES;
     T* LATTICE_WEIGHTS;
     /*
-    ~LBMParams() override {
+    ~LBParams() override {
         delete[] LATTICE_VELOCITIES; // Derived-specific cleanup
         // BaseParams' destructor is automatically called after
     }*/
 };
 
 template<typename T>
-struct CollisionParamsBGK : public LBMParams<T> {
+struct CollisionParamsBGK : public LBParams<T> {
     unsigned int Q;
     int *LATTICE_VELOCITIES;
     T* LATTICE_WEIGHTS;

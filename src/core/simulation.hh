@@ -8,22 +8,22 @@
 /***** Base class *****/
 /**********************/
 template<typename T>
-Simulation<T>::Simulation(std::unique_ptr<LBMGrid<T>>&& lbmgrid) : totalIter(1), outputFrequency(1), lbmGrid(std::move(lbmgrid))  {}
+Simulation<T>::Simulation(std::unique_ptr<LBGrid<T>>&& lbgrid) : totalIter(1), outputFrequency(1), lbGrid(std::move(lbgrid))  {}
 
 
 /***************************/
 /***** Derived classes *****/
 /***************************/
 template<typename T>
-LBMFluidSimulation<T>::LBMFluidSimulation(std::unique_ptr<LBMGrid<T>>&& lbmgrid) : Simulation<T>(std::move(lbmgrid)) {}
+LBFluidSimulation<T>::LBFluidSimulation(std::unique_ptr<LBGrid<T>>&& lbgrid) : Simulation<T>(std::move(lbgrid)) {}
 
 template<typename T>
-void LBMFluidSimulation<T>::run() {
+void LBFluidSimulation<T>::run() {
 	
     for (unsigned int iter = 0; iter < this->totalIter; ++iter) {
-        this->lbmGrid->performStreamingStep();
-        this->lbmGrid->performCollisionStep();
-        this->lbmGrid->applyBoundaryConditions();
+        this->lbGrid->performStreamingStep();
+        this->lbGrid->performCollisionStep();
+        this->lbGrid->applyBoundaryConditions();
     }
 }
 

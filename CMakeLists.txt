@@ -17,10 +17,10 @@ set(SOURCES
     src/core/cell.hh
     src/core/gridGeometry.h
     src/core/gridGeometry.hh
-    src/core/lbmGrid.h
-    src/core/lbmGrid.hh
-    src/core/lbmModel.h
-    src/core/lbmModel.hh
+    src/core/lbGrid.h
+    src/core/lbGrid.hh
+    src/core/lbModel.h
+    src/core/lbModel.hh
     src/core/collisionModel.h
     src/core/collisionModel.hh
     src/core/boundaryConditions.hh

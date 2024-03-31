@@ -3,21 +3,21 @@
 
 #include <cuda_runtime.h>
 
-//#include "core/lbmModel.h"
+//#include "core/lbModel.h"
 //#include "core/gridGeometry.h"
 #include "core/kernelParams.h"
 
 template<typename T>
-__global__ void initializeDistributionsKernel(T* collision, const LBMParams<T>* const params);
+__global__ void initializeDistributionsKernel(T* collision, const LBParams<T>* const params);
 
 template<typename T>
-void initializeDistributionsCaller(T* deviceCollision, const LBMParams<T>* const params, dim3 gridSize, dim3 blockSize);
+void initializeDistributionsCaller(T* deviceCollision, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize);
 
 template<typename T>
-__global__ void doStreamingKernel(const T *const collision, T *streaming, T* swap, const LBMParams<T>* const params);
+__global__ void doStreamingKernel(const T *const collision, T *streaming, T* swap, const LBParams<T>* const params);
 
 template<typename T>
-void doStreamingCaller(T* deviceCollision, T* deviceStreaming, T* swap, const LBMParams<T>* const params, dim3 gridSize, dim3 blockSize);
+void doStreamingCaller(T* deviceCollision, T* deviceStreaming, T* swap, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize);
 
 template<typename T>
 __global__ void doCollisionCHMKernel(T* collision, const CollisionParamsCHM<T>* const params);

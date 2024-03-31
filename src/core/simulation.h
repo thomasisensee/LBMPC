@@ -4,7 +4,7 @@
 #include <stdio.h>
 //#include <memory> // For std::unique_ptr and std::make_unique
 
-#include "lbmGrid.h"
+#include "lbGrid.h"
 
 
 /**********************/
@@ -15,12 +15,12 @@ class Simulation {
 protected:
     unsigned int totalIter;
     unsigned int outputFrequency;
-    std::unique_ptr<LBMGrid<T>> lbmGrid; // For a single grid
-    // std::vector<std::unique_ptr<LBMGrid<T>>> lbmGrids; // For multiple grids
+    std::unique_ptr<LBGrid<T>> lbGrid; // For a single grid
+    // std::vector<std::unique_ptr<LBGrid<T>>> lbGrids; // For multiple grids
 
 public:
   /// Constructor
-  Simulation(std::unique_ptr<LBMGrid<T>>&& lbmgrid);
+  Simulation(std::unique_ptr<LBGrid<T>>&& lbgrid);
   /// Time loop
   virtual void run() = 0;
 };
@@ -30,10 +30,10 @@ public:
 /***** Derived classes *****/
 /***************************/
 template<typename T>
-class LBMFluidSimulation : public Simulation<T> {
+class LBFluidSimulation : public Simulation<T> {
 public:
     /// Constructor
-    LBMFluidSimulation(std::unique_ptr<LBMGrid<T>>&& lbmgrid);
+    LBFluidSimulation(std::unique_ptr<LBGrid<T>>&& lbgrid);
     /// Collision step
     void run();
 };

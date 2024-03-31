@@ -4,15 +4,15 @@
 #include <stdio.h>
 #include <vector>
 
-#include "lbmModel.h"
+#include "lbModel.h"
 #include "gridGeometry.h"
 #include "kernelParams.h"
 
 template<typename T>
-class LBMGrid {
+class LBGrid {
 private:
     /// Required model objects
-    std::unique_ptr<LBMModel<T>> lbmModel;
+    std::unique_ptr<LBModel<T>> lbModel;
     std::unique_ptr<CollisionModel<T>> collisionModel;
     std::unique_ptr<GridGeometry2D<T>> gridGeometry;
     std::unique_ptr<BoundaryConditionManager<T>> boundaryConditionManager;
@@ -26,18 +26,18 @@ private:
     T* swap = nullptr;
 
     /// Parameters to pass to cuda kernels
-    LBMParams<T> hostParams;
-    LBMParams<T>* deviceParams = nullptr;
+    LBParams<T> hostParams;
+    LBParams<T>* deviceParams = nullptr;
 public:
     /// Constructor
-    LBMGrid(
-        std::unique_ptr<LBMModel<T>>&& model,
+    LBGrid(
+        std::unique_ptr<LBModel<T>>&& model,
         std::unique_ptr<CollisionModel<T>>&& collision, 
         std::unique_ptr<GridGeometry2D<T>>&& geometry, 
         std::unique_ptr<BoundaryConditionManager<T>>&& boundary
     );
     /// Destructor
-    ~LBMGrid();
+    ~LBGrid();
     void allocateHostData();
     void allocateDeviceData();
     void prepareKernelParams();
@@ -51,6 +51,6 @@ public:
     static unsigned int pos(unsigned int i, unsigned int j, unsigned int Nx);
 };
 
-#include "lbmGrid.hh"
+#include "lbGrid.hh"
 
-#endif // LATTICE_GRID_H
+#endif // LB_GRID_H

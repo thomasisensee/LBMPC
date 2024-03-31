@@ -1,37 +1,37 @@
-#ifndef LBM_Model_HH
-#define LBM_Model_HH
+#ifndef LB_Model_HH
+#define LB_Model_HH
 
 #include <iostream>
 
-#include "lbmModel.h"
+#include "lbModel.h"
 
 
 /**********************/
 /***** Base class *****/
 /**********************/
 template<typename T>
-unsigned int LBMModel<T>::getD() const {
+unsigned int LBModel<T>::getD() const {
     return D;
 }
 
 template<typename T>
-unsigned int LBMModel<T>::getQ() const {
+unsigned int LBModel<T>::getQ() const {
     return Q;
 }
 
 template<typename T>
-int* LBMModel<T>::getLatticeVelocitiesPtr() const {
+int* LBModel<T>::getLatticeVelocitiesPtr() const {
     return LATTICE_VELOCITIES;
 }
 
 template<typename T>
-T* LBMModel<T>::getLatticeWeightsPtr() const {
+T* LBModel<T>::getLatticeWeightsPtr() const {
     return LATTICE_WEIGHTS;
 }
 
 template<typename T>
-void LBMModel<T>::print() const {
-    std::cout << "============================== LBM Model Details ==============================" << std::endl;
+void LBModel<T>::print() const {
+    std::cout << "============================== LB Model Details ==============================" << std::endl;
     std::cout << "==                                   D" << getD() << "Q" << getQ() << "                                    ==" << std::endl;
     std::cout << "== Cx ="; for(int i=0; i<Q; ++i) {std::cout << "\t" << LATTICE_VELOCITIES[i*D]; } std::cout << "    ==" << std::endl;
     std::cout << "== Cy ="; for(int i=0; i<Q; ++i) {std::cout << "\t" << LATTICE_VELOCITIES[i*D+1]; } std::cout << "   ==" << std::endl;
@@ -89,7 +89,7 @@ T D2Q9<T>::getWEIGHT(unsigned int i) const  {
 }
 
 template<typename T>
-__host__ LBMModel<T>* D2Q9<T>::getDerivedModel() const {
+__host__ LBModel<T>* D2Q9<T>::getDerivedModel() const {
     return new D2Q9<T>(*this); // Return a pointer to a new D2Q9 object
 }
 

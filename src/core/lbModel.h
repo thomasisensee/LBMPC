@@ -1,5 +1,5 @@
-#ifndef LBM_Model_H
-#define LBM_Model_H
+#ifndef LB_Model_H
+#define LB_Model_H
 
 #include <cuda_runtime.h>
 
@@ -8,7 +8,7 @@
 /***** Base class *****/
 /**********************/
 template<typename T>
-class LBMModel {
+class LBModel {
 public:
     /// Dimension
     unsigned int D;
@@ -31,10 +31,10 @@ public:
     virtual T getWEIGHT(unsigned int i) const = 0;
     int* getLatticeVelocitiesPtr() const;
     T* getLatticeWeightsPtr() const;
-    /// Prints LBM model details
+    /// Prints LB model details
     void print() const;
     /// Provides access to the specific derived class type
-    virtual LBMModel<T>* getDerivedModel() const = 0;
+    virtual LBModel<T>* getDerivedModel() const = 0;
 };
 
 
@@ -42,7 +42,7 @@ public:
 /***** Derived classes *****/
 /***************************/
 template<typename T>
-class D2Q9 : public LBMModel<T> {
+class D2Q9 : public LBModel<T> {
 public:
     // Constructor
     D2Q9();
@@ -55,9 +55,9 @@ public:
     /// get the lattice weight corresponding to index i
     virtual T getWEIGHT(unsigned int i) const override;
     /// Provides access to the specific derived class type
-    virtual LBMModel<T>* getDerivedModel() const override;
+    virtual LBModel<T>* getDerivedModel() const override;
 };
 
-#include "lbmModel.hh"
+#include "lbModel.hh"
 
 #endif

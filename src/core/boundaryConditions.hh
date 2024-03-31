@@ -17,7 +17,7 @@ BoundaryCondition<T>::~BoundaryCondition() {
 }
 
 template<typename T>
-void BoundaryCondition<T>::prepareKernelParams(LBMParams<T>* lbmParams) {
+void BoundaryCondition<T>::prepareKernelParams(LBParams<T>* lbmParams) {
     this->hostParams.D                  = lbmParams->D;
     this->hostParams.Nx                 = lbmParams->Nx;
     this->hostParams.Ny                 = lbmParams->Ny;
@@ -41,17 +41,17 @@ void BoundaryCondition<T>::copyKernelParamsToDevice() {
     cudaErrorCheck(cudaMalloc(&deviceLatticeWeights, sizeLatticeWeights));
     cudaErrorCheck(cudaMemcpy(deviceLatticeWeights, hostParams.LATTICE_WEIGHTS, sizeLatticeWeights, cudaMemcpyHostToDevice));
 
-    // Prepare the host-side copy of LBMParams with device pointers
+    // Prepare the host-side copy of LBParams with device pointers
     BoundaryParams<T> paramsTemp = hostParams; // Use a temporary host copy
     paramsTemp.LATTICE_VELOCITIES = deviceLatticeVelocities;
     paramsTemp.LATTICE_WEIGHTS = deviceLatticeWeights;
 
-    // Allocate memory for the LBMParams struct on the device if not already allocated
+    // Allocate memory for the LBParams struct on the device if not already allocated
     if (deviceParams == nullptr) {
         cudaErrorCheck(cudaMalloc(&deviceParams, sizeof(BoundaryParams<T>)));
     }
 
-    // Copy the prepared LBMParams (with device pointers) from the temporary host copy to the device
+    // Copy the prepared LBParams (with device pointers) from the temporary host copy to the device
     cudaErrorCheck(cudaMemcpy(deviceParams, &paramsTemp, sizeof(BoundaryParams<T>), cudaMemcpyHostToDevice));
 }
 
@@ -67,7 +67,7 @@ template<typename T>
 FixedVelocityBoundary<T>::FixedVelocityBoundary(const std::vector<T>& velocity) : wallVelocity(velocity) {}
 
 template<typename T>
-void FixedVelocityBoundary<T>::prepareKernelParams(LBMParams<T>* lbmParams) {
+void FixedVelocityBoundary<T>::prepareKernelParams(LBParams<T>* lbmParams) {
     BoundaryCondition<T>::prepareKernelParams(lbmParams);
     this->hostParams.wallVelocity = this->wallVelocity.data(); // Assign the address of the first element
 }
