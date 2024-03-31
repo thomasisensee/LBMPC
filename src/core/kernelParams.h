@@ -1,6 +1,12 @@
 #ifndef KERNEL_PARAMS_H
 #define KERNEL_PARAMS_H
 
+
+/// Allowed boundary locations
+enum class BoundaryLocation {
+    WEST, EAST, SOUTH, NORTH
+};
+
 template<typename T>
 struct BaseParams {
     /// Grid
@@ -47,6 +53,8 @@ struct BoundaryParams : public BaseParams<T> {
     int *LATTICE_VELOCITIES;
     T* LATTICE_WEIGHTS;
     T* wallVelocity;
+    
+    BoundaryLocation location;
 };
 
 #endif // KERNEL_PARAMS_H

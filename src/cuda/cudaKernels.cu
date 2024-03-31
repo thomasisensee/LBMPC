@@ -86,3 +86,41 @@ void doCollisionCHMCaller(T* deviceCollision, const CollisionParamsCHM<T>* const
 }
 template void doCollisionCHMCaller<float>(float* deviceCollision, const CollisionParamsCHM<float>* const params, dim3 gridSize, dim3 blockSize);
 template void doCollisionCHMCaller<double>(double* deviceCollision, const CollisionParamsCHM<double>* const params, dim3 gridSize, dim3 blockSize);
+
+
+template<typename T>
+__global__ void applyBounceBack(T* collision, const BoundaryParams<T>* const params) {
+
+    unsigned int i,j,idx;
+    switch(params->location) {
+    case BoundaryLocation::WEST:
+        i = 0;
+        j = threadIdx.x + blockIdx.x * blockDim.x;
+        if(j > params->Ny-1) { return; }
+        
+        idx = pos(i, j, params->Nx);        
+        return;
+    case BoundaryLocation::EAST:
+        i = params->Nx+1;
+        j = threadIdx.x + blockIdx.x * blockDim.x;
+        if(j > params->Ny-1) { return; }
+        
+        idx = pos(i, j, params->Nx);        
+        return;
+    case BoundaryLocation::SOUTH:
+        i = threadIdx.x + blockIdx.x * blockDim.x;
+        j = 0;
+        if(i > params->Ny-1) { return; }
+        
+        idx = pos(i, j, params->Nx);        
+        return;
+    case BoundaryLocation::NORTH:
+        i = threadIdx.x + blockIdx.x * blockDim.x;
+        j = params->Ny-1;
+        if(i > params->Ny-1) { return; }
+        
+        idx = pos(i, j, params->Nx);        
+        return;
+    }
+
+}

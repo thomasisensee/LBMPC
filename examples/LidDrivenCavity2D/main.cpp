@@ -42,10 +42,10 @@ gridGeometry->print();
 // ===================================
 auto boundaryConditionManager = std::make_unique<BoundaryConditionManager<T>>();
 std::vector<T> wallVelocity = {1.0,0.0};
-boundaryConditionManager->addBoundaryCondition(BoundaryLocation::WEST, "bounceBack", std::make_unique<BounceBack<T>>());
-boundaryConditionManager->addBoundaryCondition(BoundaryLocation::EAST, "bounceBack", std::make_unique<BounceBack<T>>());
-boundaryConditionManager->addBoundaryCondition(BoundaryLocation::SOUTH, "bounceBack", std::make_unique<BounceBack<T>>());
-boundaryConditionManager->addBoundaryCondition(BoundaryLocation::NORTH, "fixedVelocity", std::make_unique<FixedVelocityBoundary<T>>(wallVelocity));
+boundaryConditionManager->addBoundaryCondition("bounceBack", std::make_unique<BounceBack<T>>(BoundaryLocation::WEST));
+boundaryConditionManager->addBoundaryCondition("bounceBack", std::make_unique<BounceBack<T>>(BoundaryLocation::EAST));
+boundaryConditionManager->addBoundaryCondition("bounceBack", std::make_unique<BounceBack<T>>(BoundaryLocation::SOUTH));
+boundaryConditionManager->addBoundaryCondition("fixedVelocity", std::make_unique<FixedVelocityBoundary<T>>(BoundaryLocation::NORTH, wallVelocity));
 boundaryConditionManager->print();
 
 // ======================

@@ -10,10 +10,18 @@
 /***** Base class *****/
 /**********************/
 template<typename T>
+BoundaryCondition<T>::BoundaryCondition(BoundaryLocation loc) : location(loc) {}
+
+template<typename T>
 BoundaryCondition<T>::~BoundaryCondition() {
     if (deviceParams != nullptr) {
         cudaErrorCheck(cudaFree(deviceParams));
     }
+}
+
+template<typename T>
+BoundaryLocation BoundaryCondition<T>::getLocation() const {
+    return location;
 }
 
 template<typename T>
@@ -24,7 +32,8 @@ void BoundaryCondition<T>::prepareKernelParams(LBParams<T>* lbmParams) {
     this->hostParams.Q                  = lbmParams->Q;
     this->hostParams.LATTICE_VELOCITIES = lbmParams->LATTICE_VELOCITIES;
     this->hostParams.LATTICE_WEIGHTS    = lbmParams->LATTICE_WEIGHTS;
-    this->hostParams.wallVelocity       = nullptr; // Assign the address of the first element
+    this->hostParams.wallVelocity       = nullptr;
+    this->hostParams.location           = this->location;
 }
 
 template<typename T>
@@ -59,12 +68,23 @@ void BoundaryCondition<T>::copyKernelParamsToDevice() {
 /***** Derived classes *****/
 /***************************/
 template<typename T>
-void BounceBack<T>::apply(T* lbmField) {
+BounceBack<T>::BounceBack(BoundaryLocation loc) : BoundaryCondition<T>(loc) {}
 
+template<typename T>
+void BounceBack<T>::apply(T* lbmField) {
+    dim3 threadsPerBlock(THREADS_PER_BLOCK_DIMENSION*THREADS_PER_BLOCK_DIMENSION);
+
+    if(this->location == BoundaryLocation::EAST || this->location == BoundaryLocation::WEST) {
+        dim3 numBlocks = (this->hostParams.Ny + threadsPerBlock.x - 1) / threadsPerBlock.x;
+    } else {
+        dim3 numBlocks = (this->hostParams.Nx + threadsPerBlock.x - 1) / threadsPerBlock.x;
+    }
+    
+    
 }
 
 template<typename T>
-FixedVelocityBoundary<T>::FixedVelocityBoundary(const std::vector<T>& velocity) : wallVelocity(velocity) {}
+FixedVelocityBoundary<T>::FixedVelocityBoundary(BoundaryLocation loc, const std::vector<T>& velocity) : BoundaryCondition<T>(loc), wallVelocity(velocity) {}
 
 template<typename T>
 void FixedVelocityBoundary<T>::prepareKernelParams(LBParams<T>* lbmParams) {
@@ -76,6 +96,9 @@ template<typename T>
 void FixedVelocityBoundary<T>::apply(T* lbmField) {
 
 }
+
+template<typename T>
+PeriodicBoundary<T>::PeriodicBoundary(BoundaryLocation loc) : BoundaryCondition<T>(loc) {}
 
 template<typename T>
 void PeriodicBoundary<T>::apply(T* lbmField) {
@@ -92,8 +115,9 @@ BoundaryConditionManager<T>::BoundaryConditionManager() {
 }
 
 template<typename T>
-void BoundaryConditionManager<T>::addBoundaryCondition(BoundaryLocation boundary, const std::string& name, std::unique_ptr<BoundaryCondition<T>> condition) {
-    boundaryConditions[boundary][name] = std::move(condition);
+void BoundaryConditionManager<T>::addBoundaryCondition(const std::string& name, std::unique_ptr<BoundaryCondition<T>> condition) {
+    BoundaryLocation loc = condition->getLocation();
+    boundaryConditions[loc][name] = std::move(condition);
 }
 
 template<typename T>
@@ -116,8 +140,6 @@ void BoundaryConditionManager<T>::print() const {
         for (const auto& conditionPair : boundaryConditionsPair.second) {
             std::cout << "== Condition: " << conditionPair.first << "\t=="  << std::endl;
             std::cout << "==\t\t\t\t==\n";
-            // If your BoundaryCondition class has more details to print, you can do so here
-            // conditionPair.second->printDetails(); // Assuming such a method exists
         }
     }
     std::cout << "==================================\n" << std::endl;

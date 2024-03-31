@@ -7,11 +7,7 @@
 #include <memory>       // For std::unique_ptr
 #include <string>       // Also include this if you're using std::string
 
-
-/// Allowed boundary locations
-enum class BoundaryLocation {
-    EAST, WEST, SOUTH, NORTH
-};
+#include "core/kernelParams.h"
 
 /// Transform BoundaryLocation members to strings for output
 std::string boundaryLocationToString(BoundaryLocation location) {
@@ -29,17 +25,20 @@ std::string boundaryLocationToString(BoundaryLocation location) {
 /**********************/
 template<typename T>
 class BoundaryCondition {
-private:
+protected:
+    BoundaryLocation location;
     /// Parameters to pass to cuda kernels
     BoundaryParams<T> hostParams;
     BoundaryParams<T>* deviceParams = nullptr;
 public:
+    /// Constructor
+    BoundaryCondition(BoundaryLocation loc);
     /// Destructor
     ~BoundaryCondition();
+    BoundaryLocation getLocation() const;
     void prepareKernelParams(LBParams<T>* lbParams);
     void copyKernelParamsToDevice();
     virtual void apply(T* lbField) = 0;
-
 };
 
 
@@ -49,6 +48,8 @@ public:
 template<typename T>
 class BounceBack : public BoundaryCondition<T> {
 public:
+    /// Constructor
+    BounceBack(BoundaryLocation loc);
     void apply(T* lbField) override;
 };
 
@@ -56,7 +57,8 @@ template<typename T>
 class FixedVelocityBoundary : public BoundaryCondition<T> {
     std::vector<T> wallVelocity;
 public:
-    FixedVelocityBoundary(const std::vector<T>& velocity);
+    /// Constructor
+    FixedVelocityBoundary(BoundaryLocation loc, const std::vector<T>& velocity);
     void prepareKernelParams(LBParams<T>* lbParams);
     void apply(T* lbField) override;
 };
@@ -64,6 +66,8 @@ public:
 template<typename T>
 class PeriodicBoundary : public BoundaryCondition<T> {
 public:
+    /// Constructor
+    PeriodicBoundary(BoundaryLocation loc);
     void apply(T* lbField) override;
 };
 
@@ -77,7 +81,7 @@ class BoundaryConditionManager {
 public:
     /// Constructor
     BoundaryConditionManager();
-    void addBoundaryCondition(BoundaryLocation boundary, const std::string& name, std::unique_ptr<BoundaryCondition<T>> condition);
+    void addBoundaryCondition(const std::string& name, std::unique_ptr<BoundaryCondition<T>> condition);
     void prepareAndCopyKernelParamsToDevice();
     void apply(T* lbField);
     void print() const;
