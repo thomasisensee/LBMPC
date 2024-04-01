@@ -33,9 +33,9 @@ template<typename T>
 void LBModel<T>::print() const {
     std::cout << "============================== LB Model Details ==============================" << std::endl;
     std::cout << "==                                   D" << getD() << "Q" << getQ() << "                                    ==" << std::endl;
-    std::cout << "== Cx ="; for(int i=0; i<Q; ++i) {std::cout << "\t" << LATTICE_VELOCITIES[i*D]; } std::cout << "    ==" << std::endl;
-    std::cout << "== Cy ="; for(int i=0; i<Q; ++i) {std::cout << "\t" << LATTICE_VELOCITIES[i*D+1]; } std::cout << "   ==" << std::endl;
-    std::cout << "== w  ="; for(int i=0; i<Q; ++i) {std::cout << "\t" << LATTICE_WEIGHTS[i]; } std::cout << "   ==" << std::endl;
+    std::cout << "== Cx ="; for (int i=0; i<Q; ++i) {std::cout << "\t" << LATTICE_VELOCITIES[i*D]; } std::cout << "    ==" << std::endl;
+    std::cout << "== Cy ="; for (int i=0; i<Q; ++i) {std::cout << "\t" << LATTICE_VELOCITIES[i*D+1]; } std::cout << "   ==" << std::endl;
+    std::cout << "== w  ="; for (int i=0; i<Q; ++i) {std::cout << "\t" << LATTICE_WEIGHTS[i]; } std::cout << "   ==" << std::endl;
     std::cout << "===============================================================================\n" << std::endl;
 }
 

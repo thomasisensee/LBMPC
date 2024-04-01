@@ -16,7 +16,7 @@ __global__ void initializeDistributionsKernel(T* collision, const LBParams<T>* c
 
     unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
-    if(i>params->Nx || j > params->Ny) { return; }
+    if (i>params->Nx || j > params->Ny) { return; }
     
     unsigned int idx = pos(i, j, params->Nx);
     
@@ -41,12 +41,12 @@ __global__ void doStreamingKernel(const T *const collision, T *streaming, const 
 
     unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
-    if(i<1 || i>params->Nx-1 || j<1 || j > params->Ny-1) { return; }
+    if (i<1 || i>params->Nx-1 || j<1 || j > params->Ny-1) { return; }
 
     unsigned int idx = pos(i, j, params->Nx);
     unsigned int idxNeighbor;
 
-    for(int l=0; l<params->Q; l++) {
+    for (int l=0; l<params->Q; l++) {
 	    idxNeighbor = pos(i-params->LATTICE_VELOCITIES[l*2],j-params->LATTICE_VELOCITIES[l*2+1],params->Nx);
 		streaming[params->Q*idx+l]=collision[params->Q*idxNeighbor];
 	}
@@ -67,7 +67,7 @@ __global__ void doCollisionCHMKernel(T* collision, const CollisionParamsCHM<T>* 
 
     unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
-    if(i<1 || i>params->Nx-1 || j<1 || j > params->Ny-1) { return; }
+    if (i<1 || i>params->Nx-1 || j<1 || j > params->Ny-1) { return; }
     
     unsigned int idx = pos(i, j, params->Nx);
     
@@ -96,28 +96,28 @@ __global__ void applyBounceBack(T* collision, const BoundaryParams<T>* const par
     case BoundaryLocation::WEST:
         i = 0;
         j = threadIdx.x + blockIdx.x * blockDim.x;
-        if(j > params->Ny-1) { return; }
+        if (j > params->Ny-1) { return; }
         
         idx = pos(i, j, params->Nx);        
         return;
     case BoundaryLocation::EAST:
         i = params->Nx+1;
         j = threadIdx.x + blockIdx.x * blockDim.x;
-        if(j > params->Ny-1) { return; }
+        if (j > params->Ny-1) { return; }
         
         idx = pos(i, j, params->Nx);        
         return;
     case BoundaryLocation::SOUTH:
         i = threadIdx.x + blockIdx.x * blockDim.x;
         j = 0;
-        if(i > params->Ny-1) { return; }
+        if (i > params->Ny-1) { return; }
         
         idx = pos(i, j, params->Nx);        
         return;
     case BoundaryLocation::NORTH:
         i = threadIdx.x + blockIdx.x * blockDim.x;
         j = params->Ny-1;
-        if(i > params->Ny-1) { return; }
+        if (i > params->Ny-1) { return; }
         
         idx = pos(i, j, params->Nx);        
         return;

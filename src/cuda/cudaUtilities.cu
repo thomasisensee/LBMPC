@@ -34,7 +34,7 @@ void DisplayDeviceProperties()
 void SetDevice()
 {
     int cudaDeviceCount = getDeviceCount();
-    if(cudaDeviceCount < 1)
+    if (cudaDeviceCount < 1)
     {
         std::cout << "No CUDA devices with compute capability greater or equal to 2.0 found." << std::endl;
         return;

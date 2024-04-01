@@ -21,55 +21,55 @@ __device__ T Cell<T>::computePopulation(unsigned int l, const LBParams<T>*const 
 template<typename T>
 __device__ T Cell<T>::getZeroMoment(const T*const population, const LBParams<T>*const params) const {
     T rho;
-    for(int l=0; l<params->Q; ++l) { rho += population[l]; }
+    for (int l=0; l<params->Q; ++l) { rho += population[l]; }
     return rho;
 }
 
 template<typename T>
 __device__ T Cell<T>::getFirstMomentX(const T*const population, const LBParams<T>*const params) const {
     T m1x;
-    for(int l=0; l<params->Q; ++l) { m1x += population[l]*params->LATTICE_VELOCITIES[l*params->D]; }
+    for (int l=0; l<params->Q; ++l) { m1x += population[l]*params->LATTICE_VELOCITIES[l*params->D]; }
     return m1x;
 }
 
 template<typename T>
 __device__ T Cell<T>::getFirstMomentY(const T*const population, const LBParams<T>*const params) const {
     T m1x;
-    for(int l=0; l<params->Q; ++l) { m1x += population[l]*params->LATTICE_VELOCITIES[l*params->D+1]; }
+    for (int l=0; l<params->Q; ++l) { m1x += population[l]*params->LATTICE_VELOCITIES[l*params->D+1]; }
     return m1x;
 }
 
 template<typename T>
 __device__ T Cell<T>::getVelocityX(const T*const population, const LBParams<T>*const params) const {
     T m1x;
-    for(int l=0; l<params->Q; ++l) { m1x += population[l]*params->LATTICE_VELOCITIES[l*params->D]; }
+    for (int l=0; l<params->Q; ++l) { m1x += population[l]*params->LATTICE_VELOCITIES[l*params->D]; }
     return m1x/getZeroMoment(population, params);
 }
 
 template<typename T>
 __device__ T Cell<T>::getVelocityX(const T*const population, const LBParams<T>*const params, T R) const {
     T m1x;
-    for(int l=0; l<params->Q; ++l) { m1x += population[l]*params->LATTICE_VELOCITIES[l*params->D]; }
+    for (int l=0; l<params->Q; ++l) { m1x += population[l]*params->LATTICE_VELOCITIES[l*params->D]; }
     return m1x/R;
 }
 
 template<typename T>
 __device__ T Cell<T>::getVelocityY(const T*const population, const LBParams<T>*const params) const {
     T m1x;
-    for(int l=0; l<params->Q; ++l) { m1x += population[l]*params->LATTICE_VELOCITIES[l*params->D+1]; }
+    for (int l=0; l<params->Q; ++l) { m1x += population[l]*params->LATTICE_VELOCITIES[l*params->D+1]; }
     return m1x/getZeroMoment(population, params);
 }
 
 template<typename T>
 __device__ T Cell<T>::getVelocityY(const T*const population, const LBParams<T>*const params, T R) const {
     T m1x;
-    for(int l=0; l<params->Q; ++l) { m1x += population[l]*params->LATTICE_VELOCITIES[l*params->D+1]; }
+    for (int l=0; l<params->Q; ++l) { m1x += population[l]*params->LATTICE_VELOCITIES[l*params->D+1]; }
     return m1x/R;
 }
 
 template<typename T>
 __device__ void Cell<T>::getEquilibriumDistribution(const T*const population, T* eqDistr, const LBParams<T>*const params, T R, T U, T V) const {
-    for(int l=0; l<params->Q; ++l)
+    for (int l=0; l<params->Q; ++l)
     {
 		eqDistr[l] = computePopulation(l, params, R, U, V);
 	}
@@ -77,7 +77,7 @@ __device__ void Cell<T>::getEquilibriumDistribution(const T*const population, T*
 
 template<typename T>
 __device__ void Cell<T>::setEquilibriumDistribution(T* population, const LBParams<T>*const params, T R, T U, T V) const {
-    for(int l=0; l<params->Q; ++l)
+    for (int l=0; l<params->Q; ++l)
     {
 		population[l] = computePopulation(l, params, R, U, V);
 	}
@@ -85,7 +85,7 @@ __device__ void Cell<T>::setEquilibriumDistribution(T* population, const LBParam
 
 template<typename T>
 __device__ void Cell<T>::computePostCollisionDistributionBGK(T* population, const CollisionParamsBGK<T>*const params, T R, T U, T V) const {
-    for(int l=0; l<params->Q; ++l) {
+    for (int l=0; l<params->Q; ++l) {
         population[l] -= params->omegaShear*(population[l]-coputePopulation(l, params, R, U, V));// - Fext[l];	
 	}
 }
