@@ -16,7 +16,7 @@ LBGrid<T>::LBGrid(
         std::unique_ptr<CollisionModel<T>>&& collision,
         std::unique_ptr<GridGeometry2D<T>>&& geometry,
         std::unique_ptr<BoundaryConditionManager<T>>&& boundary
-) : lbModel(std::move(model)), collisionModel(std::move(collision)), gridGeometry(std::move(geometry)), boundaryConditionManager(std::move(boundary)) {
+) : _lbModel(std::move(model)), _collisionModel(std::move(collision)), _gridGeometry(std::move(geometry)), _boundaryConditionManager(std::move(boundary)) {
     prepareKernelParams();
     copyKernelParamsToDevice();
     allocateHostData();
@@ -26,104 +26,117 @@ LBGrid<T>::LBGrid(
 
 template<typename T>
 LBGrid<T>::~LBGrid() {
-    if (deviceCollision != nullptr) {
-        cudaErrorCheck(cudaFree(deviceCollision));
+    if (_deviceCollision != nullptr) {
+        cudaErrorCheck(cudaFree(_deviceCollision));
     }
-    if (deviceCollision != nullptr) {
-        cudaErrorCheck(cudaFree(deviceStreaming));
+    if (_deviceCollision != nullptr) {
+        cudaErrorCheck(cudaFree(_deviceStreaming));
     }
-    if (deviceParams != nullptr) {
-        cudaErrorCheck(cudaFree(deviceParams));
+    if (_deviceParams != nullptr) {
+        cudaErrorCheck(cudaFree(_deviceParams));
     }
 }
 
 template<typename T>
 void LBGrid<T>::allocateHostData() {
-    hostDistributions.resize(lbModel->getQ() * gridGeometry->getGhostVolume(), static_cast<T>(0));
+    _hostDistributions.resize(_lbModel->getQ() * _gridGeometry->getGhostVolume(), static_cast<T>(0));
 }
 
 template<typename T>
 void LBGrid<T>::allocateDeviceData() {
-    cudaErrorCheck(cudaMalloc(&deviceCollision, lbModel->getQ() * gridGeometry->getGhostVolume() * sizeof(T)));
-    cudaErrorCheck(cudaMalloc(&deviceStreaming, lbModel->getQ() * gridGeometry->getGhostVolume() * sizeof(T)));
+    cudaErrorCheck(cudaMalloc(&_deviceCollision, _lbModel->getQ() * _gridGeometry->getGhostVolume() * sizeof(T)));
+    cudaErrorCheck(cudaMalloc(&_deviceStreaming, _lbModel->getQ() * _gridGeometry->getGhostVolume() * sizeof(T)));
 }
 
 template<typename T>
 void LBGrid<T>::prepareKernelParams() {
     // Own kernel parameters
-    this->hostParams.D = this->lbModel->getQ();
-    this->hostParams.Nx = this->gridGeometry->getGhostNx();
-    this->hostParams.Ny = this->gridGeometry->getGhostNy();
-    this->hostParams.Q = this->lbModel->getQ();
-    this->hostParams.LATTICE_VELOCITIES = this->lbModel->getLatticeVelocitiesPtr();
-    this->hostParams.LATTICE_WEIGHTS = this->lbModel->getLatticeWeightsPtr();
+    _hostParams.D = _lbModel->getQ();
+    _hostParams.Nx = _gridGeometry->getGhostNx();
+    _hostParams.Ny = _gridGeometry->getGhostNy();
+    _hostParams.Q = _lbModel->getQ();
+    _hostParams.LATTICE_VELOCITIES = _lbModel->getLatticeVelocitiesPtr();
+    _hostParams.LATTICE_WEIGHTS = _lbModel->getLatticeWeightsPtr();
+
+    // Set block and grid size for cuda kernel execution
+    _threadsPerBlock = std::make_pair(THREADS_PER_BLOCK_DIMENSION, THREADS_PER_BLOCK_DIMENSION);
+    _numBlocks = std::make_pair(
+        (_gridGeometry->getGhostNx() + _threadsPerBlock.first  - 1) / _threadsPerBlock.first,
+        (_gridGeometry->getGhostNy() + _threadsPerBlock.second - 1) / _threadsPerBlock.second
+    );
 
     // Kernel parameters of collision model
-    this->collisionModel->prepareKernelParams(&(this->hostParams));
-    this->collisionModel->copyKernelParamsToDevice();
+    _collisionModel->prepareKernelParams(&(_hostParams));
+    printf("1\n");
+    _collisionModel->copyKernelParamsToDevice();
+    printf("2\n");
+
+    // Kernel parameters of boundary conditions
+    _boundaryConditionManager->prepareKernelParamsAndCopyToDevice(&(_hostParams), _lbModel.get());
 }
 
 template<typename T>
 void LBGrid<T>::copyKernelParamsToDevice() {
     // Allocate device memory for lattice velocities and copy data
     int* deviceLatticeVelocities;
-    size_t sizeLatticeVelocities = lbModel->getQ() * lbModel->getD() * sizeof(int);
+    size_t sizeLatticeVelocities = _lbModel->getQ() * _lbModel->getD() * sizeof(int);
     cudaErrorCheck(cudaMalloc(&deviceLatticeVelocities, sizeLatticeVelocities));
-    cudaErrorCheck(cudaMemcpy(deviceLatticeVelocities, hostParams.LATTICE_VELOCITIES, sizeLatticeVelocities, cudaMemcpyHostToDevice));
+    cudaErrorCheck(cudaMemcpy(deviceLatticeVelocities, _hostParams.LATTICE_VELOCITIES, sizeLatticeVelocities, cudaMemcpyHostToDevice));
 
     // Allocate device memory for lattice weights and copy data
     T* deviceLatticeWeights;
-    size_t sizeLatticeWeights = lbModel->getQ() * sizeof(T);
+    size_t sizeLatticeWeights = _lbModel->getQ() * sizeof(T);
     cudaErrorCheck(cudaMalloc(&deviceLatticeWeights, sizeLatticeWeights));
-    cudaErrorCheck(cudaMemcpy(deviceLatticeWeights, hostParams.LATTICE_WEIGHTS, sizeLatticeWeights, cudaMemcpyHostToDevice));
+    cudaErrorCheck(cudaMemcpy(deviceLatticeWeights, _hostParams.LATTICE_WEIGHTS, sizeLatticeWeights, cudaMemcpyHostToDevice));
 
     // Prepare the host-side copy of LBParams with device pointers
-    LBParams<T> paramsTemp = hostParams; // Use a temporary host copy
+    LBParams<T> paramsTemp = _hostParams; // Use a temporary host copy
     paramsTemp.LATTICE_VELOCITIES = deviceLatticeVelocities;
     paramsTemp.LATTICE_WEIGHTS = deviceLatticeWeights;
 
     // Allocate memory for the LBParams struct on the device if not already allocated
-    if (deviceParams == nullptr) {
-        cudaErrorCheck(cudaMalloc(&deviceParams, sizeof(LBParams<T>)));
+    if (_deviceParams == nullptr) {
+        cudaErrorCheck(cudaMalloc(&_deviceParams, sizeof(LBParams<T>)));
     }
 
     // Copy the prepared LBParams (with device pointers) from the temporary host copy to the device
-    cudaErrorCheck(cudaMemcpy(deviceParams, &paramsTemp, sizeof(LBParams<T>), cudaMemcpyHostToDevice));
+    cudaErrorCheck(cudaMemcpy(_deviceParams, &paramsTemp, sizeof(LBParams<T>), cudaMemcpyHostToDevice));
 }
 
 template<typename T>
 void LBGrid<T>::initializeDistributions() {
-    dim3 threadsPerBlock(THREADS_PER_BLOCK_DIMENSION, THREADS_PER_BLOCK_DIMENSION);
-    dim3 numBlocks((gridGeometry->getGhostNx() + threadsPerBlock.x - 1) / threadsPerBlock.x, (gridGeometry->getGhostNy() + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    dim3 blockSize(_threadsPerBlock.first, _threadsPerBlock.second);
+    dim3 gridSize(_numBlocks.first, _numBlocks.first);
 
-    initializeDistributionsCaller(deviceCollision, deviceParams, numBlocks, threadsPerBlock);
+    initializeDistributionsCaller(_deviceCollision, _deviceParams, gridSize, blockSize);
 }
 
 template<typename T>
 void LBGrid<T>::copyToDevice() {
-       cudaErrorCheck(cudaMemcpy(deviceCollision, hostDistributions, gridGeometry->getGhostVolume() * sizeof(T), cudaMemcpyHostToDevice));
+       cudaErrorCheck(cudaMemcpy(_deviceCollision, _hostDistributions, _gridGeometry->getGhostVolume() * sizeof(T), cudaMemcpyHostToDevice));
 }
 
 template<typename T>
 void LBGrid<T>::copyToHost() {
-       cudaErrorCheck(cudaMemcpy(hostDistributions, deviceCollision, gridGeometry->getGhostVolume() * sizeof(T), cudaMemcpyHostToDevice));
+       cudaErrorCheck(cudaMemcpy(_hostDistributions, _deviceCollision, _gridGeometry->getGhostVolume() * sizeof(T), cudaMemcpyHostToDevice));
 }
 
 template<typename T>
 void LBGrid<T>::performCollisionStep() {
-    this->collisionModel->doCollision(deviceCollision);
+    _collisionModel->doCollision(_deviceCollision, _numBlocks, _threadsPerBlock);
 }
 
 template<typename T>
 void LBGrid<T>::performStreamingStep() {
-    dim3 threadsPerBlock(THREADS_PER_BLOCK_DIMENSION, THREADS_PER_BLOCK_DIMENSION);
-    dim3 numBlocks((gridGeometry->getGhostNx() + threadsPerBlock.x - 1) / threadsPerBlock.x, (gridGeometry->getGhostNy() + threadsPerBlock.y - 1) / threadsPerBlock.y);
-    doStreamingCaller(deviceCollision, deviceStreaming, swap, deviceParams, numBlocks, threadsPerBlock);
+    dim3 blockSize(_threadsPerBlock.first, _threadsPerBlock.second);
+    dim3 gridSize(_numBlocks.first, _numBlocks.first);
+
+    doStreamingCaller(_deviceCollision, _deviceStreaming, _swap, _deviceParams, gridSize, blockSize);
 }
 
 template<typename T>
 void LBGrid<T>::applyBoundaryConditions() {
-    this->boundaryConditionManager->apply(deviceCollision);
+    _boundaryConditionManager->apply(_deviceCollision);
 }
 
 

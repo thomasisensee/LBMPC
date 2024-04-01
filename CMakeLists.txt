@@ -23,11 +23,12 @@ set(SOURCES
     src/core/lbModel.hh
     src/core/collisionModel.h
     src/core/collisionModel.hh
-    src/core/boundaryConditions.hh
+    src/core/boundaryConditions.h
     src/core/boundaryConditions.hh
     src/core/simulation.h
     src/core/simulation.hh
-    src/core/kernelParams.h
+    src/core/kernelParameters.h
+    src/core/kernelParameters.hh
     src/cuda/cudaErrorHandler.cuh
     src/cuda/cudaKernels.cuh
     src/cuda/cudaKernels.cu

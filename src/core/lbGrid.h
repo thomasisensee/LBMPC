@@ -6,28 +6,32 @@
 
 #include "lbModel.h"
 #include "gridGeometry.h"
-#include "kernelParams.h"
+#include "kernelParameters.h"
 
 template<typename T>
 class LBGrid {
 private:
     /// Required model objects
-    std::unique_ptr<LBModel<T>> lbModel;
-    std::unique_ptr<CollisionModel<T>> collisionModel;
-    std::unique_ptr<GridGeometry2D<T>> gridGeometry;
-    std::unique_ptr<BoundaryConditionManager<T>> boundaryConditionManager;
+    std::unique_ptr<LBModel<T>> _lbModel;
+    std::unique_ptr<CollisionModel<T>> _collisionModel;
+    std::unique_ptr<GridGeometry2D<T>> _gridGeometry;
+    std::unique_ptr<BoundaryConditionManager<T>> _boundaryConditionManager;
 
     /// Distribution function
-    std::vector<T> hostDistributions;
-    T* deviceCollision = nullptr;
-    T* deviceStreaming = nullptr;
+    std::vector<T> _hostDistributions;
+    T* _deviceCollision = nullptr;
+    T* _deviceStreaming = nullptr;
 
     /// swap pointer for switching streaming and collision device arrays
-    T* swap = nullptr;
+    T* _swap = nullptr;
 
     /// Parameters to pass to cuda kernels
-    LBParams<T> hostParams;
-    LBParams<T>* deviceParams = nullptr;
+    LBParams<T> _hostParams;
+    LBParams<T>* _deviceParams = nullptr;
+
+    /// Cuda grid and block size
+    std::pair<unsigned int, unsigned int> _threadsPerBlock;
+    std::pair<unsigned int, unsigned int> _numBlocks;
 public:
     /// Constructor
     LBGrid(
@@ -36,8 +40,10 @@ public:
         std::unique_ptr<GridGeometry2D<T>>&& geometry, 
         std::unique_ptr<BoundaryConditionManager<T>>&& boundary
     );
+
     /// Destructor
     ~LBGrid();
+
     void allocateHostData();
     void allocateDeviceData();
     void prepareKernelParams();

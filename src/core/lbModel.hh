@@ -10,6 +10,15 @@
 /***** Base class *****/
 /**********************/
 template<typename T>
+LBModel<T>::LBModel(unsigned int d, unsigned int q) : D(d), Q(q) {}
+
+template<typename T>
+LBModel<T>::~LBModel() {
+    delete[] this->LATTICE_VELOCITIES;
+    delete[] this->LATTICE_WEIGHTS;
+}
+
+template<typename T>
 unsigned int LBModel<T>::getD() const {
     return D;
 }
@@ -44,9 +53,7 @@ void LBModel<T>::print() const {
 /***** Derived classes *****/
 /***************************/
 template<typename T>
-D2Q9<T>::D2Q9() {
-    this->D = 2;
-    this->Q = 9;
+D2Q9<T>::D2Q9() : LBModel<T>(2, 9) {
     this->LATTICE_WEIGHTS = new T[9];
     this->LATTICE_WEIGHTS[0] = 4.0/9.0;
     this->LATTICE_WEIGHTS[1] = 1.0/9.0;
@@ -65,14 +72,25 @@ D2Q9<T>::D2Q9() {
             this->LATTICE_VELOCITIES[i*this->D+j] = velocities[i][j];
         }
     }
+
+    // Initialize and compute opposites
+    this->OPPOSITE_POPULATION = new unsigned int[9];
+    for (int i = 0; i < 9; ++i) {
+        for (int j = 0; j < 9; ++j) {
+            if (velocities[j][0] == -velocities[i][0] && velocities[j][1] == -velocities[i][1]) {
+                this->OPPOSITE_POPULATION[i] = j;
+                break;
+            }
+        }
+    }
 }
 
+/*
 template<typename T>
 D2Q9<T>::~D2Q9() {
-    delete[] this->LATTICE_VELOCITIES;
-    delete[] this->LATTICE_WEIGHTS;
-}
 
+}
+*/
 template<typename T>
 int D2Q9<T>::getCX(unsigned int i) const  {
     return this->LATTICE_VELOCITIES[i*2];

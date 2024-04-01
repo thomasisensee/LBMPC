@@ -6,7 +6,7 @@
 #include "gridGeometry.h"
 
 template<typename T>
-GridGeometry2D<T>::GridGeometry2D(T delta, int nX, int nY) : _delta(delta), _nX(nX), _nY(nY) {}
+GridGeometry2D<T>::GridGeometry2D(T delta, unsigned int nX, unsigned int nY) : _delta(delta), _nX(nX), _nY(nY) {}
 
 template<typename T>
 T GridGeometry2D<T>::getDelta() const {

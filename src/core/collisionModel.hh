@@ -16,11 +16,6 @@ template<typename T>
 CollisionModel<T>::CollisionModel(T omega) : omegaShear(omega) {}
 
 template<typename T>
-void CollisionModel<T>::setOmegaShear(T omegaShear) {
-    this->omegaShear = omegaShear;
-}
-
-template<typename T>
 T CollisionModel<T>::getOmegaShear() const {
     return this->omegaShear;
 }
@@ -29,6 +24,11 @@ T CollisionModel<T>::getOmegaShear() const {
 /***************************/
 /***** Derived classes *****/
 /***************************/
+template<typename T>
+CollisionBGK<T>::~CollisionBGK() {
+    cudaErrorCheck(cudaFree(deviceParams));
+}
+
 template<typename T>
 void CollisionBGK<T>::prepareKernelParams(LBParams<T>* lbParams) {
     this->hostParams.D                  = lbParams->D;
@@ -62,16 +62,19 @@ void CollisionBGK<T>::copyKernelParamsToDevice() {
 
     // Allocate memory for the LBParams struct on the device if not already allocated
     if (deviceParams == nullptr) {
-        cudaErrorCheck(cudaMalloc(&deviceParams, sizeof(LBParams<T>)));
+        cudaErrorCheck(cudaMalloc(&deviceParams, sizeof(CollisionParamsBGK<T>)));
     }
 
     // Copy the prepared LBParams (with device pointers) from the temporary host copy to the device
-    cudaErrorCheck(cudaMemcpy(deviceParams, &paramsTemp, sizeof(LBParams<T>), cudaMemcpyHostToDevice));
+    cudaErrorCheck(cudaMemcpy(deviceParams, &paramsTemp, sizeof(CollisionParamsBGK<T>), cudaMemcpyHostToDevice));
 }
 
 template<typename T>
-void CollisionBGK<T>::doCollision(T* distribution) {
-
+void CollisionBGK<T>::doCollision(T* distribution, std::pair<unsigned int, unsigned int> numBlocks, std::pair<unsigned int, unsigned int> threadsPerBlock) {
+    dim3 blockSize(threadsPerBlock.first, threadsPerBlock.second);
+    dim3 gridSize(numBlocks.first, numBlocks.first);
+    
+    //doCollisionBGKCaller(distribution, deviceParams, gridSize, blockSize);  
 }
 
 template<typename T>
@@ -84,10 +87,9 @@ void CollisionBGK<T>::print() {
 template<typename T>
 CollisionCHM<T>::CollisionCHM(T omegaS, T omegaB) : CollisionModel<T>(omegaS), omegaBulk(omegaB) {}
 
-
 template<typename T>
-void CollisionCHM<T>::setOmegaBulk(T omegaBulk) {
-    this->omegaBulk = omegaBulk;
+CollisionCHM<T>::~CollisionCHM() {
+    cudaErrorCheck(cudaFree(deviceParams));
 }
 
 template<typename T>
@@ -109,6 +111,7 @@ void CollisionCHM<T>::prepareKernelParams(LBParams<T>* lbParams) {
 
 template<typename T>
 void CollisionCHM<T>::copyKernelParamsToDevice() {
+
     // Allocate device memory for lattice velocities and copy data
     int* deviceLatticeVelocities;
     size_t sizeLatticeVelocities = this->hostParams.Q * this->hostParams.D * sizeof(int);
@@ -128,18 +131,19 @@ void CollisionCHM<T>::copyKernelParamsToDevice() {
 
     // Allocate memory for the LBParams struct on the device if not already allocated
     if (deviceParams == nullptr) {
-        cudaErrorCheck(cudaMalloc(&deviceParams, sizeof(LBParams<T>)));
+        cudaErrorCheck(cudaMalloc(&deviceParams, sizeof(CollisionParamsCHM<T>)));
     }
 
     // Copy the prepared LBParams (with device pointers) from the temporary host copy to the device
-    cudaErrorCheck(cudaMemcpy(deviceParams, &paramsTemp, sizeof(LBParams<T>), cudaMemcpyHostToDevice));
+    cudaErrorCheck(cudaMemcpy(deviceParams, &paramsTemp, sizeof(CollisionParamsCHM<T>), cudaMemcpyHostToDevice));
 }
 
 template<typename T>
-void CollisionCHM<T>::doCollision(T* distribution) {
-    dim3 threadsPerBlock(THREADS_PER_BLOCK_DIMENSION, THREADS_PER_BLOCK_DIMENSION);
-    dim3 numBlocks((this->hostParams.Nx + threadsPerBlock.x - 1) / threadsPerBlock.x, (this->hostParams.Ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
-    doCollisionCHMCaller(distribution, deviceParams, numBlocks, threadsPerBlock);
+void CollisionCHM<T>::doCollision(T* distribution, std::pair<unsigned int, unsigned int> numBlocks, std::pair<unsigned int, unsigned int> threadsPerBlock) {
+    dim3 blockSize(threadsPerBlock.first, threadsPerBlock.second);
+    dim3 gridSize(numBlocks.first, numBlocks.first);
+
+    doCollisionCHMCaller(distribution, deviceParams, gridSize, blockSize);
 }
 
 template<typename T>

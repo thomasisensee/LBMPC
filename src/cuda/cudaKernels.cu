@@ -2,7 +2,7 @@
 #include <cuda_runtime.h>
 
 #include "core/constants.h"
-#include "core/kernelParams.h"
+#include "core/kernelParameters.h"
 #include "core/cell.h"
 #include "cudaKernels.cuh"
 #include "cudaErrorHandler.cuh"
@@ -89,38 +89,64 @@ template void doCollisionCHMCaller<double>(double* deviceCollision, const Collis
 
 
 template<typename T>
-__global__ void applyBounceBack(T* collision, const BoundaryParams<T>* const params) {
+__global__ void applyBounceBackKernel(T* collision, const BoundaryParams<T>* const params) {
 
-    unsigned int i,j,idx;
+    unsigned int i, j, idx;
+    Cell<T> cell;
+    T R, dotProduct;
+
     switch(params->location) {
     case BoundaryLocation::WEST:
         i = 0;
         j = threadIdx.x + blockIdx.x * blockDim.x;
         if (j > params->Ny-1) { return; }
         
-        idx = pos(i, j, params->Nx);        
+        idx = pos(i, j, params->Nx);
+        R = cell.getZeroMoment(&collision[params->Q*idx], params);
+        //dotProduct = params->LATTICE_VELOCITIES[m][0]*params->wallVelocity[0]+LATTICE_VELOCITIES[m][1]*params->wallVelocity[1];
+/*
+        	for(l=0; l<3; l++)
+			{	
+				m = TREAT_BOUNDARY_INDICES[0][l];
+				n = TREAT_BOUNDARY_INDICES_INVERSE[0][l];
+				density=0.0;
+				ComputeDensity(&d_CollideV[Q_LBM*pos(i+LATTICE_VELOCITIES[m][0],j+LATTICE_VELOCITIES[m][1])],&density);
+				dot_product=LATTICE_VELOCITIES[m][0]*(*Par).BC_V.u_WEST+LATTICE_VELOCITIES[m][1]*(*Par).BC_V.v_WEST;
+
+				d_CollideV[Q_LBM*pos(i,j)+m] = d_CollideV[Q_LBM*pos(i+LATTICE_VELOCITIES[m][0],j+LATTICE_VELOCITIES[m][1])+n]+2.0*LATTICE_WEIGHTS[m]*density*C_S_POW2_INV*dot_product;
+			}
+*/
         return;
     case BoundaryLocation::EAST:
         i = params->Nx+1;
         j = threadIdx.x + blockIdx.x * blockDim.x;
         if (j > params->Ny-1) { return; }
         
-        idx = pos(i, j, params->Nx);        
+        idx = pos(i, j, params->Nx);
         return;
     case BoundaryLocation::SOUTH:
         i = threadIdx.x + blockIdx.x * blockDim.x;
         j = 0;
         if (i > params->Ny-1) { return; }
         
-        idx = pos(i, j, params->Nx);        
+        idx = pos(i, j, params->Nx);
         return;
     case BoundaryLocation::NORTH:
         i = threadIdx.x + blockIdx.x * blockDim.x;
         j = params->Ny-1;
         if (i > params->Ny-1) { return; }
         
-        idx = pos(i, j, params->Nx);        
+        idx = pos(i, j, params->Nx);
         return;
     }
 
 }
+
+template<typename T>
+void applyBounceBackCaller(T* deviceCollision, const BoundaryParams<T>* const params, dim3 gridSize, dim3 blockSize) {
+    applyBounceBackKernel<<<gridSize, blockSize>>>(deviceCollision, params);
+    cudaErrorCheck(cudaDeviceSynchronize());
+}
+template void applyBounceBackCaller<float>(float* deviceCollision, const BoundaryParams<float>* const params, dim3 gridSize, dim3 blockSize);
+template void applyBounceBackCaller<double>(double* deviceCollision, const BoundaryParams<double>* const params, dim3 gridSize, dim3 blockSize);
+

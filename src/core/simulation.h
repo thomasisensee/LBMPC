@@ -2,8 +2,6 @@
 #define SIMULATION_H
 
 #include <stdio.h>
-//#include <memory> // For std::unique_ptr and std::make_unique
-
 #include "lbGrid.h"
 
 
@@ -13,8 +11,8 @@
 template<typename T>
 class Simulation {
 protected:
-    unsigned int totalIter;
-    unsigned int outputFrequency;
+    const unsigned int totalIter;
+    const unsigned int outputFrequency;
     std::unique_ptr<LBGrid<T>> lbGrid; // For a single grid
     // std::vector<std::unique_ptr<LBGrid<T>>> lbGrids; // For multiple grids
 
