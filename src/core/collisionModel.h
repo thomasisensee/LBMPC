@@ -14,6 +14,7 @@ class CollisionModel {
 protected:
     /// Relaxation parameter associated with shear viscosity
     const T omegaShear;
+
 public:
     /// Constructor
     CollisionModel(T omega);
@@ -24,39 +25,51 @@ public:
     T getOmegaShear() const;
     virtual void prepareKernelParams(LBParams<T>* lbParams) = 0;
     virtual void copyKernelParamsToDevice() = 0;
-    virtual void doCollision(T* distribution, std::pair<unsigned int, unsigned int> numBlocks, std::pair<unsigned int, unsigned int> threadsPerBlock) = 0;
+    virtual void doCollision(
+        T* distribution,
+        std::pair<unsigned int, unsigned int> numBlocks,
+        std::pair<unsigned int, unsigned int> threadsPerBlock
+    ) = 0;
     virtual void print() = 0;
 };
 
 
 
-/***************************/
-/***** Derived classes *****/
-/***************************/
+/******************************************************/
+/***** Derived class 01: BGK Collision parameters *****/
+/******************************************************/
 template<typename T>
 class CollisionBGK : public CollisionModel<T> {
 private:
     /// Parameters to pass to cuda kernels
-    CollisionParamsBGK<T> hostParams;
-    CollisionParamsBGK<T>* deviceParams = nullptr;
+    CollisionParamsBGKWrapper<T> _params;
+
 public:
     /// Destructor
     virtual ~CollisionBGK();
 
     virtual void prepareKernelParams(LBParams<T>* lbParams);
     virtual void copyKernelParamsToDevice();
-    virtual void doCollision(T* distribution, std::pair<unsigned int, unsigned int> numBlocks, std::pair<unsigned int, unsigned int> threadsPerBlock) override;
+    virtual void doCollision(
+        T* distribution,
+        std::pair<unsigned int, unsigned int> numBlocks,
+        std::pair<unsigned int, unsigned int> threadsPerBlock
+    ) override;
     virtual void print();
 };
 
+/******************************************************/
+/***** Derived class 02: CHM Collision parameters *****/
+/******************************************************/
 template<typename T>
 class CollisionCHM : public CollisionModel<T> { // only implemented for D2Q9 lattices
 private:
     /// Relaxation parameter associated with bulk viscosity
     const T omegaBulk;
+
     /// Parameters to pass to cuda kernels
-    CollisionParamsCHM<T> hostParams;
-    CollisionParamsCHM<T>* deviceParams = nullptr;
+    CollisionParamsCHMWrapper<T> _params;
+
 public:
     /// Constructor
     CollisionCHM(T omegaS, T omegaB);
@@ -67,7 +80,11 @@ public:
     T getOmegaBulk() const;
     virtual void prepareKernelParams(LBParams<T>* lbParams);
     virtual void copyKernelParamsToDevice();
-    virtual void doCollision(T* distribution, std::pair<unsigned int, unsigned int> numBlocks, std::pair<unsigned int, unsigned int> threadsPerBlock) override;
+    virtual void doCollision(
+        T* distribution,
+        std::pair<unsigned int, unsigned int> numBlocks,
+        std::pair<unsigned int, unsigned int> threadsPerBlock
+    ) override;
     virtual void print() override;
 };
 

@@ -8,12 +8,20 @@ template<typename T, typename ParamsType>
 ParamsWrapper<T, ParamsType>::ParamsWrapper() {}
 
 template<typename T, typename ParamsType>
-ParamsWrapper<T, ParamsType>::ParamsWrapper(unsigned int dim, unsigned int nx, unsigned int ny) {
+ParamsWrapper<T, ParamsType>::ParamsWrapper(
+        unsigned int dim,
+        unsigned int nx,
+        unsigned int ny
+    ) {
     setValues(dim, nx, ny);
 }
 
 template<typename T, typename ParamsType>
-void ParamsWrapper<T, ParamsType>::setValues(unsigned int dim, unsigned int nx, unsigned int ny) {
+void ParamsWrapper<T, ParamsType>::setValues(
+        unsigned int dim,
+        unsigned int nx,
+        unsigned int ny
+    ) {
     this->hostParams.D                  = dim;
     this->hostParams.Nx                 = nx;
     this->hostParams.Ny                 = ny;
@@ -45,14 +53,21 @@ ParamsType* ParamsWrapper<T, ParamsType>::getDeviceParams() {
     return deviceParams;
 }
 
-/***************************************/
-/***** Derived classe 01: LBParams *****/
-/***************************************/
+/**************************************/
+/***** Derived class 01: LBParams *****/
+/**************************************/
 template<typename T>
 LBParamsWrapper<T>::LBParamsWrapper() {}
 
 template<typename T>
-LBParamsWrapper<T>::LBParamsWrapper(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights) {
+LBParamsWrapper<T>::LBParamsWrapper(
+        unsigned int dim,
+        unsigned int nx,
+        unsigned int ny,
+        unsigned int q,
+        int* latticeVelocities,
+        T* latticeWeights
+    ) {
     setValues(dim, nx, ny, q, latticeVelocities, latticeWeights);
 }
 
@@ -65,7 +80,14 @@ LBParamsWrapper<T>::~LBParamsWrapper() {
 }
 
 template<typename T>
-void LBParamsWrapper<T>::setValues(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights) {
+void LBParamsWrapper<T>::setValues(
+        unsigned int dim,
+        unsigned int nx,
+        unsigned int ny,
+        unsigned int q,
+        int* latticeVelocities,
+        T* latticeWeights
+    ) {
     this->hostParams.D                  = dim;
     this->hostParams.Nx                 = nx;
     this->hostParams.Ny                 = ny;
@@ -127,14 +149,22 @@ void LBParamsWrapper<T>::cleanupDevice() {
     this->deviceParams = nullptr; // Ensure the pointer is marked as freed
 }
 
-/*************************************************/
-/***** Derived classe 02: CollisionParamsBGK *****/
-/*************************************************/
+/************************************************/
+/***** Derived class 02: CollisionParamsBGK *****/
+/************************************************/
 template<typename T>
 CollisionParamsBGKWrapper<T>::CollisionParamsBGKWrapper() {}
 
 template<typename T>
-CollisionParamsBGKWrapper<T>::CollisionParamsBGKWrapper(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights, T omegaShear) {
+CollisionParamsBGKWrapper<T>::CollisionParamsBGKWrapper(
+        unsigned int dim,
+        unsigned int nx,
+        unsigned int ny,
+        unsigned int q,
+        int* latticeVelocities,
+        T* latticeWeights,
+        T omegaShear
+    ) {
     setValues(dim, nx, ny, q, latticeVelocities, latticeWeights, omegaShear);
 }
 
@@ -147,7 +177,15 @@ CollisionParamsBGKWrapper<T>::~CollisionParamsBGKWrapper() {
 }
 
 template<typename T>
-void CollisionParamsBGKWrapper<T>::setValues(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights, T omegaShear) {
+void CollisionParamsBGKWrapper<T>::setValues(
+        unsigned int dim,
+        unsigned int nx,
+        unsigned int ny,
+        unsigned int q,
+        int* latticeVelocities,
+        T* latticeWeights,
+        T omegaShear
+    ) {
     this->hostParams.D                  = dim;
     this->hostParams.Nx                 = nx;
     this->hostParams.Ny                 = ny;
@@ -210,14 +248,23 @@ void CollisionParamsBGKWrapper<T>::cleanupDevice() {
     this->deviceParams = nullptr; // Ensure the pointer is marked as freed
 }
 
-/*************************************************/
-/***** Derived classe 02: CollisionParamsCHM *****/
-/*************************************************/
+/************************************************/
+/***** Derived class 02: CollisionParamsCHM *****/
+/************************************************/
 template<typename T>
 CollisionParamsCHMWrapper<T>::CollisionParamsCHMWrapper() {}
 
 template<typename T>
-CollisionParamsCHMWrapper<T>::CollisionParamsCHMWrapper(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights, T omegaShear, T omegaBulk) {
+CollisionParamsCHMWrapper<T>::CollisionParamsCHMWrapper(
+        unsigned int dim,
+        unsigned int nx,
+        unsigned int ny,
+        unsigned int q,
+        int* latticeVelocities,
+        T* latticeWeights,
+        T omegaShear,
+        T omegaBulk
+    ) {
     setValues(dim, nx, ny, q, latticeVelocities, latticeWeights, omegaShear, omegaBulk);
 }
 
@@ -230,7 +277,16 @@ CollisionParamsCHMWrapper<T>::~CollisionParamsCHMWrapper() {
 }
 
 template<typename T>
-void CollisionParamsCHMWrapper<T>::setValues(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights, T omegaShear, T omegaBulk) {
+void CollisionParamsCHMWrapper<T>::setValues(
+        unsigned int dim,
+        unsigned int nx,
+        unsigned int ny,
+        unsigned int q,
+        int* latticeVelocities,
+        T* latticeWeights,
+        T omegaShear,
+        T omegaBulk
+    ) {
     this->hostParams.D                  = dim;
     this->hostParams.Nx                 = nx;
     this->hostParams.Ny                 = ny;
@@ -294,14 +350,24 @@ void CollisionParamsCHMWrapper<T>::cleanupDevice() {
     this->deviceParams = nullptr; // Ensure the pointer is marked as freed
 }
 
-/*********************************************/
-/***** Derived classe 04: BoundaryParams *****/
-/*********************************************/
+/********************************************/
+/***** Derived class 04: BoundaryParams *****/
+/********************************************/
 template<typename T>
 BoundaryParamsWrapper<T>::BoundaryParamsWrapper() {}
 
 template<typename T>
-BoundaryParamsWrapper<T>::BoundaryParamsWrapper(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights, unsigned int* OPPOSITE_POPULATION, T* wallVelocity, BoundaryLocation location) {
+BoundaryParamsWrapper<T>::BoundaryParamsWrapper(
+        unsigned int dim,
+        unsigned int nx,
+        unsigned int ny,
+        unsigned int q,
+        int* latticeVelocities,
+        T* latticeWeights,
+        unsigned int* OPPOSITE_POPULATION,
+        T* wallVelocity,
+        BoundaryLocation location
+    ) {
     setValues(dim, nx, ny, q, latticeVelocities, latticeWeights, OPPOSITE_POPULATION, wallVelocity, location);
 }
 
@@ -314,7 +380,17 @@ BoundaryParamsWrapper<T>::~BoundaryParamsWrapper() {
 }
 
 template<typename T>
-void BoundaryParamsWrapper<T>::setValues(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights, unsigned int* OPPOSITE_POPULATION, T* wallVelocity, BoundaryLocation location) {
+void BoundaryParamsWrapper<T>::setValues(
+        unsigned int dim,
+        unsigned int nx,
+        unsigned int ny,
+        unsigned int q,
+        int* latticeVelocities,
+        T* latticeWeights,
+        unsigned int* OPPOSITE_POPULATION,
+        T* wallVelocity,
+        BoundaryLocation location
+    ) {
     this->hostParams.D                      = dim;
     this->hostParams.Nx                     = nx;
     this->hostParams.Ny                     = ny;

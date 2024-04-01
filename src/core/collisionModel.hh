@@ -21,9 +21,9 @@ T CollisionModel<T>::getOmegaShear() const {
 }
 
 
-/***************************/
-/***** Derived classes *****/
-/***************************/
+/******************************************************/
+/***** Derived class 01: BGK Collision parameters *****/
+/******************************************************/
 template<typename T>
 CollisionBGK<T>::~CollisionBGK() {
     cudaErrorCheck(cudaFree(deviceParams));
@@ -39,7 +39,6 @@ void CollisionBGK<T>::prepareKernelParams(LBParams<T>* lbParams) {
     this->hostParams.LATTICE_WEIGHTS    = lbParams->LATTICE_WEIGHTS;    
     this->hostParams.omegaShear         = this->omegaShear;
 }
-
 
 template<typename T>
 void CollisionBGK<T>::copyKernelParamsToDevice() {
@@ -84,6 +83,10 @@ void CollisionBGK<T>::print() {
     std::cout << "==================================================\n" << std::endl;
 }
 
+
+/******************************************************/
+/***** Derived class 02: CHM Collision parameters *****/
+/******************************************************/
 template<typename T>
 CollisionCHM<T>::CollisionCHM(T omegaS, T omegaB) : CollisionModel<T>(omegaS), omegaBulk(omegaB) {}
 

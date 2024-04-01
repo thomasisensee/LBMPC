@@ -26,12 +26,12 @@ private:
     T* _swap = nullptr;
 
     /// Parameters to pass to cuda kernels
-    LBParams<T> _hostParams;
-    LBParams<T>* _deviceParams = nullptr;
+    LBParamsWrapper<T> _params;
 
     /// Cuda grid and block size
     std::pair<unsigned int, unsigned int> _threadsPerBlock;
     std::pair<unsigned int, unsigned int> _numBlocks;
+
 public:
     /// Constructor
     LBGrid(

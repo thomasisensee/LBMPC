@@ -32,9 +32,6 @@ LBGrid<T>::~LBGrid() {
     if (_deviceCollision != nullptr) {
         cudaErrorCheck(cudaFree(_deviceStreaming));
     }
-    if (_deviceParams != nullptr) {
-        cudaErrorCheck(cudaFree(_deviceParams));
-    }
 }
 
 template<typename T>
@@ -51,12 +48,14 @@ void LBGrid<T>::allocateDeviceData() {
 template<typename T>
 void LBGrid<T>::prepareKernelParams() {
     // Own kernel parameters
-    _hostParams.D = _lbModel->getQ();
-    _hostParams.Nx = _gridGeometry->getGhostNx();
-    _hostParams.Ny = _gridGeometry->getGhostNy();
-    _hostParams.Q = _lbModel->getQ();
-    _hostParams.LATTICE_VELOCITIES = _lbModel->getLatticeVelocitiesPtr();
-    _hostParams.LATTICE_WEIGHTS = _lbModel->getLatticeWeightsPtr();
+    _params.setValues(
+        _lbModel->getD(),
+        _gridGeometry->getGhostNx(),
+        _gridGeometry->getGhostNy(),
+        _lbModel->getQ(),
+        _lbModel->getLatticeVelocitiesPtr(),
+        _lbModel->getLatticeWeightsPtr()
+    );
 
     // Set block and grid size for cuda kernel execution
     _threadsPerBlock = std::make_pair(THREADS_PER_BLOCK_DIMENSION, THREADS_PER_BLOCK_DIMENSION);
@@ -66,13 +65,13 @@ void LBGrid<T>::prepareKernelParams() {
     );
 
     // Kernel parameters of collision model
-    _collisionModel->prepareKernelParams(&(_hostParams));
+    _collisionModel->prepareKernelParams(_params.getHostParams());
     printf("1\n");
     _collisionModel->copyKernelParamsToDevice();
     printf("2\n");
 
     // Kernel parameters of boundary conditions
-    _boundaryConditionManager->prepareKernelParamsAndCopyToDevice(&(_hostParams), _lbModel.get());
+    _boundaryConditionManager->prepareKernelParamsAndCopyToDevice(_params.getHostParams(), _lbModel.get());
 }
 
 template<typename T>
@@ -81,26 +80,26 @@ void LBGrid<T>::copyKernelParamsToDevice() {
     int* deviceLatticeVelocities;
     size_t sizeLatticeVelocities = _lbModel->getQ() * _lbModel->getD() * sizeof(int);
     cudaErrorCheck(cudaMalloc(&deviceLatticeVelocities, sizeLatticeVelocities));
-    cudaErrorCheck(cudaMemcpy(deviceLatticeVelocities, _hostParams.LATTICE_VELOCITIES, sizeLatticeVelocities, cudaMemcpyHostToDevice));
+    cudaErrorCheck(cudaMemcpy(deviceLatticeVelocities, _params.getHostParams().LATTICE_VELOCITIES, sizeLatticeVelocities, cudaMemcpyHostToDevice));
 
     // Allocate device memory for lattice weights and copy data
     T* deviceLatticeWeights;
     size_t sizeLatticeWeights = _lbModel->getQ() * sizeof(T);
     cudaErrorCheck(cudaMalloc(&deviceLatticeWeights, sizeLatticeWeights));
-    cudaErrorCheck(cudaMemcpy(deviceLatticeWeights, _hostParams.LATTICE_WEIGHTS, sizeLatticeWeights, cudaMemcpyHostToDevice));
+    cudaErrorCheck(cudaMemcpy(deviceLatticeWeights, _params.getHostParams().LATTICE_WEIGHTS, sizeLatticeWeights, cudaMemcpyHostToDevice));
 
     // Prepare the host-side copy of LBParams with device pointers
-    LBParams<T> paramsTemp = _hostParams; // Use a temporary host copy
+    LBParams<T> paramsTemp = _params.getHostParams(); // Use a temporary host copy
     paramsTemp.LATTICE_VELOCITIES = deviceLatticeVelocities;
     paramsTemp.LATTICE_WEIGHTS = deviceLatticeWeights;
 
     // Allocate memory for the LBParams struct on the device if not already allocated
-    if (_deviceParams == nullptr) {
-        cudaErrorCheck(cudaMalloc(&_deviceParams, sizeof(LBParams<T>)));
+    if (_params.getDeviceParams() == nullptr) {
+        cudaErrorCheck(cudaMalloc(&(_params.getDeviceParams()), sizeof(LBParams<T>)));
     }
 
     // Copy the prepared LBParams (with device pointers) from the temporary host copy to the device
-    cudaErrorCheck(cudaMemcpy(_deviceParams, &paramsTemp, sizeof(LBParams<T>), cudaMemcpyHostToDevice));
+    cudaErrorCheck(cudaMemcpy(_params.getDeviceParams(), &paramsTemp, sizeof(LBParams<T>), cudaMemcpyHostToDevice));
 }
 
 template<typename T>
@@ -108,7 +107,7 @@ void LBGrid<T>::initializeDistributions() {
     dim3 blockSize(_threadsPerBlock.first, _threadsPerBlock.second);
     dim3 gridSize(_numBlocks.first, _numBlocks.first);
 
-    initializeDistributionsCaller(_deviceCollision, _deviceParams, gridSize, blockSize);
+    initializeDistributionsCaller(_deviceCollision, _params.getDeviceParams(), gridSize, blockSize);
 }
 
 template<typename T>
@@ -131,14 +130,13 @@ void LBGrid<T>::performStreamingStep() {
     dim3 blockSize(_threadsPerBlock.first, _threadsPerBlock.second);
     dim3 gridSize(_numBlocks.first, _numBlocks.first);
 
-    doStreamingCaller(_deviceCollision, _deviceStreaming, _swap, _deviceParams, gridSize, blockSize);
+    doStreamingCaller(_deviceCollision, _deviceStreaming, _swap, _params.getDeviceParams(), gridSize, blockSize);
 }
 
 template<typename T>
 void LBGrid<T>::applyBoundaryConditions() {
     _boundaryConditionManager->apply(_deviceCollision);
 }
-
 
 template<typename T>
 unsigned int LBGrid<T>::pos(unsigned int i, unsigned int j, unsigned int Nx) {
