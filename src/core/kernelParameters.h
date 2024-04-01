@@ -61,11 +61,17 @@ protected:
     ParamsType* deviceParams = nullptr;
 
 public:
-    /// Constructor
+    /// Default constructor
+    ParamsWrapper();
+
+    /// Parameterized constructor
     ParamsWrapper(unsigned int dim, unsigned int nx, unsigned int ny);
 
     /// Destructor
     virtual ~ParamsWrapper() = default;
+
+    /// Set values and trigger allocateAndCopyToDevice
+    virtual void setValues(unsigned int dim, unsigned int nx, unsigned int ny);
 
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice();
@@ -87,11 +93,17 @@ public:
 template<typename T>
 class LBParamsWrapper : public ParamsWrapper<T, LBParams<T>> {
 public:
-    /// Constructor
+    /// Default constructor
+    LBParamsWrapper();
+    
+    /// Parameterized constructor
     LBParamsWrapper(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights);
 
     /// Destructor
     ~LBParamsWrapper() override;
+
+    /// Set values and trigger allocateAndCopyToDevice
+    virtual void setValues(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights);
 
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice() override;
@@ -109,11 +121,17 @@ public:
 template<typename T>
 class CollisionParamsBGKWrapper : public ParamsWrapper<T, CollisionParamsBGK<T>> {
 public:
-    /// Constructor
+    /// Default constructor
+    CollisionParamsBGKWrapper();
+
+    /// Parameterized constructor
     CollisionParamsBGKWrapper(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights, T omegaShear);
 
     /// Destructor
     ~CollisionParamsBGKWrapper() override;
+
+    /// Set values and trigger allocateAndCopyToDevice
+    virtual void setValues(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights, T omegaShear);
 
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice() override;
@@ -131,11 +149,17 @@ public:
 template<typename T>
 class CollisionParamsCHMWrapper : public ParamsWrapper<T, CollisionParamsCHM<T>> {
 public:
-    /// Constructor
+    /// Default constructor
+    CollisionParamsCHMWrapper();
+
+    /// Parameterized constructor
     CollisionParamsCHMWrapper(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights, T omegaShear, T omegaBulk);
 
     /// Destructor
     ~CollisionParamsCHMWrapper() override;
+
+    /// Set values and trigger allocateAndCopyToDevice
+    virtual void setValues(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights, T omegaShear, T omegaBulk);
 
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice() override;
@@ -153,11 +177,17 @@ public:
 template<typename T>
 class BoundaryParamsWrapper : public ParamsWrapper<T, BoundaryParams<T>> {
 public:
-    /// Constructor
+    /// Default constructor
+    BoundaryParamsWrapper();
+
+    /// Parameterized constructor
     BoundaryParamsWrapper(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights, unsigned int* OPPOSITE_POPULATION, T* wallVelocity, BoundaryLocation location);
 
     /// Destructor
     ~BoundaryParamsWrapper() override;
+
+    /// Set values and trigger allocateAndCopyToDevice
+    virtual void setValues(unsigned int dim, unsigned int nx, unsigned int ny, unsigned int q, int* latticeVelocities, T* latticeWeights, unsigned int* OPPOSITE_POPULATION, T* wallVelocity, BoundaryLocation location);
 
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice() override;
