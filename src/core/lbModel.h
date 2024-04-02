@@ -71,7 +71,7 @@ public:
 /***** Derived classes *****/
 /***************************/
 template<typename T>
-class D2Q9 : public LBModel<T> {
+class D2Q9 final : public LBModel<T> {
 
 ///////////////////////////////////
 ///                             ///

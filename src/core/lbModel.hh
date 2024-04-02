@@ -73,17 +73,17 @@ D2Q9<T>::D2Q9() : LBModel<T>(2, 9) {
     this->_LATTICE_WEIGHTS[8] = 1.0/36.0;
 
     this->_LATTICE_VELOCITIES = new int[18];
-    int velocities[9][2] = {{0, 0},{1, 0},{0, 1},{-1, 0},{0, -1},{1, 1},{-1, 1},{-1, -1},{1, -1}};
+    int velocities[9][2] = {{0, 0},{1, 0},{-1, 0},{0, 1},{0, -1},{1, 1},{-1, -1},{1, -1},{-1, 1}};
     for (int i = 0; i < 9; ++i) {
         for (int j = 0; j < 2; ++j) {
-            this->_LATTICE_VELOCITIES[i*this->_D+j] = velocities[i][j];
+            this->_LATTICE_VELOCITIES[i*2+j] = velocities[i][j];
         }
     }
 
     // Initialize and compute opposites
     this->_OPPOSITE_POPULATION = new unsigned int[9];
-    for (int i = 0; i < 9; ++i) {
-        for (int j = 0; j < 9; ++j) {
+    for (unsigned int i = 0; i < 9; ++i) {
+        for (unsigned int j = 0; j < 9; ++j) {
             if (velocities[j][0] == -velocities[i][0] && velocities[j][1] == -velocities[i][1]) {
                 this->_OPPOSITE_POPULATION[i] = j;
                 break;

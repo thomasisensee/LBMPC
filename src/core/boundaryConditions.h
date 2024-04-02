@@ -40,7 +40,7 @@ public:
     BoundaryCondition(BoundaryLocation loc);
 
     /// Destructor
-    ~BoundaryCondition();
+    virtual ~BoundaryCondition() = default;
 
     BoundaryLocation getLocation() const;
     void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel);
@@ -52,10 +52,13 @@ public:
 /***** Derived class 01: Periodic *****/
 /**************************************/
 template<typename T>
-class PeriodicBoundary : public BoundaryCondition<T> {
+class PeriodicBoundary final : public BoundaryCondition<T> {
 public:
     /// Constructor
     PeriodicBoundary(BoundaryLocation loc);
+
+    /// Destructor
+    virtual ~PeriodicBoundary() = default;
 
     void apply(T* lbField) override;
 };
@@ -69,6 +72,9 @@ public:
     /// Constructor
     BounceBack(BoundaryLocation loc);
 
+    /// Destructor
+    virtual ~BounceBack() = default;
+
     void apply(T* lbField) override;
 };
 
@@ -76,13 +82,16 @@ public:
 /***** Derived class 03: Fixed Velocity (Bounce Back) *****/
 /**********************************************************/
 template<typename T>
-class FixedVelocityBoundary : public BounceBack<T> {
+class FixedVelocityBoundary final : public BounceBack<T> {
     /// Wall velocity
     std::vector<T> _wallVelocity;
 
 public:
     /// Constructor
     FixedVelocityBoundary(BoundaryLocation loc, const std::vector<T>& velocity);
+
+    /// Destructor
+    virtual ~FixedVelocityBoundary() = default;
 
     void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel);
 };
@@ -99,6 +108,9 @@ class BoundaryConditionManager {
 public:
     /// Constructor
     BoundaryConditionManager();
+
+    /// Destructor
+    ~BoundaryConditionManager() = default;
 
     void addBoundaryCondition(const std::string& name, std::unique_ptr<BoundaryCondition<T>> condition);
     void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel);

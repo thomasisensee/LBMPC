@@ -84,8 +84,8 @@ void CollisionCHM<T>::prepareKernelParams(const LBParams<T>& lbParams) {
         lbParams.Q,
         lbParams.LATTICE_VELOCITIES,
         lbParams.LATTICE_WEIGHTS,
-        this->omegaShear,
-        this->omegaBulk
+        this->_omegaShear,
+        this->_omegaBulk
     );
 }
 

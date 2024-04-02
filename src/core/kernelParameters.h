@@ -14,6 +14,9 @@ enum class BoundaryLocation {
 /***** Structs for passing to cuda kernels *****/
 /***********************************************/
 
+/***********************/
+/***** Base struct *****/
+/***********************/
 template<typename T>
 struct BaseParams {
     /// Grid
@@ -22,27 +25,39 @@ struct BaseParams {
     unsigned int Ny;
 };
 
+/**************************************/
+/***** Derived struct 01: LBParams ****/
+/**************************************/
 template<typename T>
 struct LBParams : public BaseParams<T> {
     unsigned int Q;
-    int* LATTICE_VELOCITIES;
-    T* LATTICE_WEIGHTS;
+    int* LATTICE_VELOCITIES = nullptr;
+    T* LATTICE_WEIGHTS      = nullptr;
 };
 
+/************************************************/
+/***** Derived struct 02: CollisionParamsBGK ****/
+/************************************************/
 template<typename T>
 struct CollisionParamsBGK : public LBParams<T> {
     T omegaShear;
 };
 
+/************************************************/
+/***** Derived struct 03: CollisionParamsCHM ****/
+/************************************************/
 template<typename T>
 struct CollisionParamsCHM : public CollisionParamsBGK<T> {
     T omegaBulk;
 };
 
+/********************************************/
+/***** Derived struct 04: BoundaryParams ****/
+/********************************************/
 template<typename T>
 struct BoundaryParams : public LBParams<T> {
-    unsigned int* OPPOSITE_POPULATION; 
-    T* WALL_VELOCITY;
+    unsigned int* OPPOSITE_POPULATION   = nullptr; 
+    T* WALL_VELOCITY                    = nullptr;
     BoundaryLocation location;
 };
 
@@ -57,7 +72,7 @@ struct BoundaryParams : public LBParams<T> {
 template<typename T, typename ParamsType>
 class ParamsWrapper {
 protected:
-    ParamsType hostParams;
+    ParamsType  hostParams;
     ParamsType* deviceParams = nullptr;
 
 public:
@@ -72,7 +87,7 @@ public:
     );
 
     /// Destructor
-    virtual ~ParamsWrapper() = default;
+    virtual ~ParamsWrapper();
 
     /// Set values and trigger allocateAndCopyToDevice
     virtual void setValues(
@@ -88,10 +103,10 @@ public:
     virtual void allocateAndCopyToDevice();
 
     /// Cleans up host memory
-    virtual void cleanupHost() = 0;
+    void cleanupHost();
 
     /// Cleans up device memory
-    virtual void cleanupDevice() = 0;
+    void cleanupDevice();
 
     /// Accessors for host and device params
     const ParamsType& getHostParams() const;
@@ -118,7 +133,7 @@ public:
     );
 
     /// Destructor
-    ~LBParamsWrapper() override;
+    virtual ~LBParamsWrapper();
 
     /// Set values and trigger allocateAndCopyToDevice
     virtual void setValues(
@@ -132,12 +147,6 @@ public:
 
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice() override;
-
-    /// Cleans up host memory
-    virtual void cleanupHost() override;
-
-    /// Cleans up device memory
-    virtual void cleanupDevice() override;
 };
 
 /************************************************/
@@ -161,7 +170,7 @@ public:
     );
 
     /// Destructor
-    ~CollisionParamsBGKWrapper() override;
+    virtual ~CollisionParamsBGKWrapper();
 
     /// Set values and trigger allocateAndCopyToDevice
     virtual void setValues(
@@ -176,12 +185,6 @@ public:
 
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice() override;
-
-    /// Cleans up host memory
-    virtual void cleanupHost() override;
-
-    /// Cleans up device memory
-    virtual void cleanupDevice() override;
 };
 
 /************************************************/
@@ -206,7 +209,7 @@ public:
     );
 
     /// Destructor
-    ~CollisionParamsCHMWrapper() override;
+    virtual ~CollisionParamsCHMWrapper();
 
     /// Set values and trigger allocateAndCopyToDevice
     virtual void setValues(
@@ -222,12 +225,6 @@ public:
 
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice() override;
-
-    /// Cleans up host memory
-    virtual void cleanupHost() override;
-
-    /// Cleans up device memory
-    virtual void cleanupDevice() override;
 };
 
 /********************************************/
@@ -253,7 +250,7 @@ public:
     );
 
     /// Destructor
-    ~BoundaryParamsWrapper() override;
+    virtual ~BoundaryParamsWrapper();
 
     /// Set values and trigger trigger allocateAndCopyToDevice
     virtual void setValues(
@@ -272,10 +269,10 @@ public:
     virtual void allocateAndCopyToDevice() override;
 
     /// Cleans up host memory
-    virtual void cleanupHost() override;
+    void cleanupHost();
 
     /// Cleans up device memory
-    virtual void cleanupDevice() override;
+    void cleanupDevice();
 };
 
 #include "kernelParameters.hh"

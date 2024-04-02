@@ -13,9 +13,6 @@ template<typename T>
 BoundaryCondition<T>::BoundaryCondition(BoundaryLocation loc) : _location(loc) {}
 
 template<typename T>
-BoundaryCondition<T>::~BoundaryCondition() {}
-
-template<typename T>
 BoundaryLocation BoundaryCondition<T>::getLocation() const {
     return _location;
 }

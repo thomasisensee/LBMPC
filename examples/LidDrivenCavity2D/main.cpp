@@ -28,7 +28,8 @@ lbModel->print();
 
 T omegaShear = 0.7;
 T omegaBulk = omegaShear;
-auto collisionModel = std::make_unique<CollisionBGK<T>>(omegaShear);
+//auto collisionModel = std::make_unique<CollisionBGK<T>>(omegaShear);
+auto collisionModel = std::make_unique<CollisionCHM<T>>(omegaShear, omegaBulk);
 collisionModel->print();
 
 // ===============================
@@ -63,7 +64,7 @@ auto lbGrid = std::make_unique<LBGrid<T>>(
 // ========================
 LBFluidSimulation simulation = LBFluidSimulation<T>(std::move(lbGrid));
 
-simulation.run();
+//simulation.run();
 
 
 return 0;

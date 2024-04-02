@@ -38,7 +38,7 @@ public:
 /***** Derived class 01: BGK Collision parameters *****/
 /******************************************************/
 template<typename T>
-class CollisionBGK : public CollisionModel<T> {
+class CollisionBGK final : public CollisionModel<T> {
 private:
     /// Parameters to pass to cuda kernels
     CollisionParamsBGKWrapper<T> _params;
@@ -63,7 +63,7 @@ public:
 /***** Derived class 02: CHM Collision parameters *****/
 /******************************************************/
 template<typename T>
-class CollisionCHM : public CollisionModel<T> { // only implemented for D2Q9 lattices
+class CollisionCHM final : public CollisionModel<T> { // only implemented for D2Q9 lattices
 private:
     /// Relaxation parameter associated with bulk viscosity
     const T _omegaBulk;
