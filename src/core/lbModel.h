@@ -7,14 +7,14 @@
 /**********************/
 /***** Base class *****/
 /**********************/
-template<typename T, unsigned int Dim, unsigned int Q>
+template<typename T>
 class LBModel {
 protected:
     /// Dimension
-    const unsigned int _D = Dim;
+    const unsigned int _D;
 
     /// Number of velocities in velocity set
-    const unsigned int _Q = Q;
+    const unsigned int _Q;
 
     /// pointer to array with lattice velocities
     int* _LATTICE_VELOCITIES;
@@ -27,7 +27,7 @@ protected:
 
 public:
     /// Constructor
-    LBModel();
+    LBModel(unsigned int d, unsigned int q);
 
     /// Destructor
     virtual ~LBModel();
@@ -63,7 +63,7 @@ public:
     void print() const;
 
     /// Provides access to the specific derived class type
-    virtual LBModel<T, Dim, Q>* getDerivedModel() const = 0;
+    virtual LBModel<T>* getDerivedModel() const = 0;
 };
 
 
@@ -71,7 +71,7 @@ public:
 /***** Derived class 01: D2Q9 model *****/
 /****************************************/
 template<typename T>
-class D2Q9 final : public LBModel<T, 2, 9> {
+class D2Q9 final : public LBModel<T> {
 
 ///////////////////////////////////
 ///                             ///
@@ -109,7 +109,7 @@ public:
     virtual unsigned int getOppositePopualation(unsigned int i) const;
 
     /// Provides access to the specific derived class type
-    virtual LBModel<T, 2, 9>* getDerivedModel() const override;
+    virtual LBModel<T>* getDerivedModel() const override;
 };
 
 #include "lbModel.hh"
