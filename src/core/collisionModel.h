@@ -23,8 +23,7 @@ public:
     virtual ~CollisionModel() = default;
 
     T getOmegaShear() const;
-    virtual void prepareKernelParams(LBParams<T>* lbParams) = 0;
-    virtual void copyKernelParamsToDevice() = 0;
+    virtual void prepareKernelParams(const LBParams<T>& lbParams) = 0;
     virtual void doCollision(
         T* distribution,
         std::pair<unsigned int, unsigned int> numBlocks,
@@ -45,11 +44,13 @@ private:
     CollisionParamsBGKWrapper<T> _params;
 
 public:
+    /// Constructor
+    CollisionBGK(T omegaS);
+
     /// Destructor
     virtual ~CollisionBGK();
 
-    virtual void prepareKernelParams(LBParams<T>* lbParams);
-    virtual void copyKernelParamsToDevice();
+    virtual void prepareKernelParams(const LBParams<T>& lbParams) override;
     virtual void doCollision(
         T* distribution,
         std::pair<unsigned int, unsigned int> numBlocks,
@@ -78,8 +79,7 @@ public:
     virtual ~CollisionCHM();
 
     T getOmegaBulk() const;
-    virtual void prepareKernelParams(LBParams<T>* lbParams);
-    virtual void copyKernelParamsToDevice();
+    virtual void prepareKernelParams(const LBParams<T>& lbParams) override;
     virtual void doCollision(
         T* distribution,
         std::pair<unsigned int, unsigned int> numBlocks,

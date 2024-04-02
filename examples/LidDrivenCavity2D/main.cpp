@@ -28,7 +28,7 @@ lbModel->print();
 
 T omegaShear = 0.7;
 T omegaBulk = omegaShear;
-auto collisionModel = std::make_unique<CollisionCHM<T>>(omegaShear,omegaBulk);
+auto collisionModel = std::make_unique<CollisionBGK<T>>(omegaShear);
 collisionModel->print();
 
 // ===============================

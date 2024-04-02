@@ -21,51 +21,27 @@ T CollisionModel<T>::getOmegaShear() const {
 }
 
 
-/******************************************************/
-/***** Derived class 01: BGK Collision parameters *****/
-/******************************************************/
+/*************************************************/
+/***** Derived class 01: BGK Collision model *****/
+/*************************************************/
 template<typename T>
-CollisionBGK<T>::~CollisionBGK() {
-    cudaErrorCheck(cudaFree(deviceParams));
-}
+CollisionBGK<T>::CollisionBGK(T omegaS) : CollisionModel<T>(omegaS) {}
 
 template<typename T>
-void CollisionBGK<T>::prepareKernelParams(LBParams<T>* lbParams) {
-    this->hostParams.D                  = lbParams->D;
-    this->hostParams.Nx                 = lbParams->Nx;
-    this->hostParams.Ny                 = lbParams->Ny;
-    this->hostParams.Q                  = lbParams->Q;
-    this->hostParams.LATTICE_VELOCITIES = lbParams->LATTICE_VELOCITIES;
-    this->hostParams.LATTICE_WEIGHTS    = lbParams->LATTICE_WEIGHTS;    
-    this->hostParams.omegaShear         = this->omegaShear;
-}
+CollisionBGK<T>::~CollisionBGK() {}
 
 template<typename T>
-void CollisionBGK<T>::copyKernelParamsToDevice() {
-    // Allocate device memory for lattice velocities and copy data
-    int* deviceLatticeVelocities;
-    size_t sizeLatticeVelocities = this->hostParams.Q * this->hostParams.D * sizeof(int);
-    cudaErrorCheck(cudaMalloc(&deviceLatticeVelocities, sizeLatticeVelocities));
-    cudaErrorCheck(cudaMemcpy(deviceLatticeVelocities, hostParams.LATTICE_VELOCITIES, sizeLatticeVelocities, cudaMemcpyHostToDevice));
-
-    // Allocate device memory for lattice weights and copy data
-    T* deviceLatticeWeights;
-    size_t sizeLatticeWeights = this->hostParams.Q * sizeof(T);
-    cudaErrorCheck(cudaMalloc(&deviceLatticeWeights, sizeLatticeWeights));
-    cudaErrorCheck(cudaMemcpy(deviceLatticeWeights, hostParams.LATTICE_WEIGHTS, sizeLatticeWeights, cudaMemcpyHostToDevice));
-
-    // Prepare the host-side copy of LBParams with device pointers
-    CollisionParamsBGK<T> paramsTemp = hostParams; // Use a temporary host copy
-    paramsTemp.LATTICE_VELOCITIES = deviceLatticeVelocities;
-    paramsTemp.LATTICE_WEIGHTS = deviceLatticeWeights;
-
-    // Allocate memory for the LBParams struct on the device if not already allocated
-    if (deviceParams == nullptr) {
-        cudaErrorCheck(cudaMalloc(&deviceParams, sizeof(CollisionParamsBGK<T>)));
-    }
-
-    // Copy the prepared LBParams (with device pointers) from the temporary host copy to the device
-    cudaErrorCheck(cudaMemcpy(deviceParams, &paramsTemp, sizeof(CollisionParamsBGK<T>), cudaMemcpyHostToDevice));
+void CollisionBGK<T>::prepareKernelParams(const LBParams<T>& lbParams) {
+    // Set kernel parameters (and duplicate on device)
+    _params.setValues(
+        lbParams.D,
+        lbParams.Nx,
+        lbParams.Ny,
+        lbParams.Q,
+        lbParams.LATTICE_VELOCITIES,
+        lbParams.LATTICE_WEIGHTS,
+        this->omegaShear
+    );
 }
 
 template<typename T>
@@ -84,16 +60,14 @@ void CollisionBGK<T>::print() {
 }
 
 
-/******************************************************/
-/***** Derived class 02: CHM Collision parameters *****/
-/******************************************************/
+/*************************************************/
+/***** Derived class 02: CHM Collision model *****/
+/*************************************************/
 template<typename T>
 CollisionCHM<T>::CollisionCHM(T omegaS, T omegaB) : CollisionModel<T>(omegaS), omegaBulk(omegaB) {}
 
 template<typename T>
-CollisionCHM<T>::~CollisionCHM() {
-    cudaErrorCheck(cudaFree(deviceParams));
-}
+CollisionCHM<T>::~CollisionCHM() {}
 
 template<typename T>
 T CollisionCHM<T>::getOmegaBulk() const {
@@ -101,44 +75,18 @@ T CollisionCHM<T>::getOmegaBulk() const {
 }
 
 template<typename T>
-void CollisionCHM<T>::prepareKernelParams(LBParams<T>* lbParams) {
-    this->hostParams.D                  = lbParams->D;
-    this->hostParams.Nx                 = lbParams->Nx;
-    this->hostParams.Ny                 = lbParams->Ny;
-    this->hostParams.Q                  = lbParams->Q;
-    this->hostParams.LATTICE_VELOCITIES = lbParams->LATTICE_VELOCITIES;
-    this->hostParams.LATTICE_WEIGHTS    = lbParams->LATTICE_WEIGHTS;    
-    this->hostParams.omegaShear         = this->omegaShear;
-    this->hostParams.omegaBulk          = this->omegaBulk;
-}
-
-template<typename T>
-void CollisionCHM<T>::copyKernelParamsToDevice() {
-
-    // Allocate device memory for lattice velocities and copy data
-    int* deviceLatticeVelocities;
-    size_t sizeLatticeVelocities = this->hostParams.Q * this->hostParams.D * sizeof(int);
-    cudaErrorCheck(cudaMalloc(&deviceLatticeVelocities, sizeLatticeVelocities));
-    cudaErrorCheck(cudaMemcpy(deviceLatticeVelocities, hostParams.LATTICE_VELOCITIES, sizeLatticeVelocities, cudaMemcpyHostToDevice));
-
-    // Allocate device memory for lattice weights and copy data
-    T* deviceLatticeWeights;
-    size_t sizeLatticeWeights = this->hostParams.Q * sizeof(T);
-    cudaErrorCheck(cudaMalloc(&deviceLatticeWeights, sizeLatticeWeights));
-    cudaErrorCheck(cudaMemcpy(deviceLatticeWeights, hostParams.LATTICE_WEIGHTS, sizeLatticeWeights, cudaMemcpyHostToDevice));
-
-    // Prepare the host-side copy of LBParams with device pointers
-    CollisionParamsCHM<T> paramsTemp = hostParams; // Use a temporary host copy
-    paramsTemp.LATTICE_VELOCITIES = deviceLatticeVelocities;
-    paramsTemp.LATTICE_WEIGHTS = deviceLatticeWeights;
-
-    // Allocate memory for the LBParams struct on the device if not already allocated
-    if (deviceParams == nullptr) {
-        cudaErrorCheck(cudaMalloc(&deviceParams, sizeof(CollisionParamsCHM<T>)));
-    }
-
-    // Copy the prepared LBParams (with device pointers) from the temporary host copy to the device
-    cudaErrorCheck(cudaMemcpy(deviceParams, &paramsTemp, sizeof(CollisionParamsCHM<T>), cudaMemcpyHostToDevice));
+void CollisionCHM<T>::prepareKernelParams(const LBParams<T>& lbParams) {
+    // Set kernel parameters (and duplicate on device)
+    _params.setValues(
+        lbParams.D,
+        lbParams.Nx,
+        lbParams.Ny,
+        lbParams.Q,
+        lbParams.LATTICE_VELOCITIES,
+        lbParams.LATTICE_WEIGHTS,
+        this->omegaShear,
+        this->omegaBulk
+    );
 }
 
 template<typename T>
@@ -146,7 +94,7 @@ void CollisionCHM<T>::doCollision(T* distribution, std::pair<unsigned int, unsig
     dim3 blockSize(threadsPerBlock.first, threadsPerBlock.second);
     dim3 gridSize(numBlocks.first, numBlocks.first);
 
-    doCollisionCHMCaller(distribution, deviceParams, gridSize, blockSize);
+    doCollisionCHMCaller(distribution, _params.getDeviceParams(), gridSize, blockSize);
 }
 
 template<typename T>

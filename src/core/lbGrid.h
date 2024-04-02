@@ -47,7 +47,6 @@ public:
     void allocateHostData();
     void allocateDeviceData();
     void prepareKernelParams();
-    void copyKernelParamsToDevice();
     void initializeDistributions();
     void copyToDevice();
     void copyToHost();

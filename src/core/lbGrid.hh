@@ -18,7 +18,6 @@ LBGrid<T>::LBGrid(
         std::unique_ptr<BoundaryConditionManager<T>>&& boundary
 ) : _lbModel(std::move(model)), _collisionModel(std::move(collision)), _gridGeometry(std::move(geometry)), _boundaryConditionManager(std::move(boundary)) {
     prepareKernelParams();
-    copyKernelParamsToDevice();
     allocateHostData();
     allocateDeviceData();
     initializeDistributions();
@@ -47,7 +46,7 @@ void LBGrid<T>::allocateDeviceData() {
 
 template<typename T>
 void LBGrid<T>::prepareKernelParams() {
-    // Own kernel parameters
+    // Own kernel parameters (and duplicate on device)
     _params.setValues(
         _lbModel->getD(),
         _gridGeometry->getGhostNx(),
@@ -64,42 +63,11 @@ void LBGrid<T>::prepareKernelParams() {
         (_gridGeometry->getGhostNy() + _threadsPerBlock.second - 1) / _threadsPerBlock.second
     );
 
-    // Kernel parameters of collision model
+    // Pass kernel parameters to collision model
     _collisionModel->prepareKernelParams(_params.getHostParams());
-    printf("1\n");
-    _collisionModel->copyKernelParamsToDevice();
-    printf("2\n");
 
-    // Kernel parameters of boundary conditions
-    _boundaryConditionManager->prepareKernelParamsAndCopyToDevice(_params.getHostParams(), _lbModel.get());
-}
-
-template<typename T>
-void LBGrid<T>::copyKernelParamsToDevice() {
-    // Allocate device memory for lattice velocities and copy data
-    int* deviceLatticeVelocities;
-    size_t sizeLatticeVelocities = _lbModel->getQ() * _lbModel->getD() * sizeof(int);
-    cudaErrorCheck(cudaMalloc(&deviceLatticeVelocities, sizeLatticeVelocities));
-    cudaErrorCheck(cudaMemcpy(deviceLatticeVelocities, _params.getHostParams().LATTICE_VELOCITIES, sizeLatticeVelocities, cudaMemcpyHostToDevice));
-
-    // Allocate device memory for lattice weights and copy data
-    T* deviceLatticeWeights;
-    size_t sizeLatticeWeights = _lbModel->getQ() * sizeof(T);
-    cudaErrorCheck(cudaMalloc(&deviceLatticeWeights, sizeLatticeWeights));
-    cudaErrorCheck(cudaMemcpy(deviceLatticeWeights, _params.getHostParams().LATTICE_WEIGHTS, sizeLatticeWeights, cudaMemcpyHostToDevice));
-
-    // Prepare the host-side copy of LBParams with device pointers
-    LBParams<T> paramsTemp = _params.getHostParams(); // Use a temporary host copy
-    paramsTemp.LATTICE_VELOCITIES = deviceLatticeVelocities;
-    paramsTemp.LATTICE_WEIGHTS = deviceLatticeWeights;
-
-    // Allocate memory for the LBParams struct on the device if not already allocated
-    if (_params.getDeviceParams() == nullptr) {
-        cudaErrorCheck(cudaMalloc(&(_params.getDeviceParams()), sizeof(LBParams<T>)));
-    }
-
-    // Copy the prepared LBParams (with device pointers) from the temporary host copy to the device
-    cudaErrorCheck(cudaMemcpy(_params.getDeviceParams(), &paramsTemp, sizeof(LBParams<T>), cudaMemcpyHostToDevice));
+    // Pass kernel parameters to boundary conditions
+    _boundaryConditionManager->prepareKernelParams(_params.getHostParams(), _lbModel.get());
 }
 
 template<typename T>

@@ -42,7 +42,7 @@ struct CollisionParamsCHM : public CollisionParamsBGK<T> {
 template<typename T>
 struct BoundaryParams : public LBParams<T> {
     unsigned int* OPPOSITE_POPULATION; 
-    T* wallVelocity;
+    T* WALL_VELOCITY;
     BoundaryLocation location;
 };
 
@@ -81,6 +81,9 @@ public:
         unsigned int ny
     );
 
+    /// Set wall velocity specifically and trigger allocateAndCopyToDevice
+    void setWallVelocity(T* WALL_VELOCITY);
+
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice();
 
@@ -91,7 +94,7 @@ public:
     virtual void cleanupDevice() = 0;
 
     /// Accessors for host and device params
-    ParamsType& getHostParams();
+    const ParamsType& getHostParams() const;
     ParamsType* getDeviceParams();
 };
 
@@ -110,8 +113,8 @@ public:
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* latticeVelocities,
-        T* latticeWeights
+        int* LATTICE_VELOCITIES,
+        T* LATTICE_WEIGHTS
     );
 
     /// Destructor
@@ -123,8 +126,8 @@ public:
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* latticeVelocities,
-        T* latticeWeights
+        int* LATTICE_VELOCITIES,
+        T* LATTICE_WEIGHTS
     );
 
     /// Allocates device memory and copies data from the host instance
@@ -152,8 +155,8 @@ public:
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* latticeVelocities,
-        T* latticeWeights,
+        int* LATTICE_VELOCITIES,
+        T* LATTICE_WEIGHTS,
         T omegaShear
     );
 
@@ -166,8 +169,8 @@ public:
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* latticeVelocities,
-        T* latticeWeights,
+        int* LATTICE_VELOCITIES,
+        T* LATTICE_WEIGHTS,
         T omegaShear
     );
 
@@ -196,8 +199,8 @@ public:
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* latticeVelocities,
-        T* latticeWeights,
+        int* LATTICE_VELOCITIES,
+        T* LATTICE_WEIGHTS,
         T omegaShear,
         T omegaBulk
     );
@@ -211,8 +214,8 @@ public:
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* latticeVelocities,
-        T* latticeWeights,
+        int* LATTICE_VELOCITIES,
+        T* LATTICE_WEIGHTS,
         T omegaShear,
         T omegaBulk
     );
@@ -242,29 +245,29 @@ public:
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* latticeVelocities,
-        T* latticeWeights,
+        int* LATTICE_VELOCITIES,
+        T* LATTICE_WEIGHTS,
         unsigned int* OPPOSITE_POPULATION,
-        T* wallVelocity,
+        T* WALL_VELOCITY,
         BoundaryLocation location
     );
 
     /// Destructor
     ~BoundaryParamsWrapper() override;
 
-    /// Set values and trigger allocateAndCopyToDevice
+    /// Set values and trigger trigger allocateAndCopyToDevice
     virtual void setValues(
         unsigned int dim,
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* latticeVelocities,
-        T* latticeWeights,
+        int* LATTICE_VELOCITIES,
+        T* LATTICE_WEIGHTS,
         unsigned int* OPPOSITE_POPULATION,
-        T* wallVelocity,
+        T* WALL_VELOCITY,
         BoundaryLocation location
     );
-
+    
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice() override;
 

@@ -26,11 +26,11 @@ std::string boundaryLocationToString(BoundaryLocation location) {
 template<typename T>
 class BoundaryCondition {
 protected:
+    /// location from enum class (only WEST, EAST, SOUTH, NORTH allowed)
     BoundaryLocation location;
 
     /// Parameters to pass to cuda kernels
-    BoundaryParams<T> hostParams;
-    BoundaryParams<T>* deviceParams = nullptr;
+    BoundaryParamsWrapper<T> _params;
 
     /// Cuda grid and block size
     unsigned int numBlocks;
@@ -43,8 +43,7 @@ public:
     ~BoundaryCondition();
 
     BoundaryLocation getLocation() const;
-    void prepareKernelParams(LBParams<T>* lbParams, LBModel<T>* lbModel);
-    void copyKernelParamsToDevice();
+    void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel);
     virtual void apply(T* lbField) = 0;
 };
 
@@ -72,12 +71,14 @@ public:
 
 template<typename T>
 class FixedVelocityBoundary : public BounceBack<T> {
+    /// Wall velocity
     std::vector<T> wallVelocity;
+
 public:
     /// Constructor
     FixedVelocityBoundary(BoundaryLocation loc, const std::vector<T>& velocity);
 
-    void prepareKernelParams(LBParams<T>* lbParams);
+    void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel);
 };
 
 
@@ -88,12 +89,13 @@ template<typename T>
 class BoundaryConditionManager {
     /// Map of location, name, boundary condition object
     std::map<BoundaryLocation, std::map<std::string, std::unique_ptr<BoundaryCondition<T>>>> boundaryConditions;
+
 public:
     /// Constructor
     BoundaryConditionManager();
 
     void addBoundaryCondition(const std::string& name, std::unique_ptr<BoundaryCondition<T>> condition);
-    void prepareKernelParamsAndCopyToDevice(LBParams<T>* lbParams, LBModel<T>* lbModel);
+    void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel);
     void apply(T* lbField);
     void print() const;
 };
