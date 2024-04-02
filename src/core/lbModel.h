@@ -1,8 +1,11 @@
 #ifndef LB_Model_H
 #define LB_Model_H
 
+#include <vector>
+#include <map>
 #include <cuda_runtime.h>
 
+#include "core/constants.h"
 
 /**********************/
 /***** Base class *****/
@@ -24,6 +27,9 @@ protected:
 
     /// pointer to array with opposite populations 
     unsigned int* _OPPOSITE_POPULATION;
+
+    /// New: Maps boundary names to indices in the velocity set
+    std::map<BoundaryLocation, std::vector<unsigned int>> _BOUNDARY_MAPPING;
 
 public:
     /// Constructor
@@ -61,6 +67,9 @@ public:
 
     /// Prints LB model details
     void print() const;
+    
+    /// Prints LB model details
+    void printBoundaryMapping() const;
 
     /// Provides access to the specific derived class type
     virtual LBModel<T>* getDerivedModel() const = 0;
@@ -95,6 +104,51 @@ public:
     
     /// Destructor
     ~D2Q9();
+
+    /// get the lattice velocity x-component corresponding to index i
+    virtual int getCX(unsigned int i) const override;
+
+    /// get the lattice velocity y-component corresponding to index i
+    virtual int getCY(unsigned int i) const override;
+
+    /// get the lattice weight corresponding to index i
+    virtual T getWEIGHT(unsigned int i) const override;
+    
+    /// Get the opposite population corresponding to index i
+    virtual unsigned int getOppositePopualation(unsigned int i) const;
+
+    /// Provides access to the specific derived class type
+    virtual LBModel<T>* getDerivedModel() const override;
+};
+
+/****************************************/
+/***** Derived class 02: D2Q5 model *****/
+/****************************************/
+template<typename T>
+class D2Q5 final : public LBModel<T> {
+
+///////////////////////////////////
+///                             ///
+/// D2Q5 Lattice configuration: ///
+///                             ///
+///           3                 ///
+///           |                 ///
+///           |                 ///
+///           |                 ///
+///     2-----0-----1           ///
+///           |                 ///
+///           |                 ///
+///           |                 ///
+///           4                 ///
+///                             ///
+///////////////////////////////////
+
+public:
+    /// Constructor
+    D2Q5();
+    
+    /// Destructor
+    ~D2Q5();
 
     /// get the lattice velocity x-component corresponding to index i
     virtual int getCX(unsigned int i) const override;

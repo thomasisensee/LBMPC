@@ -3,6 +3,7 @@
 
 #include <cuda_runtime.h>
 
+#include "constants.h"
 #include "boundaryConditions.h"
 #include "cuda/cudaErrorHandler.cuh"
 

@@ -13,6 +13,7 @@ include_directories(${CUDA_INCLUDE_DIRS})
 # Add source files
 set(SOURCES
     src/core/constants.h
+    src/core/constants.cpp
     src/core/cell.h
     src/core/cell.hh
     src/core/gridGeometry.h

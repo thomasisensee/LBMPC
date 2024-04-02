@@ -5,20 +5,10 @@
 #include <iostream>     // For std::cout
 #include <map>          // For std::map
 #include <memory>       // For std::unique_ptr
-#include <string>       // Also include this if you're using std::string
+#include <string>       // For std::string
 
-#include "core/kernelParameters.h"
-
-/// Transform BoundaryLocation members to strings for output
-std::string boundaryLocationToString(BoundaryLocation location) {
-    switch (location) {
-        case BoundaryLocation::WEST:    return "WEST";
-        case BoundaryLocation::EAST:    return "EAST";
-        case BoundaryLocation::SOUTH:   return "SOUTH";
-        case BoundaryLocation::NORTH:   return "NORTH";
-        default: return "UNKNOWN";
-    }
-}
+#include "constants.h"
+#include "kernelParameters.h"
 
 /**********************/
 /***** Base class *****/
