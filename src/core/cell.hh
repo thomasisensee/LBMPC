@@ -8,12 +8,12 @@ template<typename T>
 __device__ T Cell<T>::computePopulation(unsigned int l, const LBParams<T>*const params, T R, T U, T V) const {
     int cix = params->LATTICE_VELOCITIES[l*params->D];
     int ciy = params->LATTICE_VELOCITIES[l*params->D+1];
-    T cixcs2 = cix*cix-C_S_POW2;
-    T ciycs2 = ciy*ciy-C_S_POW2;
-    T firstOrder = C_S_POW2_INV*(U*cix+V*ciy);
-    T secondOrder = 0.5*C_S_POW4_INV*(cixcs2*U*U + ciycs2*V*V + 2.0*cix*ciy*U*V);
-    T thirdOrder = 0.5*C_S_POW6_INV*(cixcs2*ciy*U*U*V + ciycs2*cix*U*V*V);
-    T fourthOrder = 0.25*C_S_POW8_INV*(cixcs2*ciycs2*U*U*V*V);
+    T cixcs2 = cix * cix - C_S_POW2;
+    T ciycs2 = ciy * ciy - C_S_POW2;
+    T firstOrder = C_S_POW2_INV * (U * cix + V * ciy);
+    T secondOrder = 0.5 * C_S_POW4_INV * (cixcs2 * U * U + ciycs2 * V * V + 2.0 * cix * ciy * U * V);
+    T thirdOrder = 0.5 * C_S_POW6_INV * (cixcs2 * ciy * U * U * V + ciycs2 * cix * U * V * V);
+    T fourthOrder = 0.25 * C_S_POW8_INV * (cixcs2 * ciycs2 * U * U * V * V);
 
     return params->LATTICE_WEIGHTS[l] * R * (1.0 + firstOrder + secondOrder + thirdOrder + fourthOrder);
 }

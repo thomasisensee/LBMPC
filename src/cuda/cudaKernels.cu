@@ -16,14 +16,14 @@ __global__ void initializeDistributionsKernel(T* collision, const LBParams<T>* c
 
     unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
-    if (i>params->Nx || j > params->Ny) { return; }
+    if (i > params->Nx || j > params->Ny) { return; }
     
     unsigned int idx = pos(i, j, params->Nx);
     
     Cell<T> cell;
-    T R = 1;
-    T U = 0;
-    T V = 0;
+    T R = 1.0;
+    T U = 0.0;
+    T V = 0.0;
     
     cell.setEquilibriumDistribution(&collision[params->Q*idx], params, R, U, V);
 }
@@ -41,7 +41,7 @@ __global__ void doStreamingKernel(const T *const collision, T *streaming, const 
 
     unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
-    if (i<1 || i>params->Nx-1 || j<1 || j > params->Ny-1) { return; }
+    if (i < 1 || i >= params->Nx || j < 1 || j >= params->Ny) { return; }
 
     unsigned int idx = pos(i, j, params->Nx);
     unsigned int idxNeighbor;
@@ -67,7 +67,7 @@ __global__ void doCollisionCHMKernel(T* collision, const CollisionParamsCHM<T>* 
 
     unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
-    if (i<1 || i>params->Nx-1 || j<1 || j > params->Ny-1) { return; }
+    if (i < 1 || i >= params->Nx || j < 1 || j >= params->Ny) { return; }
 
     unsigned int idx = pos(i, j, params->Nx);
 
@@ -101,7 +101,7 @@ __device__ void applyBC(T* collision, const BoundaryParams<T>* const params, uns
         popRev = params->OPPOSITE_POPULATION[pop];
         cx = params->LATTICE_VELOCITIES[pop*params->D];
         cy = params->LATTICE_VELOCITIES[pop*params->D+1];
-        if ((int) i+cx < 0 || i+cx > params->Nx || (int) j+cy < 0 || j+cy > params->Ny) { continue; }
+        if ((int) i+cx < 0 || i+cx >= params->Nx || (int) j+cy < 0 || j+cy >= params->Ny) { continue; }
         idxNeighbor = pos(i+cx, j+cy, params->Nx);
         if (params->WALL_VELOCITY != nullptr) {
             dotProduct = cx*params->WALL_VELOCITY[0] + cy*params->WALL_VELOCITY[1];
@@ -165,4 +165,3 @@ void applyBounceBackCaller(T* deviceCollision, const BoundaryParams<T>* const pa
 }
 template void applyBounceBackCaller<float>(float* deviceCollision, const BoundaryParams<float>* const params, dim3 gridSize, dim3 blockSize);
 template void applyBounceBackCaller<double>(double* deviceCollision, const BoundaryParams<double>* const params, dim3 gridSize, dim3 blockSize);
-
