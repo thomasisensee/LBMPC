@@ -64,7 +64,7 @@ auto lbGrid = std::make_unique<LBGrid<T>>(
 // ========================
 LBFluidSimulation simulation = LBFluidSimulation<T>(std::move(lbGrid));
 
-//simulation.run();
+simulation.run();
 
 
 return 0;

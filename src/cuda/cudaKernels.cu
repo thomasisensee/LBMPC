@@ -68,9 +68,9 @@ __global__ void doCollisionCHMKernel(T* collision, const CollisionParamsCHM<T>* 
     unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
     if (i<1 || i>params->Nx-1 || j<1 || j > params->Ny-1) { return; }
-    
+
     unsigned int idx = pos(i, j, params->Nx);
-    
+
     Cell<T> cell;
     T R = cell.getZeroMoment(&collision[params->Q*idx], params);
     T U = cell.getVelocityX(&collision[params->Q*idx], params, R);
@@ -100,8 +100,9 @@ __global__ void applyBounceBackKernel(T* collision, const BoundaryParams<T>* con
         i = 0;
         j = threadIdx.x + blockIdx.x * blockDim.x;
         if (j > params->Ny-1) { return; }
-        
+
         idx = pos(i, j, params->Nx);
+        
         R = cell.getZeroMoment(&collision[params->Q*idx], params);
         //dotProduct = params->LATTICE_VELOCITIES[m][0]*params->wallVelocity[0]+LATTICE_VELOCITIES[m][1]*params->wallVelocity[1];
 /*

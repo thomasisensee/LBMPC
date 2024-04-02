@@ -9,58 +9,58 @@
 /**********************/
 /***** Base class *****/
 /**********************/
-template<typename T>
-LBModel<T>::LBModel(unsigned int d, unsigned int q) : _D(d), _Q(q) {}
+template<typename T, unsigned int Dim, unsigned int Q>
+LBModel<T, Dim, Q>::LBModel() {}
 
-template<typename T>
-LBModel<T>::~LBModel() {
+template<typename T, unsigned int Dim, unsigned int Q>
+LBModel<T, Dim, Q>::~LBModel() {
     delete[] this->_LATTICE_VELOCITIES;
     delete[] this->_LATTICE_WEIGHTS;
     delete[] this->_OPPOSITE_POPULATION;
 }
 
-template<typename T>
-unsigned int LBModel<T>::getD() const {
+template<typename T, unsigned int Dim, unsigned int Q>
+unsigned int LBModel<T, Dim, Q>::getD() const {
     return _D;
 }
 
-template<typename T>
-unsigned int LBModel<T>::getQ() const {
+template<typename T, unsigned int Dim, unsigned int Q>
+unsigned int LBModel<T, Dim, Q>::getQ() const {
     return _Q;
 }
 
-template<typename T>
-int* LBModel<T>::getLatticeVelocitiesPtr() const {
+template<typename T, unsigned int Dim, unsigned int Q>
+int* LBModel<T, Dim, Q>::getLatticeVelocitiesPtr() const {
     return _LATTICE_VELOCITIES;
 }
 
-template<typename T>
-T* LBModel<T>::getLatticeWeightsPtr() const {
+template<typename T, unsigned int Dim, unsigned int Q>
+T* LBModel<T, Dim, Q>::getLatticeWeightsPtr() const {
     return _LATTICE_WEIGHTS;
 }
 
-template<typename T>
-unsigned int* LBModel<T>::getOppositePopualationPtr() const {
+template<typename T, unsigned int Dim, unsigned int Q>
+unsigned int* LBModel<T, Dim, Q>::getOppositePopualationPtr() const {
     return _OPPOSITE_POPULATION;
 }
 
-template<typename T>
-void LBModel<T>::print() const {
+template<typename T, unsigned int Dim, unsigned int Q>
+void LBModel<T, Dim, Q>::print() const {
     std::cout << "============================== LB Model Details ==============================" << std::endl;
     std::cout << "==                                   D" << getD() << "Q" << getQ() << "                                    ==" << std::endl;
-    std::cout << "== Cx ="; for (int i=0; i<this->_Q; ++i) {std::cout << "\t" << _LATTICE_VELOCITIES[i*this->_D]; } std::cout << "    ==" << std::endl;
-    std::cout << "== Cy ="; for (int i=0; i<this->_Q; ++i) {std::cout << "\t" << _LATTICE_VELOCITIES[i*this->_D+1]; } std::cout << "   ==" << std::endl;
-    std::cout << "== w  ="; for (int i=0; i<this->_Q; ++i) {std::cout << "\t" << _LATTICE_WEIGHTS[i]; } std::cout << "   ==" << std::endl;
-    std::cout << "== op ="; for (int i=0; i<this->_Q; ++i) {std::cout << "\t" << _OPPOSITE_POPULATION[i]; } std::cout << "   ==" << std::endl;
+    std::cout << "== Cx ="; for (int i=0; i<Q; ++i) {std::cout << "\t" << _LATTICE_VELOCITIES[i*Dim]; } std::cout << "    ==" << std::endl;
+    std::cout << "== Cy ="; for (int i=0; i<Q; ++i) {std::cout << "\t" << _LATTICE_VELOCITIES[i*Dim+1]; } std::cout << "   ==" << std::endl;
+    std::cout << "== w  ="; for (int i=0; i<Q; ++i) {std::cout << "\t" << _LATTICE_WEIGHTS[i]; } std::cout << "   ==" << std::endl;
+    std::cout << "== op ="; for (int i=0; i<Q; ++i) {std::cout << "\t" << _OPPOSITE_POPULATION[i]; } std::cout << "   ==" << std::endl;
     std::cout << "===============================================================================\n" << std::endl;
 }
 
 
-/***************************/
-/***** Derived classes *****/
-/***************************/
+/****************************************/
+/***** Derived class 01: D2Q9 model *****/
+/****************************************/
 template<typename T>
-D2Q9<T>::D2Q9() : LBModel<T>(2, 9) {
+D2Q9<T>::D2Q9() {
     this->_LATTICE_WEIGHTS = new T[9];
     this->_LATTICE_WEIGHTS[0] = 4.0/9.0;
     this->_LATTICE_WEIGHTS[1] = 1.0/9.0;
@@ -116,7 +116,7 @@ unsigned int D2Q9<T>::getOppositePopualation(unsigned int i) const  {
 }
 
 template<typename T>
-__host__ LBModel<T>* D2Q9<T>::getDerivedModel() const {
+LBModel<T, 2, 9>* D2Q9<T>::getDerivedModel() const {
     return new D2Q9<T>(*this); // Return a pointer to a new D2Q9 object
 }
 

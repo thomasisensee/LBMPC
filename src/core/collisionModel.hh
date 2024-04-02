@@ -49,7 +49,7 @@ void CollisionBGK<T>::doCollision(T* distribution, std::pair<unsigned int, unsig
     dim3 blockSize(threadsPerBlock.first, threadsPerBlock.second);
     dim3 gridSize(numBlocks.first, numBlocks.first);
     
-    //doCollisionBGKCaller(distribution, deviceParams, gridSize, blockSize);  
+    doCollisionBGKCaller(distribution, _params.getDeviceParams(), gridSize, blockSize);  
 }
 
 template<typename T>

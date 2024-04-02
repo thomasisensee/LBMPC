@@ -32,7 +32,7 @@ public:
 /***** Derived classes *****/
 /***************************/
 template<typename T>
-class LBFluidSimulation : public Simulation<T> {
+class LBFluidSimulation final : public Simulation<T> {
 public:
     /// Constructor
     LBFluidSimulation(std::unique_ptr<LBGrid<T>>&& lbgrid);
