@@ -28,6 +28,7 @@ void BoundaryCondition<T>::prepareKernelParams(const LBParams<T>& lbParams, cons
         lbParams.Q,
         lbParams.LATTICE_VELOCITIES,
         lbParams.LATTICE_WEIGHTS,
+        lbModel->getPopualationPtr(this->getLocation()),
         lbModel->getOppositePopualationPtr(),
         nullptr,
         this->_location

@@ -57,13 +57,16 @@ public:
     virtual unsigned int getOppositePopualation(unsigned int i) const = 0;
 
     /// Get pointer to LATTICE_VELOCITIES
-    int* getLatticeVelocitiesPtr() const;
+    const int* getLatticeVelocitiesPtr() const;
 
     /// Get pointer to LATTICE_WEIGHTS
-    T* getLatticeWeightsPtr() const;
+    const T* getLatticeWeightsPtr() const;
+
+    /// Get pointer to POPULATION
+    const unsigned int* getPopualationPtr(BoundaryLocation location) const;
     
     /// Get pointer to OPPOSITE_POPULATION
-    unsigned int* getOppositePopualationPtr() const;
+    const unsigned int* getOppositePopualationPtr() const;
 
     /// Prints LB model details
     void print() const;

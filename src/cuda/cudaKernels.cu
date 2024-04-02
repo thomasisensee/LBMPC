@@ -87,13 +87,39 @@ void doCollisionCHMCaller(T* deviceCollision, const CollisionParamsCHM<T>* const
 template void doCollisionCHMCaller<float>(float* deviceCollision, const CollisionParamsCHM<float>* const params, dim3 gridSize, dim3 blockSize);
 template void doCollisionCHMCaller<double>(double* deviceCollision, const CollisionParamsCHM<double>* const params, dim3 gridSize, dim3 blockSize);
 
+template<typename T>
+__device__ void applyBC(T* collision, const BoundaryParams<T>* const params, unsigned int i, unsigned int j) {
+    unsigned int idx, idxNeighbor, pop, popRev;
+    int cx, cy;
+    Cell<T> cell;
+    T R, dotProduct;
+
+    idx = pos(i, j, params->Nx);
+        
+    for (int l = 0; l<3; ++l) {
+        pop = params->POPULATION[l];
+        popRev = params->OPPOSITE_POPULATION[pop];
+        cx = params->LATTICE_VELOCITIES[pop*params->D];
+        cy = params->LATTICE_VELOCITIES[pop*params->D+1];
+        if ((int) i+cx < 0 || i+cx > params->Nx || (int) j+cy < 0 || j+cy > params->Ny) { continue; }
+        idxNeighbor = pos(i+cx, j+cy, params->Nx);
+        if (params->WALL_VELOCITY != nullptr) {
+            dotProduct = cx*params->WALL_VELOCITY[0] + cy*params->WALL_VELOCITY[1];
+        } else {
+            dotProduct = 0.0;
+        }
+        R = cell.getZeroMoment(&collision[params->Q*idxNeighbor], params);
+        printf("(%d,%d) -> (%d,%d) | pop = %d | popRev = %d | CX = %d, CY = %d |idxNeibor = %d | R = %g | dotProduct = %g\n",i,j,i+cx,j+cy,pop,popRev,params->LATTICE_VELOCITIES[pop*params->D],params->LATTICE_VELOCITIES[pop*params->D+1],idxNeighbor,R,dotProduct);
+        
+        collision[params->Q*idx + pop] = collision[params->Q*idxNeighbor + popRev] + 2.0*params->LATTICE_WEIGHTS[pop] * R * C_S_POW2_INV * dotProduct;
+    }
+       
+}
 
 template<typename T>
 __global__ void applyBounceBackKernel(T* collision, const BoundaryParams<T>* const params) {
 
-    unsigned int i, j, idx;
-    Cell<T> cell;
-    T R, dotProduct;
+    unsigned int i, j;
 
     switch(params->location) {
     case BoundaryLocation::WEST:
@@ -101,23 +127,11 @@ __global__ void applyBounceBackKernel(T* collision, const BoundaryParams<T>* con
         j = threadIdx.x + blockIdx.x * blockDim.x;
         if (j > params->Ny-1) { return; }
 
-        idx = pos(i, j, params->Nx);
-        
-        R = cell.getZeroMoment(&collision[params->Q*idx], params);
-        //dotProduct = params->LATTICE_VELOCITIES[m][0]*params->wallVelocity[0]+LATTICE_VELOCITIES[m][1]*params->wallVelocity[1];
-/*
-        	for(l=0; l<3; l++)
-			{	
-				m = TREAT_BOUNDARY_INDICES[0][l];
-				n = TREAT_BOUNDARY_INDICES_INVERSE[0][l];
-				density=0.0;
-				ComputeDensity(&d_CollideV[Q_LBM*pos(i+LATTICE_VELOCITIES[m][0],j+LATTICE_VELOCITIES[m][1])],&density);
-				dot_product=LATTICE_VELOCITIES[m][0]*(*Par).BC_V.u_WEST+LATTICE_VELOCITIES[m][1]*(*Par).BC_V.v_WEST;
-
-				d_CollideV[Q_LBM*pos(i,j)+m] = d_CollideV[Q_LBM*pos(i+LATTICE_VELOCITIES[m][0],j+LATTICE_VELOCITIES[m][1])+n]+2.0*LATTICE_WEIGHTS[m]*density*C_S_POW2_INV*dot_product;
-			}
-*/
+        applyBC(collision, params, i, j);
         return;
+        
+        
+        /*
     case BoundaryLocation::EAST:
         i = params->Nx+1;
         j = threadIdx.x + blockIdx.x * blockDim.x;
@@ -136,9 +150,10 @@ __global__ void applyBounceBackKernel(T* collision, const BoundaryParams<T>* con
         i = threadIdx.x + blockIdx.x * blockDim.x;
         j = params->Ny-1;
         if (i > params->Ny-1) { return; }
-        
+
         idx = pos(i, j, params->Nx);
         return;
+       */ 
     }
 
 }

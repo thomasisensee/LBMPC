@@ -25,6 +25,7 @@ SetDevice();
 // ============================================
 auto lbModel = std::make_unique<D2Q9<T>>(); // Create instances of the components. Since we're passing these to LBMGrid which takes ownership, we use std::make_unique to create unique_ptr instances.
 lbModel->print();
+lbModel->printBoundaryMapping();
 
 T omegaShear = 0.7;
 T omegaBulk = omegaShear;

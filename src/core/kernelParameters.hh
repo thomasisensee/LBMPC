@@ -39,8 +39,14 @@ void ParamsWrapper<T, ParamsType>::setValues(
 
 
 template<typename T, typename ParamsType>
-void ParamsWrapper<T, ParamsType>::setWallVelocity(T* WALL_VELOCITY) {
-    this->hostParams.WALL_VELOCITY = WALL_VELOCITY;
+void ParamsWrapper<T, ParamsType>::setWallVelocity(const T* WALL_VELOCITY) {
+
+    // Clean up existing data
+    delete[] this->hostParams.WALL_VELOCITY;
+    
+    // Assign new deep copies
+    this->hostParams.WALL_VELOCITY = new int[this->hostParams.Q * this->hostParams.D];
+    std::copy(WALL_VELOCITY, WALL_VELOCITY + (this->hostParams.Q * this->hostParams.D), this->hostParams.LATTICE_VELOCITIES);
 
     allocateAndCopyToDevice();
 }
@@ -107,8 +113,8 @@ LBParamsWrapper<T>::LBParamsWrapper(
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS
     ) {
     setValues(dim, nx, ny, q, LATTICE_VELOCITIES, LATTICE_WEIGHTS);
 }
@@ -122,8 +128,8 @@ void LBParamsWrapper<T>::setValues(
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS
     ) {
 
     // Clean up existing data
@@ -185,8 +191,8 @@ CollisionParamsBGKWrapper<T>::CollisionParamsBGKWrapper(
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS,
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS,
         T omegaShear
     ) {
     setValues(dim, nx, ny, q, LATTICE_VELOCITIES, LATTICE_WEIGHTS, omegaShear);
@@ -201,8 +207,8 @@ void CollisionParamsBGKWrapper<T>::setValues(
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS,
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS,
         T omegaShear
     ) {
     // Clean up existing data
@@ -265,8 +271,8 @@ CollisionParamsCHMWrapper<T>::CollisionParamsCHMWrapper(
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS,
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS,
         T omegaShear,
         T omegaBulk
     ) {
@@ -282,8 +288,8 @@ void CollisionParamsCHMWrapper<T>::setValues(
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS,
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS,
         T omegaShear,
         T omegaBulk
     ) {
@@ -348,13 +354,14 @@ BoundaryParamsWrapper<T>::BoundaryParamsWrapper(
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS,
-        unsigned int* OPPOSITE_POPULATION,
-        T* WALL_VELOCITY,
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS,
+        const unsigned int* POPULATION,
+        const unsigned int* OPPOSITE_POPULATION,
+        const T* WALL_VELOCITY,
         BoundaryLocation location
     ) {
-    setValues(dim, nx, ny, q, LATTICE_VELOCITIES, LATTICE_WEIGHTS, OPPOSITE_POPULATION, WALL_VELOCITY, location);
+    setValues(dim, nx, ny, q, LATTICE_VELOCITIES, LATTICE_WEIGHTS, POPULATION, OPPOSITE_POPULATION, WALL_VELOCITY, location);
 }
 
 template<typename T>
@@ -371,10 +378,11 @@ void BoundaryParamsWrapper<T>::setValues(
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS,
-        unsigned int* OPPOSITE_POPULATION,
-        T* WALL_VELOCITY,
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS,
+        const unsigned int* POPULATION,
+        const unsigned int* OPPOSITE_POPULATION,
+        const T* WALL_VELOCITY,
         BoundaryLocation location
     ) {
 
@@ -382,6 +390,7 @@ void BoundaryParamsWrapper<T>::setValues(
     delete[] this->hostParams.LATTICE_VELOCITIES;
     delete[] this->hostParams.LATTICE_WEIGHTS;
     delete[] this->hostParams.OPPOSITE_POPULATION;
+    delete[] this->hostParams.POPULATION;
     delete[] this->hostParams.WALL_VELOCITY;
 
     // Assign new deep copies
@@ -397,6 +406,13 @@ void BoundaryParamsWrapper<T>::setValues(
     this->hostParams.LATTICE_WEIGHTS = new T[q];
     std::copy(LATTICE_WEIGHTS, LATTICE_WEIGHTS + q, this->hostParams.LATTICE_WEIGHTS);
 
+    unsigned int lengthPOPULATION;
+    if      (dim == 2 && q == 9) { lengthPOPULATION = 3; }
+    else if (dim == 2 && q == 5) { lengthPOPULATION = 1; }
+    else { lengthPOPULATION = 0; }
+    this->hostParams.POPULATION = new unsigned int[lengthPOPULATION];
+    std::copy(POPULATION, POPULATION + lengthPOPULATION, this->hostParams.POPULATION);
+    
     this->hostParams.OPPOSITE_POPULATION = new unsigned int[q];
     std::copy(OPPOSITE_POPULATION, OPPOSITE_POPULATION + q, this->hostParams.OPPOSITE_POPULATION);
 
@@ -418,12 +434,6 @@ void BoundaryParamsWrapper<T>::allocateAndCopyToDevice() {
     cudaErrorCheck(cudaMalloc(&deviceLatticeVelocities, sizeLatticeVelocities));
     cudaErrorCheck(cudaMemcpy(deviceLatticeVelocities, this->hostParams.LATTICE_VELOCITIES, sizeLatticeVelocities, cudaMemcpyHostToDevice));
 
-    // Allocate device memory for opposite populations and copy data
-    unsigned int* deviceOppositePopulation;
-    size_t sizeOppositePopulation = this->hostParams.Q * this->hostParams.D * sizeof(unsigned int);
-    cudaErrorCheck(cudaMalloc(&deviceOppositePopulation, sizeOppositePopulation));
-    cudaErrorCheck(cudaMemcpy(deviceOppositePopulation, this->hostParams.OPPOSITE_POPULATION, sizeOppositePopulation, cudaMemcpyHostToDevice));
-
     // Allocate device memory for lattice weights and copy data
     T* deviceLatticeWeights;
     size_t sizeLatticeWeights = this->hostParams.Q * sizeof(T);
@@ -438,11 +448,27 @@ void BoundaryParamsWrapper<T>::allocateAndCopyToDevice() {
         cudaErrorCheck(cudaMemcpy(deviceWallVelocity, this->hostParams.WALL_VELOCITY, sizeWallVelocity, cudaMemcpyHostToDevice));
     }
 
+    // Allocate device memory for opposite populations and copy data
+    unsigned int* deviceOppositePopulation;
+    size_t sizeOppositePopulation = this->hostParams.Q * this->hostParams.D * sizeof(unsigned int);
+    cudaErrorCheck(cudaMalloc(&deviceOppositePopulation, sizeOppositePopulation));
+    cudaErrorCheck(cudaMemcpy(deviceOppositePopulation, this->hostParams.OPPOSITE_POPULATION, sizeOppositePopulation, cudaMemcpyHostToDevice));
+
+    // Allocate device memory for opposite populations and copy data
+    unsigned int* devicePopulation;
+    size_t sizePopulation;
+    if      (this->hostParams.D == 2 && this->hostParams.Q == 9) { sizePopulation = 3 * sizeof(unsigned int); }
+    else if (this->hostParams.D == 2 && this->hostParams.Q == 5) { sizePopulation =     sizeof(unsigned int); }
+    else                                                         { sizePopulation =     sizeof(unsigned int); }
+    cudaErrorCheck(cudaMalloc(&devicePopulation, sizePopulation));
+    cudaErrorCheck(cudaMemcpy(devicePopulation, this->hostParams.POPULATION, sizePopulation, cudaMemcpyHostToDevice));
+
     // Prepare the host-side copy of LBParams with device pointers
     BoundaryParams<T> paramsTemp    = this->hostParams; // Use a temporary host copy
     paramsTemp.LATTICE_VELOCITIES   = deviceLatticeVelocities;
-    paramsTemp.OPPOSITE_POPULATION  = deviceOppositePopulation;
     paramsTemp.LATTICE_WEIGHTS      = deviceLatticeWeights;
+    paramsTemp.POPULATION           = devicePopulation;
+    paramsTemp.OPPOSITE_POPULATION  = deviceOppositePopulation;
     paramsTemp.WALL_VELOCITY        = deviceWallVelocity;
 
     // Allocate memory for the LBParams struct on the device if not already allocated
@@ -456,6 +482,7 @@ void BoundaryParamsWrapper<T>::allocateAndCopyToDevice() {
 
 template<typename T>
 void BoundaryParamsWrapper<T>::cleanupHost() {
+    delete[] this->hostParams.POPULATION;
     delete[] this->hostParams.OPPOSITE_POPULATION;
     delete[] this->hostParams.WALL_VELOCITY;
 }
@@ -469,6 +496,7 @@ void BoundaryParamsWrapper<T>::cleanupDevice() {
     cudaErrorCheck(cudaMemcpy(&paramsTemp, this->deviceParams, sizeof(BoundaryParams<T>), cudaMemcpyDeviceToHost));
 
     // Use the pointers from the temp copy to free device memory
+    cudaFree(paramsTemp.POPULATION);
     cudaFree(paramsTemp.OPPOSITE_POPULATION);
     cudaFree(paramsTemp.WALL_VELOCITY);
 

@@ -30,17 +30,27 @@ unsigned int LBModel<T>::getQ() const {
 }
 
 template<typename T>
-int* LBModel<T>::getLatticeVelocitiesPtr() const {
+const int* LBModel<T>::getLatticeVelocitiesPtr() const {
     return _LATTICE_VELOCITIES;
 }
 
 template<typename T>
-T* LBModel<T>::getLatticeWeightsPtr() const {
+const T* LBModel<T>::getLatticeWeightsPtr() const {
     return _LATTICE_WEIGHTS;
 }
 
 template<typename T>
-unsigned int* LBModel<T>::getOppositePopualationPtr() const {
+const unsigned int* LBModel<T>::getPopualationPtr(BoundaryLocation location) const {
+// Check if the boundary location exists in the mapping and if the vector is not empty
+    auto it = this->_BOUNDARY_MAPPING.find(location);
+    if (it != this->_BOUNDARY_MAPPING.end() && !it->second.empty()) {
+        return it->second.data();
+    }
+    return nullptr; // Return nullptr if the location does not exist or the vector is empty
+}
+
+template<typename T>
+const unsigned int* LBModel<T>::getOppositePopualationPtr() const {
     return _OPPOSITE_POPULATION;
 }
 
@@ -57,15 +67,16 @@ void LBModel<T>::print() const {
 
 template<typename T>
 void LBModel<T>::printBoundaryMapping() const {
+    std::cout << "============ LB Model boundary populations ============" << std::endl;
     for (const auto& pair : _BOUNDARY_MAPPING) {
-        std::cout << boundaryLocationToString(pair.first) << ":\t";
+        std::cout << "== " << boundaryLocationToString(pair.first) << ":\t";
         
         for (unsigned int index : pair.second) {
             std::cout << index << " ";
         }
-        
-        std::cout << std::endl; // End line after printing all indices for a boundary
+    std::cout << std::endl;       
     }
+    std::cout << "=======================================================" << std::endl; 
 }
 
 

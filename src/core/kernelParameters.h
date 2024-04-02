@@ -52,7 +52,8 @@ struct CollisionParamsCHM : public CollisionParamsBGK<T> {
 /********************************************/
 template<typename T>
 struct BoundaryParams : public LBParams<T> {
-    unsigned int* OPPOSITE_POPULATION   = nullptr; 
+    unsigned int* OPPOSITE_POPULATION   = nullptr;
+    unsigned int* POPULATION            = nullptr;
     T* WALL_VELOCITY                    = nullptr;
     BoundaryLocation location;
 };
@@ -93,7 +94,7 @@ public:
     );
 
     /// Set wall velocity specifically and trigger allocateAndCopyToDevice
-    void setWallVelocity(T* WALL_VELOCITY);
+    void setWallVelocity(const T* WALL_VELOCITY);
 
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice();
@@ -124,8 +125,8 @@ public:
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS
     );
 
     /// Destructor
@@ -137,8 +138,8 @@ public:
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS
     );
 
     /// Allocates device memory and copies data from the host instance
@@ -160,8 +161,8 @@ public:
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS,
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS,
         T omegaShear
     );
 
@@ -174,8 +175,8 @@ public:
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS,
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS,
         T omegaShear
     );
 
@@ -198,8 +199,8 @@ public:
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS,
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS,
         T omegaShear,
         T omegaBulk
     );
@@ -213,8 +214,8 @@ public:
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS,
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS,
         T omegaShear,
         T omegaBulk
     );
@@ -238,10 +239,11 @@ public:
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS,
-        unsigned int* OPPOSITE_POPULATION,
-        T* WALL_VELOCITY,
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS,
+        const unsigned int* POPULATION,
+        const unsigned int* OPPOSITE_POPULATION,
+        const T* WALL_VELOCITY,
         BoundaryLocation location
     );
 
@@ -254,10 +256,11 @@ public:
         unsigned int nx,
         unsigned int ny,
         unsigned int q,
-        int* LATTICE_VELOCITIES,
-        T* LATTICE_WEIGHTS,
-        unsigned int* OPPOSITE_POPULATION,
-        T* WALL_VELOCITY,
+        const int* LATTICE_VELOCITIES,
+        const T* LATTICE_WEIGHTS,
+        const unsigned int* POPULATION,           // Populations that have to be set when boundary condition are applied
+        const unsigned int* OPPOSITE_POPULATION,  // Opposite populations for each Q populations
+        const T* WALL_VELOCITY,
         BoundaryLocation location
     );
     
