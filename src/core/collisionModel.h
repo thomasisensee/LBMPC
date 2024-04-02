@@ -13,7 +13,7 @@ template<typename T>
 class CollisionModel {
 protected:
     /// Relaxation parameter associated with shear viscosity
-    const T omegaShear;
+    const T _omegaShear;
 
 public:
     /// Constructor
@@ -66,7 +66,7 @@ template<typename T>
 class CollisionCHM : public CollisionModel<T> { // only implemented for D2Q9 lattices
 private:
     /// Relaxation parameter associated with bulk viscosity
-    const T omegaBulk;
+    const T _omegaBulk;
 
     /// Parameters to pass to cuda kernels
     CollisionParamsCHMWrapper<T> _params;

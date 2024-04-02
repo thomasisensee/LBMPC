@@ -13,11 +13,11 @@
 /***** Base class *****/
 /**********************/
 template<typename T>
-CollisionModel<T>::CollisionModel(T omega) : omegaShear(omega) {}
+CollisionModel<T>::CollisionModel(T omega) : _omegaShear(omega) {}
 
 template<typename T>
 T CollisionModel<T>::getOmegaShear() const {
-    return this->omegaShear;
+    return this->_omegaShear;
 }
 
 
@@ -40,7 +40,7 @@ void CollisionBGK<T>::prepareKernelParams(const LBParams<T>& lbParams) {
         lbParams.Q,
         lbParams.LATTICE_VELOCITIES,
         lbParams.LATTICE_WEIGHTS,
-        this->omegaShear
+        this->_omegaShear
     );
 }
 
@@ -64,14 +64,14 @@ void CollisionBGK<T>::print() {
 /***** Derived class 02: CHM Collision model *****/
 /*************************************************/
 template<typename T>
-CollisionCHM<T>::CollisionCHM(T omegaS, T omegaB) : CollisionModel<T>(omegaS), omegaBulk(omegaB) {}
+CollisionCHM<T>::CollisionCHM(T omegaS, T omegaB) : CollisionModel<T>(omegaS), _omegaBulk(omegaB) {}
 
 template<typename T>
 CollisionCHM<T>::~CollisionCHM() {}
 
 template<typename T>
 T CollisionCHM<T>::getOmegaBulk() const {
-    return this->omegaBulk;
+    return this->_omegaBulk;
 }
 
 template<typename T>

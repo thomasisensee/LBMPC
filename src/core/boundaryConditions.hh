@@ -10,14 +10,14 @@
 /***** Base class *****/
 /**********************/
 template<typename T>
-BoundaryCondition<T>::BoundaryCondition(BoundaryLocation loc) : location(loc) {}
+BoundaryCondition<T>::BoundaryCondition(BoundaryLocation loc) : _location(loc) {}
 
 template<typename T>
 BoundaryCondition<T>::~BoundaryCondition() {}
 
 template<typename T>
 BoundaryLocation BoundaryCondition<T>::getLocation() const {
-    return location;
+    return _location;
 }
 
 template<typename T>
@@ -30,23 +30,23 @@ void BoundaryCondition<T>::prepareKernelParams(const LBParams<T>& lbParams, cons
         lbParams.Q,
         lbParams.LATTICE_VELOCITIES,
         lbParams.LATTICE_WEIGHTS,
-        lbModel->OPPOSITE_POPULATION,
+        lbModel->getOppositePopualationPtr(),
         nullptr,
-        this->location
+        this->_location
     );
 
     // Set block and grid size for cuda kernel execution
-    this->threadsPerBlock = THREADS_PER_BLOCK_DIMENSION*THREADS_PER_BLOCK_DIMENSION;
-    if (this->location == BoundaryLocation::EAST || this->location == BoundaryLocation::WEST) {
-        this->numBlocks = (lbParams.Ny + this->threadsPerBlock - 1) / this->threadsPerBlock;
+    this->_threadsPerBlock = THREADS_PER_BLOCK_DIMENSION*THREADS_PER_BLOCK_DIMENSION;
+    if (this->_location == BoundaryLocation::EAST || this->_location == BoundaryLocation::WEST) {
+        this->_numBlocks = (lbParams.Ny + this->_threadsPerBlock - 1) / this->_threadsPerBlock;
     } else {
-        this->numBlocks = (lbParams.Nx + this->threadsPerBlock - 1) / this->threadsPerBlock;
+        this->_numBlocks = (lbParams.Nx + this->_threadsPerBlock - 1) / this->_threadsPerBlock;
     }
 }
 
-/***************************/
-/***** Derived classes *****/
-/***************************/
+/**************************************/
+/***** Derived class 01: Periodic *****/
+/**************************************/
 template<typename T>
 PeriodicBoundary<T>::PeriodicBoundary(BoundaryLocation loc) : BoundaryCondition<T>(loc) {}
 
@@ -55,18 +55,24 @@ void PeriodicBoundary<T>::apply(T* lbmField) {
 
 }
 
+/*****************************************/
+/***** Derived class 02: Bounce Back *****/
+/*****************************************/
 template<typename T>
 BounceBack<T>::BounceBack(BoundaryLocation loc) : BoundaryCondition<T>(loc) {}
 
 template<typename T>
 void BounceBack<T>::apply(T* lbmField) {
-    dim3 blockSize(this->threadsPerBlock);
-    dim3 gridSize(this->numBlocks);
+    dim3 blockSize(this->_threadsPerBlock);
+    dim3 gridSize(this->_numBlocks);
     applyBounceBackCaller(lbmField, this->_params.getDeviceParams(), gridSize, blockSize);
 }
 
+/**********************************************************/
+/***** Derived class 03: Fixed Velocity (Bounce Back) *****/
+/**********************************************************/
 template<typename T>
-FixedVelocityBoundary<T>::FixedVelocityBoundary(BoundaryLocation loc, const std::vector<T>& velocity) : BounceBack<T>(loc), wallVelocity(velocity) {}
+FixedVelocityBoundary<T>::FixedVelocityBoundary(BoundaryLocation loc, const std::vector<T>& velocity) : BounceBack<T>(loc), _wallVelocity(velocity) {}
 
 template<typename T>
 void FixedVelocityBoundary<T>::prepareKernelParams(const LBParams<T>& lbmParams, const LBModel<T>* lbModel) {
@@ -126,4 +132,5 @@ void BoundaryConditionManager<T>::print() const {
     }
     std::cout << "==================================\n" << std::endl;
 }
+
 #endif // BOUNDARY_CONDITIONS_HH

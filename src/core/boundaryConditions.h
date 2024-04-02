@@ -12,10 +12,10 @@
 /// Transform BoundaryLocation members to strings for output
 std::string boundaryLocationToString(BoundaryLocation location) {
     switch (location) {
-        case BoundaryLocation::EAST: return "EAST";
-        case BoundaryLocation::WEST: return "WEST";
-        case BoundaryLocation::SOUTH: return "SOUTH";
-        case BoundaryLocation::NORTH: return "NORTH";
+        case BoundaryLocation::WEST:    return "WEST";
+        case BoundaryLocation::EAST:    return "EAST";
+        case BoundaryLocation::SOUTH:   return "SOUTH";
+        case BoundaryLocation::NORTH:   return "NORTH";
         default: return "UNKNOWN";
     }
 }
@@ -27,14 +27,14 @@ template<typename T>
 class BoundaryCondition {
 protected:
     /// location from enum class (only WEST, EAST, SOUTH, NORTH allowed)
-    BoundaryLocation location;
+    BoundaryLocation _location;
 
     /// Parameters to pass to cuda kernels
     BoundaryParamsWrapper<T> _params;
 
     /// Cuda grid and block size
-    unsigned int numBlocks;
-    unsigned int threadsPerBlock;
+    unsigned int _numBlocks;
+    unsigned int _threadsPerBlock;
 public:
     /// Constructor
     BoundaryCondition(BoundaryLocation loc);
@@ -48,9 +48,9 @@ public:
 };
 
 
-/***************************/
-/***** Derived classes *****/
-/***************************/
+/**************************************/
+/***** Derived class 01: Periodic *****/
+/**************************************/
 template<typename T>
 class PeriodicBoundary : public BoundaryCondition<T> {
 public:
@@ -60,6 +60,9 @@ public:
     void apply(T* lbField) override;
 };
 
+/*****************************************/
+/***** Derived class 02: Bounce Back *****/
+/*****************************************/
 template<typename T>
 class BounceBack : public BoundaryCondition<T> {
 public:
@@ -69,10 +72,13 @@ public:
     void apply(T* lbField) override;
 };
 
+/**********************************************************/
+/***** Derived class 03: Fixed Velocity (Bounce Back) *****/
+/**********************************************************/
 template<typename T>
 class FixedVelocityBoundary : public BounceBack<T> {
     /// Wall velocity
-    std::vector<T> wallVelocity;
+    std::vector<T> _wallVelocity;
 
 public:
     /// Constructor

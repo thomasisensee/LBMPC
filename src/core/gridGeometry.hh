@@ -34,6 +34,11 @@ unsigned int GridGeometry2D<T>::getGhostNy() const {
 }
 
 template<typename T>
+unsigned int GridGeometry2D<T>::getVolume() const {
+    return _nX*_nY;
+}
+
+template<typename T>
 unsigned int GridGeometry2D<T>::getGhostVolume() const {
     return (_nX+2)*(_nY+2);
 }

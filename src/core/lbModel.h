@@ -9,20 +9,22 @@
 /**********************/
 template<typename T>
 class LBModel {
-public:
+protected:
     /// Dimension
-    const unsigned int D;
+    const unsigned int _D;
 
     /// Number of velocities in velocity set
-    const unsigned int Q;
+    const unsigned int _Q;
 
     /// pointer to array with lattice velocities
-    int* LATTICE_VELOCITIES;
-    
-    unsigned int* OPPOSITE_POPULATION;
+    int* _LATTICE_VELOCITIES;
 
     /// pointer to array with lattice weights
-    T* LATTICE_WEIGHTS;
+    T* _LATTICE_WEIGHTS;
+
+    /// pointer to array with opposite populations 
+    unsigned int* _OPPOSITE_POPULATION;
+
 public:
     /// Constructor
     LBModel(unsigned int d, unsigned int q);
@@ -44,12 +46,18 @@ public:
 
     /// Get the lattice weight corresponding to index i
     virtual T getWEIGHT(unsigned int i) const = 0;
+    
+    /// Get the opposite population corresponding to index i
+    virtual unsigned int getOppositePopualation(unsigned int i) const = 0;
 
     /// Get pointer to LATTICE_VELOCITIES
     int* getLatticeVelocitiesPtr() const;
 
     /// Get pointer to LATTICE_WEIGHTS
     T* getLatticeWeightsPtr() const;
+    
+    /// Get pointer to OPPOSITE_POPULATION
+    unsigned int* getOppositePopualationPtr() const;
 
     /// Prints LB model details
     void print() const;
@@ -82,8 +90,11 @@ class D2Q9 : public LBModel<T> {
 ///////////////////////////////////
 
 public:
-    // Constructor
+    /// Constructor
     D2Q9();
+    
+    /// Destructor
+    ~D2Q9();
 
     /// get the lattice velocity x-component corresponding to index i
     virtual int getCX(unsigned int i) const override;
@@ -93,6 +104,9 @@ public:
 
     /// get the lattice weight corresponding to index i
     virtual T getWEIGHT(unsigned int i) const override;
+    
+    /// Get the opposite population corresponding to index i
+    virtual unsigned int getOppositePopualation(unsigned int i) const;
 
     /// Provides access to the specific derived class type
     virtual LBModel<T>* getDerivedModel() const override;
