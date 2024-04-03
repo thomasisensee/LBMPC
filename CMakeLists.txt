@@ -30,6 +30,8 @@ set(SOURCES
     src/core/simulation.hh
     src/core/kernelParameters.h
     src/core/kernelParameters.hh
+    src/io/vtkWriter.h
+    src/io/vtkWriter.hh
     src/cuda/cudaErrorHandler.cuh
     src/cuda/cudaKernels.cuh
     src/cuda/cudaKernels.cu

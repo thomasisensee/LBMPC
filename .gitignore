@@ -10,9 +10,7 @@
 *.mp4
 *.pvsm
 
-Makefile
-CMakeFiles
-cmake_install.cmake
-
 build/*
 examples/*/build
+
+.vscode/

@@ -7,6 +7,7 @@
 #include "core/boundaryConditions.h"
 #include "core/lbGrid.h"
 #include "core/simulation.h"
+#include "io/vtkWriter.h"
 #include "cuda/cudaUtilities.cuh"
 
 using FLOATING_POINT_TYPE = float;
@@ -27,7 +28,8 @@ auto lbModel = std::make_unique<D2Q9<T>>(); // Create instances of the component
 lbModel->print();
 lbModel->printBoundaryMapping();
 
-T omegaShear = 0.7;
+T tauShear = 0.7;
+T omegaShear = 1.0/tauShear;
 T omegaBulk = omegaShear;
 //auto collisionModel = std::make_unique<CollisionBGK<T>>(omegaShear);
 auto collisionModel = std::make_unique<CollisionCHM<T>>(omegaShear, omegaBulk);
@@ -36,7 +38,7 @@ collisionModel->print();
 // ===============================
 // === Prepare domain geometry ===
 // ===============================
-auto gridGeometry = std::make_unique<GridGeometry2D<T>>(0.00793650793,126,126);
+auto gridGeometry = std::make_unique<GridGeometry2D<T>>(0.00793650793,16,16);
 gridGeometry->print();
 
 // ===================================
