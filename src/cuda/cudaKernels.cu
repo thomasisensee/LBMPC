@@ -14,8 +14,8 @@ __device__ unsigned int pos(unsigned int i, unsigned int j, unsigned int width) 
 template<typename T>
 __global__ void initializeDistributionsKernel(T* collision, const LBParams<T>* const params) {
 
-    unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
-    unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
+    const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+    const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
     if (i > params->Nx - 1 || j > params->Ny - 1) { return; }
     
     unsigned int idx = pos(i, j, params->Nx);
@@ -39,8 +39,8 @@ template void initializeDistributionsCaller<double>(double* deviceCollision, con
 template<typename T>
 __global__ void doStreamingKernel(const T *const collision, T *streaming, const LBParams<T>* const params) {
 
-    unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
-    unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
+    const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+    const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
     if (i < 1 || i > params->Nx - 2 || j < 1 || j > params->Ny - 2) { return; }
 
     unsigned int idx = pos(i, j, params->Nx);
@@ -64,8 +64,8 @@ template void doStreamingCaller<double>(double* deviceCollision, double* deviceS
 template<typename T>
 __global__ void doCollisionBGKKernel(T* collision, const CollisionParamsBGK<T>* const params) {
 
-    unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
-    unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
+    const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+    const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
     if (i < 1 || i > params->Nx - 2 || j < 1 || j > params->Ny - 2) { return; }
 
     unsigned int idx = pos(i, j, params->Nx);
@@ -91,8 +91,8 @@ template void doCollisionBGKCaller<double>(double* deviceCollision, const Collis
 template<typename T>
 __global__ void doCollisionCHMKernel(T* collision, const CollisionParamsCHM<T>* const params) {
 
-    unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
-    unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
+    const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+    const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
     if (i < 1 || i > params->Nx - 2 || j < 1 || j > params->Ny - 2) { return; }
 
     unsigned int idx = pos(i, j, params->Nx);
@@ -193,8 +193,8 @@ template void applyBounceBackCaller<double>(double* deviceCollision, const Bound
 
 template<typename T>
 __global__ void testKernel(T* collision, const CollisionParamsBGK<T>* const params) {
-    unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
-    unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
+    const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+    const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
     if (i < 1 || i > params->Nx - 2 || j < 1 || j > params->Ny - 2) { return; }
 
     unsigned int idx = pos(i, j, params->Nx);
