@@ -22,9 +22,7 @@ enum class BoundaryLocation {
     WEST,
     EAST,
     SOUTH,
-    NORTH,
-    BOTTOM,
-    TOP
+    NORTH
 };
 
 /// Transform BoundaryLocation members to strings for output

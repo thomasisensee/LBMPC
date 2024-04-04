@@ -44,6 +44,12 @@ public:
     /// Destructor
     ~LBGrid();
 
+    /// Getter for _hostDistributions
+    std::vector<T>& getHostDistributions();
+
+    // Getter for _deviceCollision
+    T* getDeviceCollision() const;
+
     void allocateHostData();
     void allocateDeviceData();
     void prepareKernelParams();
@@ -54,6 +60,7 @@ public:
     void performStreamingStep();
     void applyBoundaryConditions();
     static unsigned int pos(unsigned int i, unsigned int j, unsigned int Nx);
+
 };
 
 #include "lbGrid.hh"

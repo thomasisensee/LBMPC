@@ -33,6 +33,17 @@ LBGrid<T>::~LBGrid() {
     }
 }
 
+// Getter for _hostDistributions
+template<typename T>
+std::vector<T>& LBGrid<T>::getHostDistributions() {
+    return _hostDistributions;
+}
+
+template<typename T>
+T* LBGrid<T>::getDeviceCollision() const {
+    return _deviceCollision;
+}
+
 template<typename T>
 void LBGrid<T>::allocateHostData() {
     _hostDistributions.resize(_lbModel->getQ() * _gridGeometry->getGhostVolume(), static_cast<T>(0));
@@ -80,12 +91,12 @@ void LBGrid<T>::initializeDistributions() {
 
 template<typename T>
 void LBGrid<T>::copyToDevice() {
-       cudaErrorCheck(cudaMemcpy(_deviceCollision, _hostDistributions, _gridGeometry->getGhostVolume() * sizeof(T), cudaMemcpyHostToDevice));
+       cudaErrorCheck(cudaMemcpy(_deviceCollision, _hostDistributions.data(), _gridGeometry->getGhostVolume() * sizeof(T), cudaMemcpyHostToDevice));
 }
 
 template<typename T>
 void LBGrid<T>::copyToHost() {
-       cudaErrorCheck(cudaMemcpy(_hostDistributions, _deviceCollision, _gridGeometry->getGhostVolume() * sizeof(T), cudaMemcpyHostToDevice));
+       cudaErrorCheck(cudaMemcpy(_hostDistributions.data(), _deviceCollision, _gridGeometry->getGhostVolume() * sizeof(T), cudaMemcpyDeviceToHost));
 }
 
 template<typename T>

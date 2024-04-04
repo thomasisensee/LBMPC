@@ -8,15 +8,25 @@
 
 class VTKWriter {
 private:
+    /// Inherent members
     std::string _outputDir;
     std::string _baseFilename;
     unsigned int _outputFrequency;
-    unsigned int _currentTimeStep;
+    unsigned int _currentIter;
 
-    std::string constructFilename(const std::string& fieldName, unsigned int timeStep);
+    /// Non-inherent members (need to be set)
+    unsigned int _nX, _nY;
+    float _delta;
+
+    /// Helper functions for templated writeScalarField function
+    std::string constructFilename(const std::string& fieldName, unsigned int iter);
     std::string getVtkDataTypeString(const float&);
     std::string getVtkDataTypeString(const double&);
     std::string getVtkDataTypeString(const int&);
+
+    /// Helper functions for writing binary data
+    template<typename T>
+    inline T SwapBytes(float f);
 
 protected:
     void writeSnapshot() {
@@ -30,10 +40,27 @@ public:
     /// Constructor
     VTKWriter(const std::string& outputDir, const std::string& baseFilename, unsigned int outputFrequency);
 
-    void update(unsigned int timeStep);
+    /// Destructor
+    ~VTKWriter() = default;
 
+    /// Set member variables necessary for output: grid dimensions nX and nY, and grid spacing delta
+    void setNonInherent(unsigned int nX, unsigned int nY, float delta);
+
+    /// Update current timeStep and check for output
     template<typename T>
-    void writeScalarField(const std::vector<T>& field, const std::string& fieldName, unsigned int timeStep);
+    void update(unsigned int iter, std::vector<T>& hostData, T* deviceData);
+
+    /// Fetch data from device
+    template<typename T>
+    void copyToHost(std::vector<T>& hostData, T* deviceData);
+
+    /// Write a scalar field to a VTK file
+    template<typename T>
+    void writeScalarField(const std::vector<T>& field, const std::string& fieldName, unsigned int iter);
+
+    /// Write a vector field to a VTK file
+    template<typename T>
+    void writeVectorField(const std::vector<T>& field, const std::string& fieldName, unsigned int iter);
 };
 
 #include "vtkWriter.hh"

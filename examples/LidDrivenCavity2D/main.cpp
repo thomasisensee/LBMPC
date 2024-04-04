@@ -62,10 +62,15 @@ auto lbGrid = std::make_unique<LBGrid<T>>(
     std::move(boundaryConditionManager)
 );
 
+// ===============================
+// === Setup simulation output ===
+// ===============================
+auto vtkWriter = std::make_unique<VTKWriter>(std::string("output"), std::string("lidDrivenCavity"), 10);
+
 // ========================
 // === Setup simulation ===
 // ========================
-LBFluidSimulation simulation = LBFluidSimulation<T>(std::move(lbGrid));
+LBFluidSimulation simulation = LBFluidSimulation<T>(std::move(lbGrid), std::move(vtkWriter));
 
 simulation.run();
 
