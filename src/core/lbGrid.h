@@ -17,10 +17,16 @@ private:
     std::unique_ptr<GridGeometry2D<T>> _gridGeometry;
     std::unique_ptr<BoundaryConditionManager<T>> _boundaryConditionManager;
 
-    /// Distribution function
+    /// Distribution function, both for host and device
     std::vector<T> _hostDistributions;
     T* _deviceCollision = nullptr;
     T* _deviceStreaming = nullptr;
+
+    /// Fields for zeroth and first moments, both for host and device
+    std::vector<T> _hostZerothMoment;
+    std::vector<T> _hostFirstMoment;
+    T* _deviceZerothMoment = nullptr;
+    T* _deviceFirstMoment = nullptr;
 
     /// swap pointer for switching streaming and collision device arrays
     T* _swap = nullptr;
@@ -47,8 +53,15 @@ public:
     /// Getter for _hostDistributions
     std::vector<T>& getHostDistributions();
 
-    // Getter for _deviceCollision
+    /// Getter for host-side moment vectors
+    std::vector<T>& getHostZerothMoment();
+    std::vector<T>& getHostFirstMoment();
+
+    /// Getter for _deviceCollision
     T* getDeviceCollision() const;
+
+    /// Getter for gridGeometry
+    const GridGeometry2D<T>& getGridGeometry() const;
 
     void allocateHostData();
     void allocateDeviceData();
@@ -56,11 +69,15 @@ public:
     void initializeDistributions();
     void copyToDevice();
     void copyToHost();
+    void fetchZerothMoment();
+    void fetchFirstMoment();
     void performCollisionStep();
     void performStreamingStep();
     void applyBoundaryConditions();
+    void computeMoments();
+    void computeZerothMoment();
+    void computeFirstMoment();
     static unsigned int pos(unsigned int i, unsigned int j, unsigned int Nx);
-
 };
 
 #include "lbGrid.hh"

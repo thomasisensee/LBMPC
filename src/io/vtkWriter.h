@@ -11,8 +11,6 @@ private:
     /// Inherent members
     std::string _outputDir;
     std::string _baseFilename;
-    unsigned int _outputFrequency;
-    unsigned int _currentIter;
 
     /// Non-inherent members (need to be set)
     unsigned int _nX, _nY;
@@ -24,35 +22,23 @@ private:
     std::string getVtkDataTypeString(const double&);
     std::string getVtkDataTypeString(const int&);
 
+    /// Create the output directory if it doesn't exist
+    void setOutputDirectory();
+
+
     /// Helper functions for writing binary data
     template<typename T>
-    inline T SwapBytes(float f);
-
-protected:
-    void writeSnapshot() {
-        // Example: Write multiple fields at the current timestep
-        // writeField(velocityField, "velocity");
-        // writeField(pressureField, "pressure");
-        // Add more fields as necessary
-    }
+    inline T SwapBytes(T value);
 
 public:
     /// Constructor
-    VTKWriter(const std::string& outputDir, const std::string& baseFilename, unsigned int outputFrequency);
+    VTKWriter(const std::string& outputDir, const std::string& baseFilename);
 
     /// Destructor
     ~VTKWriter() = default;
 
     /// Set member variables necessary for output: grid dimensions nX and nY, and grid spacing delta
     void setNonInherent(unsigned int nX, unsigned int nY, float delta);
-
-    /// Update current timeStep and check for output
-    template<typename T>
-    void update(unsigned int iter, std::vector<T>& hostData, T* deviceData);
-
-    /// Fetch data from device
-    template<typename T>
-    void copyToHost(std::vector<T>& hostData, T* deviceData);
 
     /// Write a scalar field to a VTK file
     template<typename T>

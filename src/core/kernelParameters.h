@@ -1,6 +1,7 @@
 #ifndef KERNEL_PARAMETERS_H
 #define KERNEL_PARAMETERS_H
 
+#include <vector>
 #include <cuda_runtime.h>
 #include "core/constants.h"
 #include "cuda/cudaConstants.cuh"
@@ -92,9 +93,6 @@ public:
         unsigned int nx,
         unsigned int ny
     );
-
-    /// Set wall velocity specifically and trigger allocateAndCopyToDevice
-    void setWallVelocity(const T* WALL_VELOCITY);
 
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice();
@@ -263,6 +261,9 @@ public:
         const T* WALL_VELOCITY,
         BoundaryLocation location
     );
+
+    /// Set wall velocity specifically and trigger allocateAndCopyToDevice
+    void setWallVelocity(const std::vector<T>& wallVelocity);
     
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice() override;

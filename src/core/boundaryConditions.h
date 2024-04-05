@@ -33,8 +33,12 @@ public:
     virtual ~BoundaryCondition() = default;
 
     BoundaryLocation getLocation() const;
-    void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel);
+    virtual void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel);
     virtual void apply(T* lbField) = 0;
+
+    virtual void print() const;
+    virtual void printBoundaryLocation() const;
+
 };
 
 
@@ -51,6 +55,8 @@ public:
     virtual ~PeriodicBoundary() = default;
 
     void apply(T* lbField) override;
+
+    void print() const override;
 };
 
 /*****************************************/
@@ -66,6 +72,9 @@ public:
     virtual ~BounceBack() = default;
 
     void apply(T* lbField) override;
+
+    void print() const override;
+
 };
 
 /**********************************************************/
@@ -83,7 +92,10 @@ public:
     /// Destructor
     virtual ~FixedVelocityBoundary() = default;
 
-    void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel);
+    void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel) override;
+
+    const std::vector<T>& getWallVelocity() const;
+    void print() const override;
 };
 
 
@@ -92,8 +104,8 @@ public:
 /*************************/
 template<typename T>
 class BoundaryConditionManager {
-    /// Map of location, name, boundary condition object
-    std::map<BoundaryLocation, std::map<std::string, std::unique_ptr<BoundaryCondition<T>>>> boundaryConditions;
+    /// Vector of boundary condition objects
+    std::vector<std::unique_ptr<BoundaryCondition<T>>> boundaryConditions;
 
 public:
     /// Constructor
@@ -102,7 +114,7 @@ public:
     /// Destructor
     ~BoundaryConditionManager() = default;
 
-    void addBoundaryCondition(const std::string& name, std::unique_ptr<BoundaryCondition<T>> condition);
+    void addBoundaryCondition(std::unique_ptr<BoundaryCondition<T>> condition);
     void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel);
     void apply(T* lbField);
     void print() const;

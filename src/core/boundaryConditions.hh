@@ -43,6 +43,18 @@ void BoundaryCondition<T>::prepareKernelParams(const LBParams<T>& lbParams, cons
     }
 }
 
+template<typename T>
+void BoundaryCondition<T>::printBoundaryLocation() const {
+    std::cout << "== Boundary Location: " << boundaryLocationToString(_location) << "\t==" << std::endl;
+}
+
+template<typename T>
+void BoundaryCondition<T>::print() const {
+    printBoundaryLocation();
+    std::cout << "== Condition: " << "Base" << "\t=="  << std::endl;
+}
+
+
 /**************************************/
 /***** Derived class 01: Periodic *****/
 /**************************************/
@@ -54,6 +66,12 @@ void PeriodicBoundary<T>::apply(T* lbmField) {
 
 }
 
+template<typename T>
+void PeriodicBoundary<T>::print() const {
+    BoundaryCondition<T>::printBoundaryLocation();
+    std::cout << "== Condition: " << "Periodic" << "\t=="  << std::endl;
+}
+
 /*****************************************/
 /***** Derived class 02: Bounce Back *****/
 /*****************************************/
@@ -62,9 +80,16 @@ BounceBack<T>::BounceBack(BoundaryLocation loc) : BoundaryCondition<T>(loc) {}
 
 template<typename T>
 void BounceBack<T>::apply(T* lbmField) {
+    //std::cout << boundaryLocationToString(this->_location) << "| V = {" << this->_params.getHostParams().WALL_VELOCITY << "}"  << std::endl;
     dim3 blockSize(this->_threadsPerBlock);
     dim3 gridSize(this->_numBlocks);
     applyBounceBackCaller(lbmField, this->_params.getDeviceParams(), gridSize, blockSize);
+}
+
+template<typename T>
+void BounceBack<T>::print() const {
+    BoundaryCondition<T>::printBoundaryLocation();
+    std::cout << "== Condition: " << "Bounce-back" << "\t=="  << std::endl;
 }
 
 /**********************************************************/
@@ -76,8 +101,20 @@ FixedVelocityBoundary<T>::FixedVelocityBoundary(BoundaryLocation loc, const std:
 template<typename T>
 void FixedVelocityBoundary<T>::prepareKernelParams(const LBParams<T>& lbmParams, const LBModel<T>* lbModel) {
     BoundaryCondition<T>::prepareKernelParams(lbmParams, lbModel);
-    this->_params.setWallVelocity(this->wallVelocity.data()); // Assign the address of the first element
+    this->_params.setWallVelocity(getWallVelocity());
 
+}
+
+template<typename T>
+const std::vector<T>& FixedVelocityBoundary<T>::getWallVelocity() const {
+    return _wallVelocity;
+}
+
+template<typename T>
+void FixedVelocityBoundary<T>::print() const {
+    BoundaryCondition<T>::printBoundaryLocation();
+    std::cout << "== Condition: " << "Bounce-Back with fixed velocity" << "\t=="  << std::endl;
+    std::cout << "== Velocity = {" << getWallVelocity()[0] << ", " << getWallVelocity()[1] << "}\t=="  << std::endl;
 }
 
 
@@ -90,44 +127,36 @@ BoundaryConditionManager<T>::BoundaryConditionManager() {
 }
 
 template<typename T>
-void BoundaryConditionManager<T>::addBoundaryCondition(const std::string& name, std::unique_ptr<BoundaryCondition<T>> condition) {
-    BoundaryLocation loc = condition->getLocation();
-    boundaryConditions[loc][name] = std::move(condition);
+void BoundaryConditionManager<T>::addBoundaryCondition(std::unique_ptr<BoundaryCondition<T>> condition) {
+    for (const auto& existingCondition : boundaryConditions) {
+        if (condition->getLocation() == existingCondition->getLocation()) {
+            std::cerr << "Error: Boundary condition already exists for location " << boundaryLocationToString(condition->getLocation()) << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }   
+
+    boundaryConditions.push_back(std::move(condition));
 }
 
 template<typename T>
 void BoundaryConditionManager<T>::prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel) {
-    // Iterate over each boundary location
-    for (auto& boundaryConditionsPair : boundaryConditions) {
-        // Now iterate over each condition for this boundary
-        for (auto& conditionPair : boundaryConditionsPair.second) {
-            // Apply the boundary condition
-            conditionPair.second->prepareKernelParams(lbParams, lbModel);
-        }
+    for (const auto& condition : boundaryConditions) {
+        condition->prepareKernelParams(lbParams, lbModel);
     }
 }
 
 template<typename T>
 void BoundaryConditionManager<T>::apply(T* lbmField) {
-    // Iterate over each boundary location
-    for (auto& boundaryConditionsPair : boundaryConditions) {
-        // Now iterate over each condition for this boundary
-        for (auto& conditionPair : boundaryConditionsPair.second) {
-            // Apply the boundary condition
-            conditionPair.second->apply(lbmField);
-        }
+    for (const auto& condition : boundaryConditions) {
+        condition->apply(lbmField);
     }
 }
 
 template<typename T>
 void BoundaryConditionManager<T>::print() const {
     std::cout << "====== Boundary conditions =======" << std::endl;
-    for (const auto& boundaryConditionsPair : boundaryConditions) {
-        std::cout << "== Boundary Location: " << boundaryLocationToString(boundaryConditionsPair.first) << "\t==" << std::endl;
-        for (const auto& conditionPair : boundaryConditionsPair.second) {
-            std::cout << "== Condition: " << conditionPair.first << "\t=="  << std::endl;
-            std::cout << "==\t\t\t\t==\n";
-        }
+    for (const auto& condition : boundaryConditions) {
+        condition->print();
     }
     std::cout << "==================================\n" << std::endl;
 }

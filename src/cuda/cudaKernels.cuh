@@ -36,6 +36,21 @@ template<typename T>
 void applyBounceBackCaller(T* deviceCollision, const BoundaryParams<T>* const params, dim3 gridSize, dim3 blockSize);
 
 template<typename T>
+__global__ void computeZerothMomentKernel(T* zerothMoment, const T* const collision, const LBParams<T>* const params);
+
+template<typename T>
+void computeZerothMomentCaller(T* deviceZerothMoment, const T* const deviceCollision, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize);
+
+template<typename T>
+__global__ void computeFirstMomentKernel(T* firstMoment, const T* const collision, const LBParams<T>* const params);
+
+template<typename T>
+void computeFirstMomentCaller(T* deviceFirstMoment, const T* const deviceCollision, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize);
+
+template<typename T>
+__global__ void testKernel(T* collision, const CollisionParamsBGK<T>* const params);
+
+template<typename T>
 __global__ void testKernel(T* collision, const CollisionParamsBGK<T>* const params);
 
 template<typename T>

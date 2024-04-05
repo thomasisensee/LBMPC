@@ -46,7 +46,7 @@ __global__ void doStreamingKernel(const T *const collision, T *streaming, const 
     unsigned int idx = pos(i, j, params->Nx);
     unsigned int idxNeighbor;
 
-    for (int l=0; l < params->Q; ++l) {
+    for (size_t l=0; l < params->Q; ++l) {
 	    idxNeighbor = pos(i - params->LATTICE_VELOCITIES[l * params->D], j - params->LATTICE_VELOCITIES[l * params->D + 1], params->Nx);
 		streaming[params->Q * idx + l] = collision[params->Q * idxNeighbor + l];
 	}
@@ -124,7 +124,7 @@ __device__ void applyBC(T* collision, const BoundaryParams<T>* const params, uns
 
     idx = pos(i, j, params->Nx);
         
-    for (int l = 0; l < 3; ++l) {
+    for (size_t l = 0; l < 3; ++l) {
         pop = params->POPULATION[l];
         popRev = params->OPPOSITE_POPULATION[pop];
         cx = params->LATTICE_VELOCITIES[pop*params->D];
@@ -132,13 +132,15 @@ __device__ void applyBC(T* collision, const BoundaryParams<T>* const params, uns
         if ((int) i+cx < 0 || i+cx >= params->Nx || (int) j+cy < 0 || j+cy >= params->Ny) { continue; }
         idxNeighbor = pos(i+cx, j+cy, params->Nx);
         if (params->WALL_VELOCITY != nullptr) {
+            printf("V = (%g,%g)\n",params->WALL_VELOCITY[0],params->WALL_VELOCITY[1]);
             dotProduct = cx * params->WALL_VELOCITY[0] + cy * params->WALL_VELOCITY[1];
         } else {
             dotProduct = 0.0;
         }
         R = cell.getZeroMoment(&collision[params->Q * idxNeighbor], params);
-        //printf("(%d,%d) -> (%d,%d) | pop = %d | popRev = %d | CX = %d, CY = %d |idxNeibor = %d | R = %g | dotProduct = %g\n",i,j,i+cx,j+cy,pop,popRev,params->LATTICE_VELOCITIES[pop * params->D],params->LATTICE_VELOCITIES[pop * params->D + 1],idxNeighbor,R,dotProduct);
-        
+        if (dotProduct > 1.e-4) {
+            printf("(%d,%d) -> (%d,%d) | pop = %d | popRev = %d | CX = %d, CY = %d |idxNeibor = %d | R = %g | dotProduct = %g\n",i,j,i+cx,j+cy,pop,popRev,params->LATTICE_VELOCITIES[pop * params->D],params->LATTICE_VELOCITIES[pop * params->D + 1],idxNeighbor,R,dotProduct);
+        }
         collision[params->Q * idx + pop] = collision[params->Q * idxNeighbor + popRev] + 2.0*params->LATTICE_WEIGHTS[pop] * R * C_S_POW2_INV * dotProduct;
     }
        
@@ -179,7 +181,6 @@ __global__ void applyBounceBackKernel(T* collision, const BoundaryParams<T>* con
         applyBC(collision, params, i, j);
         return;
     }
-
 }
 
 template<typename T>
@@ -189,6 +190,56 @@ void applyBounceBackCaller(T* deviceCollision, const BoundaryParams<T>* const pa
 }
 template void applyBounceBackCaller<float>(float* deviceCollision, const BoundaryParams<float>* const params, dim3 gridSize, dim3 blockSize);
 template void applyBounceBackCaller<double>(double* deviceCollision, const BoundaryParams<double>* const params, dim3 gridSize, dim3 blockSize);
+
+template<typename T>
+__global__ void computeZerothMomentKernel(T* zerothMoment, const T* const collision, const LBParams<T>* const params) {
+
+    const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+    const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
+    if (i < 1 || i > params->Nx - 2 || j < 1 || j > params->Ny - 2) { return; }
+
+    unsigned int idx        = pos(i, j, params->Nx);
+    unsigned int idxMoment  = pos(i - 1, j - 1, params->Nx - 2); // Since the zerothMoment array does not contain the ghost cells
+
+    Cell<T> cell;
+    T R = cell.getZeroMoment(&collision[idx * params->Q], params);
+    zerothMoment[idxMoment] = R;
+}
+
+
+template<typename T>
+void computeZerothMomentCaller(T* deviceZerothMoment, const T* const deviceCollision, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
+    computeZerothMomentKernel<<<gridSize, blockSize>>>(deviceZerothMoment, deviceCollision, params);
+    cudaErrorCheck(cudaDeviceSynchronize());
+}
+template void computeZerothMomentCaller<float>(float* deviceZerothMoment, const float* const deviceCollision, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
+template void computeZerothMomentCaller<double>(double* deviceZerothMoment, const double* const deviceCollision, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
+
+template<typename T>
+__global__ void computeFirstMomentKernel(T* firstMoment, const T* const collision, const LBParams<T>* const params) {
+
+    const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+    const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
+    if (i < 1 || i > params->Nx - 2 || j < 1 || j > params->Ny - 2) { return; }
+
+    unsigned int idx        = pos(i, j, params->Nx);
+    unsigned int idxMoment  = pos(i - 1, j - 1, params->Nx - 2); // Since the zerothMoment array does not contain the ghost cells
+
+    Cell<T> cell;
+    T U = cell.getFirstMomentX(&collision[idx * params->Q], params);
+    T V = cell.getFirstMomentY(&collision[idx * params->Q], params);
+    firstMoment[idxMoment]      = U;
+    firstMoment[idxMoment + 1]  = V;
+}
+
+
+template<typename T>
+void computeFirstMomentCaller(T* deviceFirstMoment, const T* const deviceCollision, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
+    computeFirstMomentKernel<<<gridSize, blockSize>>>(deviceFirstMoment, deviceCollision, params);
+    cudaErrorCheck(cudaDeviceSynchronize());
+}
+template void computeFirstMomentCaller<float>(float* deviceFirstMoment, const float* const deviceCollision, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
+template void computeFirstMomentCaller<double>(double* deviceFirstMoment, const double* const deviceCollision, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
 
 
 template<typename T>
@@ -200,7 +251,7 @@ __global__ void testKernel(T* collision, const CollisionParamsBGK<T>* const para
     unsigned int idx = pos(i, j, params->Nx);
     Cell<T> cell;
     T R = cell.getZeroMoment(&collision[params->Q * idx], params);
-    printf("(i,j) = (%d,%d) | R = %g\n",i,j,R);
+    //printf("(i,j) = (%d,%d) | R = %g\n",i,j,R);
 }
 
 template<typename T>

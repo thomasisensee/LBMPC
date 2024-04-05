@@ -46,10 +46,10 @@ gridGeometry->print();
 // ===================================
 auto boundaryConditionManager = std::make_unique<BoundaryConditionManager<T>>();
 std::vector<T> wallVelocity = {1.0,0.0};
-boundaryConditionManager->addBoundaryCondition("bounceBack", std::make_unique<BounceBack<T>>(BoundaryLocation::WEST));
-boundaryConditionManager->addBoundaryCondition("bounceBack", std::make_unique<BounceBack<T>>(BoundaryLocation::EAST));
-boundaryConditionManager->addBoundaryCondition("bounceBack", std::make_unique<BounceBack<T>>(BoundaryLocation::SOUTH));
-boundaryConditionManager->addBoundaryCondition("fixedVelocity", std::make_unique<FixedVelocityBoundary<T>>(BoundaryLocation::NORTH, wallVelocity));
+boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T>>(BoundaryLocation::WEST));
+boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T>>(BoundaryLocation::EAST));
+boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T>>(BoundaryLocation::SOUTH));
+boundaryConditionManager->addBoundaryCondition(std::make_unique<FixedVelocityBoundary<T>>(BoundaryLocation::NORTH, wallVelocity));
 boundaryConditionManager->print();
 
 // ======================
@@ -65,12 +65,12 @@ auto lbGrid = std::make_unique<LBGrid<T>>(
 // ===============================
 // === Setup simulation output ===
 // ===============================
-auto vtkWriter = std::make_unique<VTKWriter>(std::string("output"), std::string("lidDrivenCavity"), 10);
+auto vtkWriter = std::make_unique<VTKWriter>(std::string("./test"), std::string("lidDrivenCavity"));
 
 // ========================
 // === Setup simulation ===
 // ========================
-LBFluidSimulation simulation = LBFluidSimulation<T>(std::move(lbGrid), std::move(vtkWriter));
+LBFluidSimulation simulation = LBFluidSimulation<T>(std::move(lbGrid), std::move(vtkWriter), 10000, 1000);
 
 simulation.run();
 

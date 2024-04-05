@@ -13,6 +13,7 @@ template<typename T>
 class Simulation {
 protected:
     const unsigned int _totalIter;
+    const unsigned int _outputFrequency;
     std::unique_ptr<LBGrid<T>> _lbGrid; // For a single grid
     // std::vector<std::unique_ptr<LBGrid<T>>> _lbGrids; // For multiple grids
 
@@ -20,13 +21,16 @@ protected:
 
 public:
     /// Constructor
-    Simulation(std::unique_ptr<LBGrid<T>>&& lbgrid, std::unique_ptr<VTKWriter>&& vtkWriter);
+    Simulation(std::unique_ptr<LBGrid<T>>&& lbgrid, std::unique_ptr<VTKWriter>&& vtkWriter, unsigned int totalIter, unsigned int outputFrequency);
   
     /// Destructor
     virtual ~Simulation();
 
     /// Time loop
     virtual void run() = 0;
+
+    /// Check for output and trigger moment computation and output if ncesseary
+    void checkOutput(unsigned int iter);
 };
 
 
@@ -37,10 +41,10 @@ template<typename T>
 class LBFluidSimulation final : public Simulation<T> {
 public:
     /// Constructor
-    LBFluidSimulation(std::unique_ptr<LBGrid<T>>&& lbgrid, std::unique_ptr<VTKWriter>&& vtkWriter);
+    LBFluidSimulation(std::unique_ptr<LBGrid<T>>&& lbgrid, std::unique_ptr<VTKWriter>&& vtkWriter, unsigned int totalIter, unsigned int outputFrequency);
 
-    /// Collision step
-    void run();
+    /// Run simulation
+    void run() override;
 };
 
 #include "simulation.hh"
