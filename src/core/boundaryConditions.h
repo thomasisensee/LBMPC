@@ -71,7 +71,7 @@ public:
     /// Destructor
     virtual ~BounceBack() = default;
 
-    void apply(T* lbField) override;
+    virtual void apply(T* lbField) override;
 
     void print() const override;
 
@@ -96,6 +96,8 @@ public:
 
     const std::vector<T>& getWallVelocity() const;
     void print() const override;
+
+    //void apply(T* lbField) override;
 };
 
 

@@ -14,7 +14,6 @@
 /***********************/
 /***** Base struct *****/
 /***********************/
-template<typename T>
 struct BaseParams {
     /// Grid
     unsigned int D;
@@ -26,7 +25,8 @@ struct BaseParams {
 /***** Derived struct 01: LBParams ****/
 /**************************************/
 template<typename T>
-struct LBParams : public BaseParams<T> {
+struct LBParams : public BaseParams {
+    /// Lattice properties
     unsigned int Q;
     int* LATTICE_VELOCITIES = nullptr;
     T* LATTICE_WEIGHTS      = nullptr;
@@ -37,6 +37,7 @@ struct LBParams : public BaseParams<T> {
 /************************************************/
 template<typename T>
 struct CollisionParamsBGK : public LBParams<T> {
+    /// Relaxation parameter related to shear viscosity
     T omegaShear;
 };
 
@@ -45,6 +46,7 @@ struct CollisionParamsBGK : public LBParams<T> {
 /************************************************/
 template<typename T>
 struct CollisionParamsCHM : public CollisionParamsBGK<T> {
+    /// Relaxation parameter related to bulk viscosity
     T omegaBulk;
 };
 
@@ -53,6 +55,7 @@ struct CollisionParamsCHM : public CollisionParamsBGK<T> {
 /********************************************/
 template<typename T>
 struct BoundaryParams : public LBParams<T> {
+    /// Properties needed for boundary conditions
     unsigned int* OPPOSITE_POPULATION   = nullptr;
     unsigned int* POPULATION            = nullptr;
     T* WALL_VELOCITY                    = nullptr;
@@ -70,8 +73,8 @@ struct BoundaryParams : public LBParams<T> {
 template<typename T, typename ParamsType>
 class ParamsWrapper {
 protected:
-    ParamsType  hostParams;
-    ParamsType* deviceParams = nullptr;
+    ParamsType  _hostParams;
+    ParamsType* _deviceParams = nullptr;
 
 public:
     /// Default constructor

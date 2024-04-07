@@ -80,7 +80,7 @@ BounceBack<T>::BounceBack(BoundaryLocation loc) : BoundaryCondition<T>(loc) {}
 
 template<typename T>
 void BounceBack<T>::apply(T* lbmField) {
-    //std::cout << boundaryLocationToString(this->_location) << "| V = {" << this->_params.getHostParams().WALL_VELOCITY << "}"  << std::endl;
+    //std::cout << boundaryLocationToString(this->_location) << "| V = {" << this->_params.getHostParams().WALL_VELOCITY[0] << ", " << this->_params.getHostParams().WALL_VELOCITY[1] << "}"  << std::endl;
     dim3 blockSize(this->_threadsPerBlock);
     dim3 gridSize(this->_numBlocks);
     applyBounceBackCaller(lbmField, this->_params.getDeviceParams(), gridSize, blockSize);
@@ -102,7 +102,6 @@ template<typename T>
 void FixedVelocityBoundary<T>::prepareKernelParams(const LBParams<T>& lbmParams, const LBModel<T>* lbModel) {
     BoundaryCondition<T>::prepareKernelParams(lbmParams, lbModel);
     this->_params.setWallVelocity(getWallVelocity());
-
 }
 
 template<typename T>
@@ -116,6 +115,14 @@ void FixedVelocityBoundary<T>::print() const {
     std::cout << "== Condition: " << "Bounce-Back with fixed velocity" << "\t=="  << std::endl;
     std::cout << "== Velocity = {" << getWallVelocity()[0] << ", " << getWallVelocity()[1] << "}\t=="  << std::endl;
 }
+/*
+template<typename T>
+void FixedVelocityBoundary<T>::apply(T* lbmField) {
+    std::cout << boundaryLocationToString(this->_location) << "| V = {" << this->_params.getHostParams().WALL_VELOCITY[0] << "}"  << std::endl;
+    dim3 blockSize(this->_threadsPerBlock);
+    dim3 gridSize(this->_numBlocks);
+    applyBounceBackCaller(lbmField, this->_params.getDeviceParams(), gridSize, blockSize);
+}*/
 
 
 /*************************/

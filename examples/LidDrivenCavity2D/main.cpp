@@ -38,14 +38,14 @@ collisionModel->print();
 // ===============================
 // === Prepare domain geometry ===
 // ===============================
-auto gridGeometry = std::make_unique<GridGeometry2D<T>>(0.00793650793,16,16);
+auto gridGeometry = std::make_unique<GridGeometry2D<T>>(0.00793650793,14,14);
 gridGeometry->print();
 
 // ===================================
 // === Prepare boundary conditions ===
 // ===================================
 auto boundaryConditionManager = std::make_unique<BoundaryConditionManager<T>>();
-std::vector<T> wallVelocity = {1.0,0.0};
+std::vector<T> wallVelocity = {1.0,0.0}; // Has to be two-dimensional for now
 boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T>>(BoundaryLocation::WEST));
 boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T>>(BoundaryLocation::EAST));
 boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T>>(BoundaryLocation::SOUTH));
@@ -75,5 +75,5 @@ LBFluidSimulation simulation = LBFluidSimulation<T>(std::move(lbGrid), std::move
 simulation.run();
 
 
-return 0;
+return EXIT_SUCCESS;
 }

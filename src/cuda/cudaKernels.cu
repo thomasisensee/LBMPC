@@ -123,25 +123,25 @@ __device__ void applyBC(T* collision, const BoundaryParams<T>* const params, uns
     T R, dotProduct;
 
     idx = pos(i, j, params->Nx);
+
+
         
     for (size_t l = 0; l < 3; ++l) {
         pop = params->POPULATION[l];
         popRev = params->OPPOSITE_POPULATION[pop];
         cx = params->LATTICE_VELOCITIES[pop*params->D];
         cy = params->LATTICE_VELOCITIES[pop*params->D+1];
-        if ((int) i+cx < 0 || i+cx >= params->Nx || (int) j+cy < 0 || j+cy >= params->Ny) { continue; }
-        idxNeighbor = pos(i+cx, j+cy, params->Nx);
+
+        if (static_cast<int>(i)+cx < 1 || static_cast<int>(i)+cx > params->Nx - 2 || static_cast<int>(j)+cy < 1 || static_cast<int>(j)+cy > params->Ny - 2) { continue; }
+
+        idxNeighbor = pos(static_cast<int>(i)+cx, static_cast<int>(j)+cy, params->Nx);
         if (params->WALL_VELOCITY != nullptr) {
-            printf("V = (%g,%g)\n",params->WALL_VELOCITY[0],params->WALL_VELOCITY[1]);
             dotProduct = cx * params->WALL_VELOCITY[0] + cy * params->WALL_VELOCITY[1];
         } else {
             dotProduct = 0.0;
         }
         R = cell.getZeroMoment(&collision[params->Q * idxNeighbor], params);
-        if (dotProduct > 1.e-4) {
-            printf("(%d,%d) -> (%d,%d) | pop = %d | popRev = %d | CX = %d, CY = %d |idxNeibor = %d | R = %g | dotProduct = %g\n",i,j,i+cx,j+cy,pop,popRev,params->LATTICE_VELOCITIES[pop * params->D],params->LATTICE_VELOCITIES[pop * params->D + 1],idxNeighbor,R,dotProduct);
-        }
-        collision[params->Q * idx + pop] = collision[params->Q * idxNeighbor + popRev] + 2.0*params->LATTICE_WEIGHTS[pop] * R * C_S_POW2_INV * dotProduct;
+        collision[params->Q * idx + pop] = collision[params->Q * idxNeighbor + popRev] + 2.0 * params->LATTICE_WEIGHTS[pop] * R * C_S_POW2_INV * dotProduct;
     }
        
 }
@@ -155,28 +155,28 @@ __global__ void applyBounceBackKernel(T* collision, const BoundaryParams<T>* con
     case BoundaryLocation::WEST:
         i = 0;
         j = threadIdx.x + blockIdx.x * blockDim.x;
-        if (j > params->Ny - 2) { return; }
+        if (j > params->Ny - 1) { return; }
 
         applyBC(collision, params, i, j);
         return;
     case BoundaryLocation::EAST:
-        i = params->Nx;
+        i = params->Nx-1;
         j = threadIdx.x + blockIdx.x * blockDim.x;
-        if (j > params->Ny - 2) { return; }
+        if (j > params->Ny - 1) { return; }
 
         applyBC(collision, params, i, j);
         return;     
     case BoundaryLocation::SOUTH:
         i = threadIdx.x + blockIdx.x * blockDim.x;
         j = 0;
-        if (i > params->Nx - 2) { return; }
+        if (i > params->Nx - 1) { return; }
 
         applyBC(collision, params, i, j);
         return;
     case BoundaryLocation::NORTH:
         i = threadIdx.x + blockIdx.x * blockDim.x;
-        j = params->Ny;
-        if (i > params->Nx - 2) { return; }
+        j = params->Ny-1;
+        if (i > params->Nx - 1) { return; }
 
         applyBC(collision, params, i, j);
         return;
@@ -230,6 +230,7 @@ __global__ void computeFirstMomentKernel(T* firstMoment, const T* const collisio
     T V = cell.getFirstMomentY(&collision[idx * params->Q], params);
     firstMoment[idxMoment]      = U;
     firstMoment[idxMoment + 1]  = V;
+    printf("(i,j) = (%d,%d) | U = %g, V = %g\n",i,j,U,V);
 }
 
 

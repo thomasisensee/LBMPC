@@ -108,10 +108,10 @@ D2Q9<T>::D2Q9() : LBModel<T>(2, 9) {
         this->_LATTICE_VELOCITIES[i*2+1]    = velocities[i][1];
   
         // Fill _BOUNDARY_MAPPING with (vector) values
-        if (velocities[i][0] < 0)       { this->_BOUNDARY_MAPPING[BoundaryLocation::EAST].push_back(i); }
-        else if (velocities[i][0] > 0)  { this->_BOUNDARY_MAPPING[BoundaryLocation::WEST].push_back(i); }
-        if (velocities[i][1] < 0)       { this->_BOUNDARY_MAPPING[BoundaryLocation::SOUTH].push_back(i); }
-        else if (velocities[i][1] > 0)  { this->_BOUNDARY_MAPPING[BoundaryLocation::NORTH].push_back(i); }
+        if (velocities[i][0] > 0)       { this->_BOUNDARY_MAPPING[BoundaryLocation::EAST].push_back(i); }
+        else if (velocities[i][0] < 0)  { this->_BOUNDARY_MAPPING[BoundaryLocation::WEST].push_back(i); }
+        if (velocities[i][1] > 0)       { this->_BOUNDARY_MAPPING[BoundaryLocation::SOUTH].push_back(i); }
+        else if (velocities[i][1] < 0)  { this->_BOUNDARY_MAPPING[BoundaryLocation::NORTH].push_back(i); }
         
         // Compute opposite populations
         for (unsigned int j = 0; j < 9; ++j) {

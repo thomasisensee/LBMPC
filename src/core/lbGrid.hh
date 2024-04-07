@@ -29,7 +29,7 @@ LBGrid<T>::~LBGrid() {
     if (_deviceCollision != nullptr) {
         cudaErrorCheck(cudaFree(_deviceCollision));
     }
-    if (_deviceCollision != nullptr) {
+    if (_deviceStreaming != nullptr) {
         cudaErrorCheck(cudaFree(_deviceStreaming));
     }
 }
