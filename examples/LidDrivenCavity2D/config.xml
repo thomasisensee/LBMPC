@@ -1,0 +1,23 @@
+<simulationConfig>
+    <fluidProperties>
+        <Reynolds>100</Reynolds>
+    </fluidProperties>
+    <grid>
+        <nX>126</nX>
+        <nY>126</nY>
+        <dx>1/126</dx>
+    </grid>
+    <lbmModel>
+        <type>D2Q9</type>
+    </lbmModel>
+    <collisionModel>
+        <type>BGK</type>
+        <relaxationShear>0.7</relaxationShear>
+    </collisionModel>
+    <simulation>
+        <simTime>10</simTime>
+    </simulation>
+    <output>
+        <numberOutputFiles>10</numberOutputFiles>
+        <outputPath>./output</outputPath>
+</simulationConfig>
