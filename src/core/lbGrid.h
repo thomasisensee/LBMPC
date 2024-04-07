@@ -28,9 +28,6 @@ private:
     T* _deviceZerothMoment = nullptr;
     T* _deviceFirstMoment = nullptr;
 
-    /// swap pointer for switching streaming and collision device arrays
-    T* _swap = nullptr;
-
     /// Parameters to pass to cuda kernels
     LBParamsWrapper<T> _params;
 
@@ -57,20 +54,31 @@ public:
     std::vector<T>& getHostZerothMoment();
     std::vector<T>& getHostFirstMoment();
 
-    /// Getter for _deviceCollision
+    /// Getter for _deviceCollision and _deviceStreaming
     T* getDeviceCollision() const;
+    T* getDeviceStreaming() const;
+
+    /// Getter for device-side moment pointers
+    T* getDeviceZerothMoment() const;
+    T* getDeviceFirstMoment() const;
 
     /// Getter for gridGeometry
     const GridGeometry2D<T>& getGridGeometry() const;
 
+    /// Memory operations
     void allocateHostData();
     void allocateDeviceData();
+    void cleanupDevice();
     void prepareKernelParams();
-    void initializeDistributions();
-    void copyToDevice();
-    void copyToHost();
     void fetchZerothMoment();
     void fetchFirstMoment();
+
+    /// Host-Device communication
+    void copyToDevice();
+    void copyToHost();
+
+    /// Main computations
+    void initializeDistributions();
     void performCollisionStep();
     void performStreamingStep();
     void applyBoundaryConditions();

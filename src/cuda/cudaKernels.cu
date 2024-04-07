@@ -46,20 +46,26 @@ __global__ void doStreamingKernel(const T *const collision, T *streaming, const 
     unsigned int idx = pos(i, j, params->Nx);
     unsigned int idxNeighbor;
 
-    for (size_t l=0; l < params->Q; ++l) {
-	    idxNeighbor = pos(i - params->LATTICE_VELOCITIES[l * params->D], j - params->LATTICE_VELOCITIES[l * params->D + 1], params->Nx);
+    for (size_t l = 0; l < params->Q; ++l) {
+	    idxNeighbor = pos(static_cast<int>(i) - params->LATTICE_VELOCITIES[l * params->D], static_cast<int>(j) - params->LATTICE_VELOCITIES[l * params->D + 1], params->Nx);
 		streaming[params->Q * idx + l] = collision[params->Q * idxNeighbor + l];
+        printf("(%d,%d) | l = (%zu) | (cx,cy) = (%d,%d), (in,jn) = (%d,%d)\n",i,j,l,params->LATTICE_VELOCITIES[l * params->D],params->LATTICE_VELOCITIES[l * params->D+1],static_cast<int>(i)-params->LATTICE_VELOCITIES[l * params->D],static_cast<int>(j)-params->LATTICE_VELOCITIES[l * params->D+1]);
 	}
 }
 
 template<typename T>
-void doStreamingCaller(T* deviceCollision, T* deviceStreaming, T* swap, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
-    doStreamingKernel<<<gridSize, blockSize>>>(deviceCollision, deviceStreaming, params);
+void doStreamingCaller(T** deviceCollision, T** deviceStreaming, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
+    // Call the cuda kernel
+    doStreamingKernel<<<gridSize, blockSize>>>(*deviceCollision, *deviceStreaming, params);
     cudaErrorCheck(cudaDeviceSynchronize());
-    swap = deviceCollision; deviceCollision = deviceStreaming; deviceStreaming = swap;
+
+    // Swap the pointers
+    T* swap = *deviceCollision;
+    *deviceCollision = *deviceStreaming;
+    *deviceStreaming = swap;
 }
-template void doStreamingCaller<float>(float* deviceCollision, float* deviceStreaming, float* swap, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
-template void doStreamingCaller<double>(double* deviceCollision, double* deviceStreaming, double* swap, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
+template void doStreamingCaller<float>(float** deviceCollision, float** deviceStreaming, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
+template void doStreamingCaller<double>(double** deviceCollision, double** deviceStreaming, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
 
 template<typename T>
 __global__ void doCollisionBGKKernel(T* collision, const CollisionParamsBGK<T>* const params) {
@@ -230,7 +236,7 @@ __global__ void computeFirstMomentKernel(T* firstMoment, const T* const collisio
     T V = cell.getFirstMomentY(&collision[idx * params->Q], params);
     firstMoment[idxMoment]      = U;
     firstMoment[idxMoment + 1]  = V;
-    printf("(i,j) = (%d,%d) | U = %g, V = %g\n",i,j,U,V);
+    //printf("(i,j) = (%d,%d) | U = %g, V = %g\n",i,j,U,V);
 }
 
 

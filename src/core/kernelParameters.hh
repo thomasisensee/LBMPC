@@ -461,7 +461,6 @@ void BoundaryParamsWrapper<T>::allocateAndCopyToDevice() {
     // Allocate device memory for wall velocity and copy data, if wall velocity is specified, i.e., not nullptr
     T* deviceWallVelocity = nullptr;
     if (this->_hostParams.WALL_VELOCITY != nullptr) {
-        std::cout << this->_hostParams.WALL_VELOCITY[0] << ", " << this->_hostParams.WALL_VELOCITY[1] << std::endl;
         size_t sizeWallVelocity = this->_hostParams.D * sizeof(T);
         cudaErrorCheck(cudaMalloc(&deviceWallVelocity, sizeWallVelocity));
         cudaErrorCheck(cudaMemcpy(deviceWallVelocity, this->_hostParams.WALL_VELOCITY, sizeWallVelocity, cudaMemcpyHostToDevice));

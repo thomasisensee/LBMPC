@@ -31,14 +31,15 @@ lbModel->printBoundaryMapping();
 T tauShear = 0.7;
 T omegaShear = 1.0/tauShear;
 T omegaBulk = omegaShear;
-//auto collisionModel = std::make_unique<CollisionBGK<T>>(omegaShear);
-auto collisionModel = std::make_unique<CollisionCHM<T>>(omegaShear, omegaBulk);
+auto collisionModel = std::make_unique<CollisionBGK<T>>(omegaShear);
+//auto collisionModel = std::make_unique<CollisionCHM<T>>(omegaShear, omegaBulk);
 collisionModel->print();
 
 // ===============================
 // === Prepare domain geometry ===
 // ===============================
-auto gridGeometry = std::make_unique<GridGeometry2D<T>>(0.00793650793,14,14);
+unsigned int Nx = 126;
+auto gridGeometry = std::make_unique<GridGeometry2D<T>>(static_cast<T>(1.0/Nx),Nx,Nx);
 gridGeometry->print();
 
 // ===================================
@@ -70,7 +71,7 @@ auto vtkWriter = std::make_unique<VTKWriter>(std::string("./test"), std::string(
 // ========================
 // === Setup simulation ===
 // ========================
-LBFluidSimulation simulation = LBFluidSimulation<T>(std::move(lbGrid), std::move(vtkWriter), 10000, 1000);
+LBFluidSimulation simulation = LBFluidSimulation<T>(std::move(lbGrid), std::move(vtkWriter), 1, 0);
 
 simulation.run();
 

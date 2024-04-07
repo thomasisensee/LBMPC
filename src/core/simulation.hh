@@ -23,7 +23,7 @@ Simulation<T>::~Simulation() {}
 
 template<typename T>
 void Simulation<T>::checkOutput(unsigned int iter) {
-    if (iter % _outputFrequency == 0) {
+    if (_outputFrequency && iter % _outputFrequency == 0) {
         _lbGrid->computeMoments();
         _vtkWriter->writeScalarField(_lbGrid->getHostZerothMoment(), "Rho", iter);
         _vtkWriter->writeVectorField(_lbGrid->getHostFirstMoment(), "Vel", iter);
@@ -44,8 +44,8 @@ LBFluidSimulation<T>::LBFluidSimulation(
 
 template<typename T>
 void LBFluidSimulation<T>::run() {
-	this->checkOutput(0);
-    for (unsigned int iter = 1; iter < this->_totalIter; ++iter) {
+	this->checkOutput(0);        
+    for (unsigned int iter = 1; iter <= this->_totalIter; ++iter) {
         this->_lbGrid->applyBoundaryConditions();
         this->_lbGrid->performStreamingStep();
         this->_lbGrid->performCollisionStep();

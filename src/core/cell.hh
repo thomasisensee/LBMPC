@@ -42,8 +42,9 @@ __device__ T Cell<T>::getFirstMomentY(const T*const population, const LBParams<T
 template<typename T>
 __device__ T Cell<T>::getVelocityX(const T*const population, const LBParams<T>*const params) const {
     T m1x = 0.0;
-    for (size_t l = 0; l < params->Q; ++l) { m1x += population[l] * params->LATTICE_VELOCITIES[l * params->D]; }
-    return m1x / getZeroMoment(population, params);
+    T rho = 0.0;
+    for (size_t l = 0; l < params->Q; ++l) { m1x += population[l] * params->LATTICE_VELOCITIES[l * params->D]; rho += population[l]; }
+    return m1x / rho;
 }
 
 template<typename T>
@@ -56,8 +57,9 @@ __device__ T Cell<T>::getVelocityX(const T*const population, const LBParams<T>*c
 template<typename T>
 __device__ T Cell<T>::getVelocityY(const T*const population, const LBParams<T>*const params) const {
     T m1x = 0.0;
-    for (size_t l = 0; l < params->Q; ++l) { m1x += population[l] * params->LATTICE_VELOCITIES[l * params->D + 1]; }
-    return m1x / getZeroMoment(population, params);
+    T rho = 0.0;
+    for (size_t l = 0; l < params->Q; ++l) { m1x += population[l] * params->LATTICE_VELOCITIES[l * params->D + 1]; rho += population[l]; }
+    return m1x / rho;
 }
 
 template<typename T>

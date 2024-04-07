@@ -55,6 +55,21 @@ T* LBGrid<T>::getDeviceCollision() const {
 }
 
 template<typename T>
+T* LBGrid<T>::getDeviceStreaming() const {
+    return _deviceStreaming;
+}
+
+template<typename T>
+T* LBGrid<T>::getDeviceZerothMoment() const {
+    return _deviceZerothMoment;
+}
+
+template<typename T>
+T* LBGrid<T>::getDeviceFirstMoment() const {
+    return _deviceFirstMoment;
+}
+
+template<typename T>
 const GridGeometry2D<T>& LBGrid<T>::getGridGeometry() const {
     assert(_gridGeometry != nullptr); // Optional: Ensure the unique_ptr is not empty
     return *_gridGeometry;
@@ -69,11 +84,38 @@ void LBGrid<T>::allocateHostData() {
 
 template<typename T>
 void LBGrid<T>::allocateDeviceData() {
-    cudaErrorCheck(cudaMalloc(&_deviceCollision, _lbModel->getQ() * _gridGeometry->getGhostVolume() * sizeof(T)));
-    cudaErrorCheck(cudaMalloc(&_deviceStreaming, _lbModel->getQ() * _gridGeometry->getGhostVolume() * sizeof(T)));
+    if(this->getDeviceCollision() == nullptr) {
+        cudaErrorCheck(cudaMalloc(&_deviceCollision, _lbModel->getQ() * _gridGeometry->getGhostVolume() * sizeof(T)));
+    }
+    if(this->getDeviceStreaming() == nullptr) {
+        cudaErrorCheck(cudaMalloc(&_deviceStreaming, _lbModel->getQ() * _gridGeometry->getGhostVolume() * sizeof(T)));
+    }
+    if(this->getDeviceZerothMoment() == nullptr) {
+        cudaErrorCheck(cudaMalloc(&_deviceZerothMoment, _gridGeometry->getVolume() * sizeof(T)));
+    }
+    if(this->getDeviceFirstMoment() == nullptr) {
+        cudaErrorCheck(cudaMalloc(&_deviceFirstMoment, _lbModel->getD() * _gridGeometry->getVolume() * sizeof(T)));
+    }
+}
 
-    cudaErrorCheck(cudaMalloc(&_deviceZerothMoment, _gridGeometry->getVolume() * sizeof(T)));
-    cudaErrorCheck(cudaMalloc(&_deviceFirstMoment, _lbModel->getD() * _gridGeometry->getVolume() * sizeof(T)));
+template<typename T>
+void LBGrid<T>::cleanupDevice() {
+    if(this->getDeviceCollision() != nullptr) {
+        cudaErrorCheck(cudaFree(this->getDeviceCollision()));
+        _deviceCollision = nullptr;
+    }
+    if(this->getDeviceStreaming() != nullptr) {
+        cudaErrorCheck(cudaFree(this->getDeviceStreaming()));
+        _deviceStreaming = nullptr;
+    }
+    if(this->getDeviceZerothMoment() != nullptr) {
+        cudaErrorCheck(cudaFree(this->getDeviceZerothMoment()));
+        _deviceZerothMoment = nullptr;
+    }
+    if(this->getDeviceFirstMoment() != nullptr) {
+        cudaErrorCheck(cudaFree(this->getDeviceFirstMoment()));
+        _deviceFirstMoment = nullptr;
+    }
 }
 
 template<typename T>
@@ -103,31 +145,40 @@ void LBGrid<T>::prepareKernelParams() {
 }
 
 template<typename T>
+void LBGrid<T>::fetchZerothMoment() {
+    if(this->getDeviceZerothMoment() != nullptr) {
+       cudaErrorCheck(cudaMemcpy(_hostZerothMoment.data(), _deviceZerothMoment, _gridGeometry->getVolume() * sizeof(T), cudaMemcpyDeviceToHost));
+    }
+}
+
+template<typename T>
+void LBGrid<T>::fetchFirstMoment() {
+    if(this->getDeviceFirstMoment() != nullptr) {
+       cudaErrorCheck(cudaMemcpy(_hostFirstMoment.data(), _deviceFirstMoment, _lbModel->getD() * _gridGeometry->getVolume() * sizeof(T), cudaMemcpyDeviceToHost));
+    }
+}
+
+
+template<typename T>
+void LBGrid<T>::copyToDevice() {
+    if(this->getDeviceCollision() != nullptr) {
+       cudaErrorCheck(cudaMemcpy(_deviceCollision, _hostDistributions.data(), _gridGeometry->getGhostVolume() * sizeof(T), cudaMemcpyHostToDevice));
+    }
+}
+
+template<typename T>
+void LBGrid<T>::copyToHost() {
+    if(this->getDeviceStreaming() != nullptr) {
+       cudaErrorCheck(cudaMemcpy(_hostDistributions.data(), _deviceCollision, _gridGeometry->getGhostVolume() * sizeof(T), cudaMemcpyDeviceToHost));
+    }
+}
+
+template<typename T>
 void LBGrid<T>::initializeDistributions() {
     dim3 blockSize(_threadsPerBlock.first, _threadsPerBlock.second);
     dim3 gridSize(_numBlocks.first, _numBlocks.first);
 
     initializeDistributionsCaller(_deviceCollision, _params.getDeviceParams(), gridSize, blockSize);
-}
-
-template<typename T>
-void LBGrid<T>::copyToDevice() {
-       cudaErrorCheck(cudaMemcpy(_deviceCollision, _hostDistributions.data(), _gridGeometry->getGhostVolume() * sizeof(T), cudaMemcpyHostToDevice));
-}
-
-template<typename T>
-void LBGrid<T>::copyToHost() {
-       cudaErrorCheck(cudaMemcpy(_hostDistributions.data(), _deviceCollision, _gridGeometry->getGhostVolume() * sizeof(T), cudaMemcpyDeviceToHost));
-}
-
-template<typename T>
-void LBGrid<T>::fetchZerothMoment() {
-       cudaErrorCheck(cudaMemcpy(_hostZerothMoment.data(), _deviceZerothMoment, _gridGeometry->getVolume() * sizeof(T), cudaMemcpyDeviceToHost));
-}
-
-template<typename T>
-void LBGrid<T>::fetchFirstMoment() {
-       cudaErrorCheck(cudaMemcpy(_hostFirstMoment.data(), _deviceFirstMoment, _lbModel->getD() * _gridGeometry->getVolume() * sizeof(T), cudaMemcpyDeviceToHost));
 }
 
 template<typename T>
@@ -140,7 +191,7 @@ void LBGrid<T>::performStreamingStep() {
     dim3 blockSize(_threadsPerBlock.first, _threadsPerBlock.second);
     dim3 gridSize(_numBlocks.first, _numBlocks.first);
 
-    doStreamingCaller(_deviceCollision, _deviceStreaming, _swap, _params.getDeviceParams(), gridSize, blockSize);
+    doStreamingCaller(&_deviceCollision, &_deviceStreaming, _params.getDeviceParams(), gridSize, blockSize);
 }
 
 template<typename T>
