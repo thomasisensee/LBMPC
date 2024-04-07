@@ -26,7 +26,7 @@ void Simulation<T>::checkOutput(unsigned int iter) {
     if (_outputFrequency && iter % _outputFrequency == 0) {
         _lbGrid->computeMoments();
         _vtkWriter->writeScalarField(_lbGrid->getHostZerothMoment(), "Rho", iter);
-        _vtkWriter->writeVectorField(_lbGrid->getHostFirstMoment(), "Vel", iter);
+        _vtkWriter->writeVectorField(_lbGrid->getHostFirstMoment(), _lbGrid->getHostZerothMoment(), "Vel", iter);
     }
 }
 

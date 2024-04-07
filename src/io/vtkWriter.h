@@ -47,6 +47,10 @@ public:
     /// Write a vector field to a VTK file
     template<typename T>
     void writeVectorField(const std::vector<T>& field, const std::string& fieldName, unsigned int iter);
+
+    /// Write a vector field to a VTK file, dividing by scalar field (as for velocity computation)
+    template<typename T>
+    void writeVectorField(const std::vector<T>& vectorField, const std::vector<T>& scalarField, const std::string& fieldName, unsigned int iter);
 };
 
 #include "vtkWriter.hh"

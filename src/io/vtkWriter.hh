@@ -2,6 +2,7 @@
 #define VTK_WRITER_HH
 
 #include <filesystem>
+#include <sstream> // Include this for std::ostringstream
 
 #include "vtkWriter.h"
 
@@ -13,7 +14,12 @@ VTKWriter::VTKWriter(
     }
 
 std::string VTKWriter::constructFilename(const std::string& fieldName, unsigned int iter) {
-    return _outputDir + "/" + _baseFilename + "_" + fieldName + "_" + std::to_string(iter) + ".vtk";
+    std::ostringstream iterStr;
+    iterStr.fill('0');  // Set the fill character for padding
+    iterStr.width(6);   // Set the width. Adjust according to your needs
+    iterStr << iter;    // Insert the iteration number into the stream
+
+    return _outputDir + "/" + _baseFilename + "_" + fieldName + "_" + iterStr.str() + ".vtk";
 }
 
 std::string VTKWriter::getVtkDataTypeString(const float&) {
@@ -110,11 +116,13 @@ void VTKWriter::writeVectorField(const std::vector<T>& field, const std::string&
 
     for(size_t i = 0; i < _nY * _nX; ++i) {
         // x-value
-        swapped = SwapBytes(field[i]);
+        swapped = SwapBytes(field[i * 2]);
         outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));
+    
         // y-value
-        swapped = SwapBytes(field[i + 1]);
+        swapped = SwapBytes(field[i * 2 + 1]);
         outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));
+
         // z-value
         swapped = 0.0;
         outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));   
@@ -122,7 +130,42 @@ void VTKWriter::writeVectorField(const std::vector<T>& field, const std::string&
     outFile.close();
 }
 
+template<typename T>
+void VTKWriter::writeVectorField(const std::vector<T>& vectorField, const std::vector<T>& scalarField, const std::string& fieldName, unsigned int iter) {
+    std::string filename = constructFilename(fieldName, iter);
+    std::ofstream outFile(filename);
+    if (!outFile.is_open()) {
+        std::cerr << "Failed to open " << filename << " for writing.\n";
+        return;
+    }
 
+    T swapped;      // Variable to store swapped bytes
+    T typeDummy;    // Create a dummy variable to deduce type for getVtkDataTypeString
 
+    outFile << "# vtk DataFile Version 3.0\n";
+    outFile << "Vector Field\n";
+    outFile << "BINARY\n";
+    outFile << "DATASET STRUCTURED_POINTS\n";
+    outFile << "DIMENSIONS " << _nX << " " << _nY << " 1\n";
+    outFile << "SPACING " << _delta << " " << _delta << " 0.0\n";
+    outFile << "ORIGIN 0 0 0\n";
+    outFile << "POINT_DATA " << _nX*_nY << "\n";
+    outFile << "VECTORS " << fieldName << " " << getVtkDataTypeString(typeDummy) << " 3\n";
+
+    for(size_t i = 0; i < _nY * _nX; ++i) {
+        // x-value
+        swapped = SwapBytes(vectorField[i * 2]/scalarField[i]);
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));
+    
+        // y-value
+        swapped = SwapBytes(vectorField[i * 2 + 1]/scalarField[i]);
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));
+
+        // z-value
+        swapped = 0.0;
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));   
+    }
+    outFile.close();
+}
 
 #endif // VTK_WRITER_HH

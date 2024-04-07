@@ -98,13 +98,13 @@ public:
     );
 
     /// Allocates device memory and copies data from the host instance
-    virtual void allocateAndCopyToDevice();
+    virtual void allocateAndCopyToDevice() = 0;
 
     /// Cleans up host memory
-    void cleanupHost();
+    virtual void cleanupHost() = 0;
 
     /// Cleans up device memory
-    void cleanupDevice();
+    virtual void cleanupDevice() = 0;
 
     /// Accessors for host and device params
     const ParamsType& getHostParams() const;
@@ -145,6 +145,12 @@ public:
 
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice() override;
+
+    /// Cleans up host memory
+    void cleanupHost() override;
+
+    /// Cleans up device memory
+    void cleanupDevice() override;
 };
 
 /************************************************/
@@ -183,6 +189,12 @@ public:
 
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice() override;
+
+    /// Cleans up host memory
+    void cleanupHost() override;
+
+    /// Cleans up device memory
+    void cleanupDevice() override;
 };
 
 /************************************************/
@@ -223,6 +235,12 @@ public:
 
     /// Allocates device memory and copies data from the host instance
     virtual void allocateAndCopyToDevice() override;
+
+    /// Cleans up host memory
+    void cleanupHost() override;
+
+    /// Cleans up device memory
+    void cleanupDevice() override;
 };
 
 /********************************************/
@@ -272,10 +290,10 @@ public:
     virtual void allocateAndCopyToDevice() override;
 
     /// Cleans up host memory
-    void cleanupHost();
+    void cleanupHost() override;
 
     /// Cleans up device memory
-    void cleanupDevice();
+    void cleanupDevice() override;
 };
 
 #include "kernelParameters.hh"

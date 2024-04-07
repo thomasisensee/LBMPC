@@ -20,12 +20,7 @@ ParamsWrapper<T, ParamsType>::ParamsWrapper(
 }
 
 template<typename T, typename ParamsType>
-ParamsWrapper<T, ParamsType>::~ParamsWrapper() {
-    // Cleanup host resources
-    cleanupHost();
-    // Cleanup device resources
-    cleanupDevice();
-}
+ParamsWrapper<T, ParamsType>::~ParamsWrapper() {}
 
 template<typename T, typename ParamsType>
 void ParamsWrapper<T, ParamsType>::setValues(
@@ -38,56 +33,6 @@ void ParamsWrapper<T, ParamsType>::setValues(
     this->_hostParams.Ny                 = ny;
 
     allocateAndCopyToDevice();
-}
-
-
-template<typename T, typename ParamsType>
-void ParamsWrapper<T, ParamsType>::allocateAndCopyToDevice() {
-    // Cleanup device resources that may have been previously allocated
-    cleanupDevice();
-
-    // Prepare the host-side copy of LBParams with device pointers
-    ParamsType paramsTemp = _hostParams; // Use a temporary host copy
-
-    // Allocate memory for the LBParams struct on the device if not already allocated
-    if (_deviceParams == nullptr) {
-        cudaErrorCheck(cudaMalloc(&_deviceParams, sizeof(ParamsType)));
-    }
-
-    // Copy the prepared LBParams (with device pointers) from the temporary host copy to the device
-    cudaErrorCheck(cudaMemcpy(this->getDeviceParams(), &paramsTemp, sizeof(ParamsType), cudaMemcpyHostToDevice));
-}
-
-template<typename T, typename ParamsType>
-void ParamsWrapper<T, ParamsType>::cleanupHost() {
-    if (this->_hostParams.LATTICE_VELOCITIES != nullptr) {
-        delete[] this->_hostParams.LATTICE_VELOCITIES;
-        this->_hostParams.LATTICE_VELOCITIES = nullptr;
-    }
-    if (this->_hostParams.LATTICE_WEIGHTS != nullptr) {
-        delete[] this->_hostParams.LATTICE_WEIGHTS;
-        this->_hostParams.LATTICE_WEIGHTS = nullptr;
-    }
-}
-
-template<typename T, typename ParamsType>
-void ParamsWrapper<T, ParamsType>::cleanupDevice() {
-    // If _deviceParams was already freed and set to nullptr, return
-    if(this->getDeviceParams() == nullptr) { return; }
-
-    // Assuming _deviceParams has been properly allocated and initialized
-    ParamsType paramsTemp;
-
-    // Copy _deviceParams back to host to access the pointers
-    cudaErrorCheck(cudaMemcpy(&paramsTemp, this->getDeviceParams(), sizeof(ParamsType), cudaMemcpyDeviceToHost));
-
-    // Use the pointers from the temp copy to free device memory
-    cudaFree(paramsTemp.LATTICE_VELOCITIES);
-    cudaFree(paramsTemp.LATTICE_WEIGHTS);
-
-    // Finally, free the _deviceParams struct itself
-    cudaFree(this->_deviceParams);
-    this->_deviceParams = nullptr; // Ensure the pointer is marked as freed
 }
 
 template<typename T, typename ParamsType>
@@ -119,7 +64,12 @@ LBParamsWrapper<T>::LBParamsWrapper(
 }
 
 template<typename T>
-LBParamsWrapper<T>::~LBParamsWrapper() {}
+LBParamsWrapper<T>::~LBParamsWrapper() {
+    // Cleanup host resources
+    cleanupHost();
+    // Cleanup device resources
+    cleanupDevice();
+}
 
 template<typename T>
 void LBParamsWrapper<T>::setValues(
@@ -130,10 +80,8 @@ void LBParamsWrapper<T>::setValues(
         const int* LATTICE_VELOCITIES,
         const T* LATTICE_WEIGHTS
     ) {
-
     // Clean up existing data
-    ParamsWrapper<T, LBParams<T>>::cleanupHost();
-
+    cleanupHost();
 
     // Assign new deep copies
     this->_hostParams.D                  = dim;
@@ -153,7 +101,7 @@ void LBParamsWrapper<T>::setValues(
 template<typename T>
 void LBParamsWrapper<T>::allocateAndCopyToDevice() {
     // Cleanup device resources that may have been previously allocated
-    ParamsWrapper<T, LBParams<T>>::cleanupDevice();
+    cleanupDevice();
 
     // Allocate device memory for lattice velocities and copy data
     int* deviceLatticeVelocities;
@@ -181,6 +129,39 @@ void LBParamsWrapper<T>::allocateAndCopyToDevice() {
     cudaErrorCheck(cudaMemcpy(this->_deviceParams, &paramsTemp, sizeof(LBParams<T>), cudaMemcpyHostToDevice));
 }
 
+
+template<typename T>
+void LBParamsWrapper<T>::cleanupHost() {
+    if (this->_hostParams.LATTICE_VELOCITIES != nullptr) {
+        delete[] this->_hostParams.LATTICE_VELOCITIES;
+        this->_hostParams.LATTICE_VELOCITIES = nullptr;
+    }
+    if (this->_hostParams.LATTICE_WEIGHTS != nullptr) {
+        delete[] this->_hostParams.LATTICE_WEIGHTS;
+        this->_hostParams.LATTICE_WEIGHTS = nullptr;
+    }
+}
+
+template<typename T>
+void LBParamsWrapper<T>::cleanupDevice() {
+    // If _deviceParams was already freed and set to nullptr, return
+    if(this->getDeviceParams() == nullptr) { return; }
+
+    // Assuming _deviceParams has been properly allocated and initialized
+    LBParams<T> paramsTemp;
+
+    // Copy _deviceParams back to host to access the pointers
+    cudaErrorCheck(cudaMemcpy(&paramsTemp, this->getDeviceParams(), sizeof(LBParams<T>), cudaMemcpyDeviceToHost));
+
+    // Use the pointers from the temp copy to free device memory
+    cudaFree(paramsTemp.LATTICE_VELOCITIES);
+    cudaFree(paramsTemp.LATTICE_WEIGHTS);
+
+    // Finally, free the _deviceParams struct itself
+    cudaFree(this->_deviceParams);
+    this->_deviceParams = nullptr; // Ensure the pointer is marked as freed
+}
+
 /************************************************/
 /***** Derived class 02: CollisionParamsBGK *****/
 /************************************************/
@@ -201,7 +182,12 @@ CollisionParamsBGKWrapper<T>::CollisionParamsBGKWrapper(
 }
 
 template<typename T>
-CollisionParamsBGKWrapper<T>::~CollisionParamsBGKWrapper() {}
+CollisionParamsBGKWrapper<T>::~CollisionParamsBGKWrapper() {
+    // Cleanup host resources
+    cleanupHost();
+    // Cleanup device resources
+    cleanupDevice();
+}
 
 template<typename T>
 void CollisionParamsBGKWrapper<T>::setValues(
@@ -214,8 +200,7 @@ void CollisionParamsBGKWrapper<T>::setValues(
         T omegaShear
     ) {
     // Clean up existing data
-    ParamsWrapper<T, CollisionParamsBGK<T>>::cleanupHost();
-
+    cleanupHost();
 
     // Assign new deep copies
     this->_hostParams.D                  = dim;
@@ -236,7 +221,7 @@ void CollisionParamsBGKWrapper<T>::setValues(
 template<typename T>
 void CollisionParamsBGKWrapper<T>::allocateAndCopyToDevice() {
     // Cleanup device resources that may have been previously allocated
-    ParamsWrapper<T, CollisionParamsBGK<T>>::cleanupDevice();
+    cleanupDevice();
 
     // Allocate device memory for lattice velocities and copy data
     int* deviceLatticeVelocities;
@@ -264,11 +249,48 @@ void CollisionParamsBGKWrapper<T>::allocateAndCopyToDevice() {
     cudaErrorCheck(cudaMemcpy(this->_deviceParams, &paramsTemp, sizeof(CollisionParamsBGK<T>), cudaMemcpyHostToDevice));
 }
 
+template<typename T>
+void CollisionParamsBGKWrapper<T>::cleanupHost() {
+    if (this->_hostParams.LATTICE_VELOCITIES != nullptr) {
+        delete[] this->_hostParams.LATTICE_VELOCITIES;
+        this->_hostParams.LATTICE_VELOCITIES = nullptr;
+    }
+    if (this->_hostParams.LATTICE_WEIGHTS != nullptr) {
+        delete[] this->_hostParams.LATTICE_WEIGHTS;
+        this->_hostParams.LATTICE_WEIGHTS = nullptr;
+    }
+}
+
+template<typename T>
+void CollisionParamsBGKWrapper<T>::cleanupDevice() {
+    // If _deviceParams was already freed and set to nullptr, return
+    if(this->getDeviceParams() == nullptr) { return; }
+
+    // Assuming _deviceParams has been properly allocated and initialized
+    CollisionParamsBGK<T> paramsTemp;
+
+    // Copy _deviceParams back to host to access the pointers
+    cudaErrorCheck(cudaMemcpy(&paramsTemp, this->getDeviceParams(), sizeof(CollisionParamsBGK<T>), cudaMemcpyDeviceToHost));
+
+    // Use the pointers from the temp copy to free device memory
+    cudaFree(paramsTemp.LATTICE_VELOCITIES);
+    cudaFree(paramsTemp.LATTICE_WEIGHTS);
+
+    // Finally, free the _deviceParams struct itself
+    cudaFree(this->_deviceParams);
+    this->_deviceParams = nullptr; // Ensure the pointer is marked as freed
+}
+
 /************************************************/
 /***** Derived class 02: CollisionParamsCHM *****/
 /************************************************/
 template<typename T>
-CollisionParamsCHMWrapper<T>::CollisionParamsCHMWrapper() {}
+CollisionParamsCHMWrapper<T>::CollisionParamsCHMWrapper() {
+    // Cleanup host resources
+    cleanupHost();
+    // Cleanup device resources
+    cleanupDevice();
+}
 
 template<typename T>
 CollisionParamsCHMWrapper<T>::CollisionParamsCHMWrapper(
@@ -299,7 +321,7 @@ void CollisionParamsCHMWrapper<T>::setValues(
         T omegaBulk
     ) {
     // Clean up existing data
-    ParamsWrapper<T, CollisionParamsCHM<T>>::cleanupHost();
+    cleanupHost();
 
     // Assign new deep copies
     this->_hostParams.D                  = dim;
@@ -321,7 +343,7 @@ void CollisionParamsCHMWrapper<T>::setValues(
 template<typename T>
 void CollisionParamsCHMWrapper<T>::allocateAndCopyToDevice() {
     // Cleanup device resources that may have been previously allocated
-    ParamsWrapper<T, CollisionParamsCHM<T>>::cleanupDevice();
+    cleanupDevice();
 
     // Allocate device memory for lattice velocities and copy data
     int* deviceLatticeVelocities;
@@ -347,6 +369,38 @@ void CollisionParamsCHMWrapper<T>::allocateAndCopyToDevice() {
 
     // Copy the prepared Params (with device pointers) from the temporary host copy to the device
     cudaErrorCheck(cudaMemcpy(this->_deviceParams, &paramsTemp, sizeof(CollisionParamsCHM<T>), cudaMemcpyHostToDevice));
+}
+
+template<typename T>
+void CollisionParamsCHMWrapper<T>::cleanupHost() {
+    if (this->_hostParams.LATTICE_VELOCITIES != nullptr) {
+        delete[] this->_hostParams.LATTICE_VELOCITIES;
+        this->_hostParams.LATTICE_VELOCITIES = nullptr;
+    }
+    if (this->_hostParams.LATTICE_WEIGHTS != nullptr) {
+        delete[] this->_hostParams.LATTICE_WEIGHTS;
+        this->_hostParams.LATTICE_WEIGHTS = nullptr;
+    }
+}
+
+template<typename T>
+void CollisionParamsCHMWrapper<T>::cleanupDevice() {
+    // If _deviceParams was already freed and set to nullptr, return
+    if(this->getDeviceParams() == nullptr) { return; }
+
+    // Assuming _deviceParams has been properly allocated and initialized
+    CollisionParamsCHM<T> paramsTemp;
+
+    // Copy _deviceParams back to host to access the pointers
+    cudaErrorCheck(cudaMemcpy(&paramsTemp, this->getDeviceParams(), sizeof(CollisionParamsCHM<T>), cudaMemcpyDeviceToHost));
+
+    // Use the pointers from the temp copy to free device memory
+    cudaFree(paramsTemp.LATTICE_VELOCITIES);
+    cudaFree(paramsTemp.LATTICE_WEIGHTS);
+
+    // Finally, free the _deviceParams struct itself
+    cudaFree(this->_deviceParams);
+    this->_deviceParams = nullptr; // Ensure the pointer is marked as freed
 }
 
 /********************************************/
@@ -392,7 +446,6 @@ void BoundaryParamsWrapper<T>::setValues(
         const T* WALL_VELOCITY,
         BoundaryLocation location
     ) {
-
     // Clean up existing data
     cleanupHost();
 

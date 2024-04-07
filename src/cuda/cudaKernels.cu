@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
+#include <cstdio>     // For std::cout
 
 #include "core/constants.h"
 #include "core/kernelParameters.h"
@@ -45,11 +46,14 @@ __global__ void doStreamingKernel(const T *const collision, T *streaming, const 
 
     unsigned int idx = pos(i, j, params->Nx);
     unsigned int idxNeighbor;
+    int cx, cy;
 
-    for (size_t l = 0; l < params->Q; ++l) {
-	    idxNeighbor = pos(static_cast<int>(i) - params->LATTICE_VELOCITIES[l * params->D], static_cast<int>(j) - params->LATTICE_VELOCITIES[l * params->D + 1], params->Nx);
+    for (unsigned int l = 0; l < params->Q; ++l) {
+        cx = params->LATTICE_VELOCITIES[l * params->D];
+        cy = params->LATTICE_VELOCITIES[l * params->D + 1];
+
+ 	    idxNeighbor = pos(static_cast<int>(i) - cx, static_cast<int>(j) - cy, params->Nx);
 		streaming[params->Q * idx + l] = collision[params->Q * idxNeighbor + l];
-        printf("(%d,%d) | l = (%zu) | (cx,cy) = (%d,%d), (in,jn) = (%d,%d)\n",i,j,l,params->LATTICE_VELOCITIES[l * params->D],params->LATTICE_VELOCITIES[l * params->D+1],static_cast<int>(i)-params->LATTICE_VELOCITIES[l * params->D],static_cast<int>(j)-params->LATTICE_VELOCITIES[l * params->D+1]);
 	}
 }
 
@@ -130,23 +134,29 @@ __device__ void applyBC(T* collision, const BoundaryParams<T>* const params, uns
 
     idx = pos(i, j, params->Nx);
 
-
-        
-    for (size_t l = 0; l < 3; ++l) {
+    for (unsigned int l = 0; l < 3; ++l) {
         pop = params->POPULATION[l];
         popRev = params->OPPOSITE_POPULATION[pop];
         cx = params->LATTICE_VELOCITIES[pop*params->D];
         cy = params->LATTICE_VELOCITIES[pop*params->D+1];
 
-        if (static_cast<int>(i)+cx < 1 || static_cast<int>(i)+cx > params->Nx - 2 || static_cast<int>(j)+cy < 1 || static_cast<int>(j)+cy > params->Ny - 2) { continue; }
+        // Check if the neighbor is outside the domain (i.e., a ghost cell)
+        if (static_cast<int>(i) + cx < 1 || static_cast<int>(i) + cx > params->Nx - 2 || static_cast<int>(j) + cy < 1 || static_cast<int>(j) + cy > params->Ny - 2) { continue; }
 
+        // Compute the index of the neighbor
         idxNeighbor = pos(static_cast<int>(i)+cx, static_cast<int>(j)+cy, params->Nx);
+
+        // Compute the dot product if WALL_VELOCITY is not null
         if (params->WALL_VELOCITY != nullptr) {
             dotProduct = cx * params->WALL_VELOCITY[0] + cy * params->WALL_VELOCITY[1];
         } else {
             dotProduct = 0.0;
         }
+
+        // Compute the zeroth moment (i.e., the density) of the neighbor cell
         R = cell.getZeroMoment(&collision[params->Q * idxNeighbor], params);
+
+        // Apply the bounce-back boundary condition
         collision[params->Q * idx + pop] = collision[params->Q * idxNeighbor + popRev] + 2.0 * params->LATTICE_WEIGHTS[pop] * R * C_S_POW2_INV * dotProduct;
     }
        
@@ -212,7 +222,6 @@ __global__ void computeZerothMomentKernel(T* zerothMoment, const T* const collis
     zerothMoment[idxMoment] = R;
 }
 
-
 template<typename T>
 void computeZerothMomentCaller(T* deviceZerothMoment, const T* const deviceCollision, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
     computeZerothMomentKernel<<<gridSize, blockSize>>>(deviceZerothMoment, deviceCollision, params);
@@ -234,11 +243,10 @@ __global__ void computeFirstMomentKernel(T* firstMoment, const T* const collisio
     Cell<T> cell;
     T U = cell.getFirstMomentX(&collision[idx * params->Q], params);
     T V = cell.getFirstMomentY(&collision[idx * params->Q], params);
-    firstMoment[idxMoment]      = U;
-    firstMoment[idxMoment + 1]  = V;
-    //printf("(i,j) = (%d,%d) | U = %g, V = %g\n",i,j,U,V);
-}
 
+    firstMoment[idxMoment * params->D]      = U;
+    firstMoment[idxMoment * params->D + 1]  = V;
+}
 
 template<typename T>
 void computeFirstMomentCaller(T* deviceFirstMoment, const T* const deviceCollision, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
@@ -258,7 +266,6 @@ __global__ void testKernel(T* collision, const CollisionParamsBGK<T>* const para
     unsigned int idx = pos(i, j, params->Nx);
     Cell<T> cell;
     T R = cell.getZeroMoment(&collision[params->Q * idx], params);
-    //printf("(i,j) = (%d,%d) | R = %g\n",i,j,R);
 }
 
 template<typename T>
