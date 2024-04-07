@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <memory> // For std::unique_ptr and std::make_unique
 
+#include "tinyxml2.h"
+
 #include "core/lbModel.h"
 #include "core/collisionModel.h"
 #include "core/gridGeometry.h"

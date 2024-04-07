@@ -39,10 +39,14 @@ set(SOURCES
     src/cuda/cudaUtilities.cu
 )
 
+# Define the tinyxml2 library
+add_library(tinyxml2 STATIC external/tinyxml2/tinyxml2.cpp)
+target_include_directories(tinyxml2 PUBLIC external/tinyxml2)
+
 # Example: LidDrivenCavity2D
 #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=sm_61)  # Example for compute capability 6.1
 CUDA_ADD_EXECUTABLE(LidDrivenCavity2D examples/LidDrivenCavity2D/main.cpp ${SOURCES})
-target_link_libraries(LidDrivenCavity2D ${CUDA_LIBRARIES})
+target_link_libraries(LidDrivenCavity2D ${CUDA_LIBRARIES} tinyxml2)
 set_target_properties(LidDrivenCavity2D PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/LidDrivenCavity2D/build")
 set_target_properties(LidDrivenCavity2D PROPERTIES CUDA_ARCHITECTURES "native")
 
