@@ -4,7 +4,8 @@
 
 #include "core/constants.h"
 #include "core/kernelParameters.h"
-#include "core/cell.h"
+#include "core/lb/lbConstants.h"
+#include "core/lb/cell.h"
 #include "cudaKernels.cuh"
 #include "cudaErrorHandler.cuh"
 

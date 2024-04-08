@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <vector>
 
-#include "kernelParameters.h"
+#include "core/kernelParameters.h"
 
 /**********************/
 /***** Base class *****/

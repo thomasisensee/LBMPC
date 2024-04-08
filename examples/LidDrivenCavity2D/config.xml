@@ -13,11 +13,35 @@
     <collisionModel>
         <type>BGK</type>
         <relaxationShear>0.7</relaxationShear>
+        <!--
+        <type>CHM</type>
+        <relaxationShear>0.7</relaxationShear>
+        <relaxationBulk>0.7</relaxationBulk>
+        -->
     </collisionModel>
+    <boundaryConditions>
+        <WEST>
+        <type>bounceBack</type>
+        </WESTt>
+        <EAST>
+        <type>bounceBack</type>
+        </EAST>
+        <SOUTH>
+        <type>bounceBack</type>
+        </SOUTH>
+        <NORTH>
+        <type>movingWall</type>
+        <velocity>
+            <x>1.0</x>
+            <y>0.0</y>
+        </velocity>
+        </NORTH>
+    </boundaryConditions>
     <simulation>
         <simTime>10</simTime>
     </simulation>
     <output>
         <numberOutputFiles>10</numberOutputFiles>
         <outputPath>./output</outputPath>
+    </output>
 </simulationConfig>

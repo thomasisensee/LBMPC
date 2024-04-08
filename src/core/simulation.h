@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#include "lbGrid.h"
+#include "lb/lbGrid.h"
 #include "io/vtkWriter.h"
 
 /**********************/

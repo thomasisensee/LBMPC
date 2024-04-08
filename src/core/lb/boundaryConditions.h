@@ -7,8 +7,8 @@
 #include <memory>       // For std::unique_ptr
 #include <string>       // For std::string
 
-#include "constants.h"
-#include "kernelParameters.h"
+#include "core/constants.h"
+#include "core/kernelParameters.h"
 
 /**********************/
 /***** Base class *****/
@@ -81,16 +81,16 @@ public:
 /***** Derived class 03: Fixed Velocity (Bounce Back) *****/
 /**********************************************************/
 template<typename T>
-class FixedVelocityBoundary final : public BounceBack<T> {
+class MovingWall final : public BounceBack<T> {
     /// Wall velocity
     std::vector<T> _wallVelocity;
 
 public:
     /// Constructor
-    FixedVelocityBoundary(BoundaryLocation loc, const std::vector<T>& velocity);
+    MovingWall(BoundaryLocation loc, const std::vector<T>& velocity);
 
     /// Destructor
-    virtual ~FixedVelocityBoundary() = default;
+    virtual ~MovingWall() = default;
 
     void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel) override;
 

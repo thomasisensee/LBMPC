@@ -3,12 +3,14 @@
 
 #include "tinyxml2.h"
 
-#include "core/lbModel.h"
-#include "core/collisionModel.h"
+#include "core/constants.h"
+#include "core/lb/lbConstants.h"
 #include "core/gridGeometry.h"
-#include "core/boundaryConditions.h"
-#include "core/lbGrid.h"
 #include "core/simulation.h"
+#include "core/lb/lbModel.h"
+#include "core/lb/collisionModel.h"
+#include "core/lb/boundaryConditions.h"
+#include "core/lb/lbGrid.h"
 #include "io/vtkWriter.h"
 #include "cuda/cudaUtilities.cuh"
 
@@ -53,7 +55,7 @@ int main() {
     boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T>>(BoundaryLocation::WEST));
     boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T>>(BoundaryLocation::EAST));
     boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T>>(BoundaryLocation::SOUTH));
-    boundaryConditionManager->addBoundaryCondition(std::make_unique<FixedVelocityBoundary<T>>(BoundaryLocation::NORTH, wallVelocity)); // For now the order matters, since all BCs access the corners
+    boundaryConditionManager->addBoundaryCondition(std::make_unique<MovingWall<T>>(BoundaryLocation::NORTH, wallVelocity)); // For now the order matters, since all BCs access the corners
     boundaryConditionManager->print();
 
     // ======================

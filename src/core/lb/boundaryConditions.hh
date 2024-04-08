@@ -3,8 +3,8 @@
 
 #include <cuda_runtime.h>
 
-#include "constants.h"
 #include "boundaryConditions.h"
+#include "core/constants.h"
 #include "cuda/cudaErrorHandler.cuh"
 
 /**********************/
@@ -28,7 +28,7 @@ void BoundaryCondition<T>::prepareKernelParams(const LBParams<T>& lbParams, cons
         lbParams.Q,
         lbParams.LATTICE_VELOCITIES,
         lbParams.LATTICE_WEIGHTS,
-        lbModel->getPopualationPtr(this->getLocation()),
+        lbModel->getPopulationPtr(this->getLocation()),
         lbModel->getOppositePopualationPtr(),
         nullptr,
         this->_location
@@ -96,28 +96,28 @@ void BounceBack<T>::print() const {
 /***** Derived class 03: Fixed Velocity (Bounce Back) *****/
 /**********************************************************/
 template<typename T>
-FixedVelocityBoundary<T>::FixedVelocityBoundary(BoundaryLocation loc, const std::vector<T>& velocity) : BounceBack<T>(loc), _wallVelocity(velocity) {}
+MovingWall<T>::MovingWall(BoundaryLocation loc, const std::vector<T>& velocity) : BounceBack<T>(loc), _wallVelocity(velocity) {}
 
 template<typename T>
-void FixedVelocityBoundary<T>::prepareKernelParams(const LBParams<T>& lbmParams, const LBModel<T>* lbModel) {
+void MovingWall<T>::prepareKernelParams(const LBParams<T>& lbmParams, const LBModel<T>* lbModel) {
     BoundaryCondition<T>::prepareKernelParams(lbmParams, lbModel);
     this->_params.setWallVelocity(getWallVelocity());
 }
 
 template<typename T>
-const std::vector<T>& FixedVelocityBoundary<T>::getWallVelocity() const {
+const std::vector<T>& MovingWall<T>::getWallVelocity() const {
     return _wallVelocity;
 }
 
 template<typename T>
-void FixedVelocityBoundary<T>::print() const {
+void MovingWall<T>::print() const {
     BoundaryCondition<T>::printBoundaryLocation();
     std::cout << "== Condition: " << "Bounce-Back with fixed velocity" << "\t=="  << std::endl;
     std::cout << "== Velocity = {" << getWallVelocity()[0] << ", " << getWallVelocity()[1] << "}\t=="  << std::endl;
 }
 /*
 template<typename T>
-void FixedVelocityBoundary<T>::apply(T* lbmField) {
+void MovingWall<T>::apply(T* lbmField) {
     std::cout << boundaryLocationToString(this->_location) << "| V = {" << this->_params.getHostParams().WALL_VELOCITY[0] << "}"  << std::endl;
     dim3 blockSize(this->_threadsPerBlock);
     dim3 gridSize(this->_numBlocks);

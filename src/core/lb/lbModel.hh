@@ -5,7 +5,6 @@
 
 #include "lbModel.h"
 
-
 /**********************/
 /***** Base class *****/
 /**********************/
@@ -40,7 +39,7 @@ const T* LBModel<T>::getLatticeWeightsPtr() const {
 }
 
 template<typename T>
-const unsigned int* LBModel<T>::getPopualationPtr(BoundaryLocation location) const {
+const unsigned int* LBModel<T>::getPopulationPtr(BoundaryLocation location) const {
 // Check if the boundary location exists in the mapping and if the vector is not empty
     auto it = this->_BOUNDARY_MAPPING.find(location);
     if (it != this->_BOUNDARY_MAPPING.end() && !it->second.empty()) {

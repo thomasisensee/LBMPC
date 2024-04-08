@@ -14,18 +14,19 @@ include_directories(${CUDA_INCLUDE_DIRS})
 set(SOURCES
     src/core/constants.h
     src/core/constants.cpp
-    src/core/cell.h
-    src/core/cell.hh
+    src/core/lb/lbConstants.h
+    src/core/lb/cell.h
+    src/core/lb/cell.hh
     src/core/gridGeometry.h
     src/core/gridGeometry.hh
-    src/core/lbGrid.h
-    src/core/lbGrid.hh
-    src/core/lbModel.h
-    src/core/lbModel.hh
-    src/core/collisionModel.h
-    src/core/collisionModel.hh
-    src/core/boundaryConditions.h
-    src/core/boundaryConditions.hh
+    src/core/lb/lbGrid.h
+    src/core/lb/lbGrid.hh
+    src/core/lb/lbModel.h
+    src/core/lb/lbModel.hh
+    src/core/lb/collisionModel.h
+    src/core/lb/collisionModel.hh
+    src/core/lb/boundaryConditions.h
+    src/core/lb/boundaryConditions.hh
     src/core/simulation.h
     src/core/simulation.hh
     src/core/kernelParameters.h

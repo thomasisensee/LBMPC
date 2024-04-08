@@ -63,7 +63,7 @@ public:
     const T* getLatticeWeightsPtr() const;
 
     /// Get pointer to POPULATION
-    const unsigned int* getPopualationPtr(BoundaryLocation location) const;
+    const unsigned int* getPopulationPtr(BoundaryLocation location) const;
     
     /// Get pointer to OPPOSITE_POPULATION
     const unsigned int* getOppositePopualationPtr() const;

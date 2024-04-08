@@ -5,8 +5,10 @@
 #include <vector>
 
 #include "lbModel.h"
-#include "gridGeometry.h"
-#include "kernelParameters.h"
+#include "collisionModel.h"
+#include "boundaryConditions.h"
+#include "core/gridGeometry.h"
+#include "core/kernelParameters.h"
 
 template<typename T>
 class LBGrid {

@@ -3,7 +3,6 @@
 
 #include "cell.h"
 
-
 template<typename T>
 __device__ T Cell<T>::computeEquilibriumPopulation(unsigned int l, const LBParams<T>* const params, T R, T U, T V) const {
     int cix = params->LATTICE_VELOCITIES[l * params->D];
