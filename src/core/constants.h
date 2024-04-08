@@ -5,14 +5,12 @@
 
 /// Allowed boundary locations
 enum class BoundaryLocation {
-    WEST,
+    WEST = 0,
     EAST,
     SOUTH,
-    NORTH
+    NORTH,
+    COUNT // Sentinel, not a real location, just marks the end
 };
-
-/// Transform BoundaryLocation members to strings for output
-std::string boundaryLocationToString(BoundaryLocation location);
 
 //#include "constants.hh"
 

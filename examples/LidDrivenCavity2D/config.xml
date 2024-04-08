@@ -1,28 +1,32 @@
 <simulationConfig>
-    <fluidProperties>
+    <physicalProperties>
         <Reynolds>100</Reynolds>
-    </fluidProperties>
+    </physicalProperties>
     <grid>
         <nX>126</nX>
         <nY>126</nY>
-        <dx>1/126</dx>
-    </grid>
-    <lbmModel>
-        <type>D2Q9</type>
-    </lbmModel>
-    <collisionModel>
-        <type>BGK</type>
-        <relaxationShear>0.7</relaxationShear>
+        <dx>7.93650793e-3</dx>
         <!--
+        <LengthX>1.0</LengthX>
+        -->
+    </grid>
+    <lbModel>
+        <type>D2Q9</type>
+    </lbModel>
+    <collisionModel>
+    <!--
+        <type>BGK</type>
+        <relaxationShear>0.6</relaxationShear>
+    -->
         <type>CHM</type>
         <relaxationShear>0.7</relaxationShear>
         <relaxationBulk>0.7</relaxationBulk>
-        -->
+
     </collisionModel>
     <boundaryConditions>
         <WEST>
         <type>bounceBack</type>
-        </WESTt>
+        </WEST>
         <EAST>
         <type>bounceBack</type>
         </EAST>
@@ -38,10 +42,10 @@
         </NORTH>
     </boundaryConditions>
     <simulation>
-        <simTime>10</simTime>
+        <simTime>5</simTime>
     </simulation>
     <output>
         <numberOutputFiles>10</numberOutputFiles>
-        <outputPath>./output</outputPath>
+        <outputDirectory>./output</outputDirectory>
     </output>
 </simulationConfig>

@@ -49,6 +49,9 @@ public:
     /// Destructor
     ~LBGrid();
 
+    /// Print parameters
+    void printParameters();
+
     /// Getter for _hostDistributions
     std::vector<T>& getHostDistributions();
 

@@ -5,6 +5,7 @@
 
 #include "boundaryConditions.h"
 #include "core/constants.h"
+#include "core/utilities.h"
 #include "cuda/cudaErrorHandler.cuh"
 
 /**********************/
@@ -49,7 +50,7 @@ void BoundaryCondition<T>::printBoundaryLocation() const {
 }
 
 template<typename T>
-void BoundaryCondition<T>::print() const {
+void BoundaryCondition<T>::printParameters() const {
     printBoundaryLocation();
     std::cout << "== Condition: " << "Base" << "\t=="  << std::endl;
 }
@@ -59,15 +60,15 @@ void BoundaryCondition<T>::print() const {
 /***** Derived class 01: Periodic *****/
 /**************************************/
 template<typename T>
-PeriodicBoundary<T>::PeriodicBoundary(BoundaryLocation loc) : BoundaryCondition<T>(loc) {}
+Periodic<T>::Periodic(BoundaryLocation loc) : BoundaryCondition<T>(loc) {}
 
 template<typename T>
-void PeriodicBoundary<T>::apply(T* lbmField) {
+void Periodic<T>::apply(T* lbmField) {
 
 }
 
 template<typename T>
-void PeriodicBoundary<T>::print() const {
+void Periodic<T>::printParameters() const {
     BoundaryCondition<T>::printBoundaryLocation();
     std::cout << "== Condition: " << "Periodic" << "\t=="  << std::endl;
 }
@@ -87,7 +88,7 @@ void BounceBack<T>::apply(T* lbmField) {
 }
 
 template<typename T>
-void BounceBack<T>::print() const {
+void BounceBack<T>::printParameters() const {
     BoundaryCondition<T>::printBoundaryLocation();
     std::cout << "== Condition: " << "Bounce-back" << "\t=="  << std::endl;
 }
@@ -96,7 +97,7 @@ void BounceBack<T>::print() const {
 /***** Derived class 03: Fixed Velocity (Bounce Back) *****/
 /**********************************************************/
 template<typename T>
-MovingWall<T>::MovingWall(BoundaryLocation loc, const std::vector<T>& velocity) : BounceBack<T>(loc), _wallVelocity(velocity) {}
+MovingWall<T>::MovingWall(BoundaryLocation loc, const std::vector<T>& velocity) : BounceBack<T>(loc), _wallVelocity(velocity), _dxdt(0.0) {}
 
 template<typename T>
 void MovingWall<T>::prepareKernelParams(const LBParams<T>& lbmParams, const LBModel<T>* lbModel) {
@@ -110,27 +111,26 @@ const std::vector<T>& MovingWall<T>::getWallVelocity() const {
 }
 
 template<typename T>
-void MovingWall<T>::print() const {
+void MovingWall<T>::printParameters() const {
     BoundaryCondition<T>::printBoundaryLocation();
     std::cout << "== Condition: " << "Bounce-Back with fixed velocity" << "\t=="  << std::endl;
-    std::cout << "== Velocity = {" << getWallVelocity()[0] << ", " << getWallVelocity()[1] << "}\t=="  << std::endl;
+    std::cout << "== Velocity = {" << getWallVelocity()[0] * _dxdt << ", " << getWallVelocity()[1] * _dxdt << "}\t=="  << std::endl;
 }
-/*
-template<typename T>
-void MovingWall<T>::apply(T* lbmField) {
-    std::cout << boundaryLocationToString(this->_location) << "| V = {" << this->_params.getHostParams().WALL_VELOCITY[0] << "}"  << std::endl;
-    dim3 blockSize(this->_threadsPerBlock);
-    dim3 gridSize(this->_numBlocks);
-    applyBounceBackCaller(lbmField, this->_params.getDeviceParams(), gridSize, blockSize);
-}*/
 
+template<typename T>
+void MovingWall<T>::setDxdt(T dxdt) {
+    _dxdt = dxdt;
+}
 
 /*************************/
 /***** Wrapper class *****/
 /*************************/
 template<typename T>
-BoundaryConditionManager<T>::BoundaryConditionManager() {
+BoundaryConditionManager<T>::BoundaryConditionManager() {}
 
+template<typename T>
+void BoundaryConditionManager<T>::setDxdt(T dxdt) {
+    _dxdt = dxdt;
 }
 
 template<typename T>
@@ -141,6 +141,12 @@ void BoundaryConditionManager<T>::addBoundaryCondition(std::unique_ptr<BoundaryC
             exit(EXIT_FAILURE);
         }
     }   
+
+    // If MovingWall, then set dxdt
+    MovingWall<T>* MWCondition = dynamic_cast<MovingWall<T>*>(condition.get());
+    if (MWCondition != nullptr) {
+        MWCondition->setDxdt(_dxdt);
+    }
 
     boundaryConditions.push_back(std::move(condition));
 }
@@ -160,10 +166,10 @@ void BoundaryConditionManager<T>::apply(T* lbmField) {
 }
 
 template<typename T>
-void BoundaryConditionManager<T>::print() const {
+void BoundaryConditionManager<T>::printParameters() const {
     std::cout << "====== Boundary conditions =======" << std::endl;
     for (const auto& condition : boundaryConditions) {
-        condition->print();
+        condition->printParameters();
     }
     std::cout << "==================================\n" << std::endl;
 }

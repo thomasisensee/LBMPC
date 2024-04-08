@@ -17,7 +17,7 @@ private:
     float _delta;
 
     /// Helper functions for templated writeScalarField function
-    std::string constructFilename(const std::string& fieldName, unsigned int iter);
+    std::string constructFilename(const std::string& fieldName, unsigned int outputCounter);
     std::string getVtkDataTypeString(const float&);
     std::string getVtkDataTypeString(const double&);
     std::string getVtkDataTypeString(const int&);
@@ -42,15 +42,15 @@ public:
 
     /// Write a scalar field to a VTK file
     template<typename T>
-    void writeScalarField(const std::vector<T>& field, const std::string& fieldName, unsigned int iter);
+    void writeScalarField(const std::vector<T>& field, const std::string& fieldName, unsigned int outputCounter);
 
     /// Write a vector field to a VTK file
     template<typename T>
-    void writeVectorField(const std::vector<T>& field, const std::string& fieldName, unsigned int iter);
+    void writeVectorField(const std::vector<T>& field, const std::string& fieldName, unsigned int outputCounter);
 
     /// Write a vector field to a VTK file, dividing by scalar field (as for velocity computation)
     template<typename T>
-    void writeVectorField(const std::vector<T>& vectorField, const std::vector<T>& scalarField, const std::string& fieldName, unsigned int iter);
+    void writeVectorField(const std::vector<T>& vectorField, const std::vector<T>& scalarField, const std::string& fieldName, T dt, unsigned int outputCounter);
 };
 
 #include "vtkWriter.hh"

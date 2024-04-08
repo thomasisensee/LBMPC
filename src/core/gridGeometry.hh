@@ -44,7 +44,7 @@ unsigned int GridGeometry2D<T>::getGhostVolume() const {
 }
 
 template<typename T>
-void GridGeometry2D<T>::print() const {
+void GridGeometry2D<T>::printParameters() const {
     std::cout << "============== Grid Details ==============" << std::endl;
     std::cout << "==\tExtent (Lx,Ly):"  << "\t" << "(" << this->getNx()*this->getDelta() << "/" << this->getNy()*this->getDelta() << ")" << "\t\t==" << std::endl;
     std::cout << "==\tExtent (Nx,Ny):"  << "\t" << "(" << this->getNx() << "/" << this->getNy() << ")" << "\t==" << std::endl;

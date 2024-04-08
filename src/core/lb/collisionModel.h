@@ -29,7 +29,7 @@ public:
         std::pair<unsigned int, unsigned int> numBlocks,
         std::pair<unsigned int, unsigned int> threadsPerBlock
     ) = 0;
-    virtual void print() = 0;
+    virtual void printParameters() = 0;
 };
 
 
@@ -56,7 +56,7 @@ public:
         std::pair<unsigned int, unsigned int> numBlocks,
         std::pair<unsigned int, unsigned int> threadsPerBlock
     ) override;
-    virtual void print();
+    virtual void printParameters();
 };
 
 /******************************************************/
@@ -85,7 +85,7 @@ public:
         std::pair<unsigned int, unsigned int> numBlocks,
         std::pair<unsigned int, unsigned int> threadsPerBlock
     ) override;
-    virtual void print() override;
+    virtual void printParameters() override;
 };
 
 #include "collisionModel.hh"

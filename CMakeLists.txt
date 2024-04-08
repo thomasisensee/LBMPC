@@ -13,7 +13,8 @@ include_directories(${CUDA_INCLUDE_DIRS})
 # Add source files
 set(SOURCES
     src/core/constants.h
-    src/core/constants.cpp
+    src/core/utilities.h
+    src/core/utilities.cpp
     src/core/lb/lbConstants.h
     src/core/lb/cell.h
     src/core/lb/cell.hh

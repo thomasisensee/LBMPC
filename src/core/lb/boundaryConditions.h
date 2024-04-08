@@ -8,6 +8,7 @@
 #include <string>       // For std::string
 
 #include "core/constants.h"
+#include "core/lb/lbConstants.h"
 #include "core/kernelParameters.h"
 
 /**********************/
@@ -25,6 +26,7 @@ protected:
     /// Cuda grid and block size
     unsigned int _numBlocks;
     unsigned int _threadsPerBlock;
+
 public:
     /// Constructor
     BoundaryCondition(BoundaryLocation loc);
@@ -36,7 +38,7 @@ public:
     virtual void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel);
     virtual void apply(T* lbField) = 0;
 
-    virtual void print() const;
+    virtual void printParameters() const;
     virtual void printBoundaryLocation() const;
 
 };
@@ -46,17 +48,17 @@ public:
 /***** Derived class 01: Periodic *****/
 /**************************************/
 template<typename T>
-class PeriodicBoundary final : public BoundaryCondition<T> {
+class Periodic final : public BoundaryCondition<T> {
 public:
     /// Constructor
-    PeriodicBoundary(BoundaryLocation loc);
+    Periodic(BoundaryLocation loc);
 
     /// Destructor
-    virtual ~PeriodicBoundary() = default;
+    virtual ~Periodic() = default;
 
     void apply(T* lbField) override;
 
-    void print() const override;
+    void printParameters() const override;
 };
 
 /*****************************************/
@@ -73,7 +75,7 @@ public:
 
     virtual void apply(T* lbField) override;
 
-    void print() const override;
+    void printParameters() const override;
 
 };
 
@@ -85,6 +87,9 @@ class MovingWall final : public BounceBack<T> {
     /// Wall velocity
     std::vector<T> _wallVelocity;
 
+    /// Helper variables (currently only for printing the correct velocity)
+    T _dxdt; // dx/dt
+
 public:
     /// Constructor
     MovingWall(BoundaryLocation loc, const std::vector<T>& velocity);
@@ -95,9 +100,10 @@ public:
     void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel) override;
 
     const std::vector<T>& getWallVelocity() const;
-    void print() const override;
+    void printParameters() const override;
 
-    //void apply(T* lbField) override;
+    /// Setter for _dxdt
+    void setDxdt(T dxdt);
 };
 
 
@@ -109,6 +115,9 @@ class BoundaryConditionManager {
     /// Vector of boundary condition objects
     std::vector<std::unique_ptr<BoundaryCondition<T>>> boundaryConditions;
 
+    /// Helper variables (currently only for printing the correct velocity in case of moving wall)
+    T _dxdt; // dx/dt
+
 public:
     /// Constructor
     BoundaryConditionManager();
@@ -116,10 +125,13 @@ public:
     /// Destructor
     ~BoundaryConditionManager() = default;
 
+    /// Setter for _dxdt
+    void setDxdt(T dxdt);
+
     void addBoundaryCondition(std::unique_ptr<BoundaryCondition<T>> condition);
     void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel);
     void apply(T* lbField);
-    void print() const;
+    void printParameters() const;
 };
 
 #include "boundaryConditions.hh"

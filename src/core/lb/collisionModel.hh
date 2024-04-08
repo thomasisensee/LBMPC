@@ -54,7 +54,7 @@ void CollisionBGK<T>::doCollision(T* distribution, std::pair<unsigned int, unsig
 }
 
 template<typename T>
-void CollisionBGK<T>::print() {
+void CollisionBGK<T>::printParameters() {
     std::cout << "============= Collision Model: BGK ===============" << std::endl;
     std::cout << "== Omega shear:\t" << this->getOmegaShear() << "\t\t\t==" << std::endl;
     std::cout << "==================================================\n" << std::endl;
@@ -100,7 +100,7 @@ void CollisionCHM<T>::doCollision(T* distribution, std::pair<unsigned int, unsig
 }
 
 template<typename T>
-void CollisionCHM<T>::print() {
+void CollisionCHM<T>::printParameters() {
     std::cout << "============= Collision Model: CHM ===============" << std::endl;
     std::cout << "== Omega shear:\t" << this->getOmegaShear() << "\t\t\t\t==" << std::endl;
     std::cout << "== Omega bulk:\t" << this->getOmegaBulk() << "\t\t\t\t\t==" << std::endl;

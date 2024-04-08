@@ -26,7 +26,7 @@ public:
     /// Read access to grid volume
     unsigned int getGhostVolume() const;
     /// Prints grid details
-    void print() const;
+    void printParameters() const;
 };
 
 #include "gridGeometry.hh"

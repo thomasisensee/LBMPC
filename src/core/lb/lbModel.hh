@@ -54,7 +54,7 @@ const unsigned int* LBModel<T>::getOppositePopualationPtr() const {
 }
 
 template<typename T>
-void LBModel<T>::print() const {
+void LBModel<T>::printParameters() const {
     std::cout << "============================== LB Model Details ==============================" << std::endl;
     std::cout << "==                                   D" << getD() << "Q" << getQ() << "                                    ==" << std::endl;
     std::cout << "== Cx ="; for (int i=0; i<this->_Q; ++i) {std::cout << "\t" << _LATTICE_VELOCITIES[i*this->_D]; } std::cout << "    ==" << std::endl;

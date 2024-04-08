@@ -13,11 +13,11 @@ VTKWriter::VTKWriter(
         setOutputDirectory();
     }
 
-std::string VTKWriter::constructFilename(const std::string& fieldName, unsigned int iter) {
+std::string VTKWriter::constructFilename(const std::string& fieldName, unsigned int outputCounter) {
     std::ostringstream iterStr;
     iterStr.fill('0');  // Set the fill character for padding
-    iterStr.width(6);   // Set the width. Adjust according to your needs
-    iterStr << iter;    // Insert the iteration number into the stream
+    iterStr.width(5);   // Set the width. Adjust according to your needs
+    iterStr << outputCounter;    // Insert the iteration number into the stream
 
     return _outputDir + "/" + _baseFilename + "_" + fieldName + "_" + iterStr.str() + ".vtk";
 }
@@ -63,8 +63,8 @@ void VTKWriter::setNonInherent(unsigned int nX, unsigned int nY, float delta) {
 }
 
 template<typename T>
-void VTKWriter::writeScalarField(const std::vector<T>& field, const std::string& fieldName, unsigned int iter) {
-    std::string filename = constructFilename(fieldName, iter);
+void VTKWriter::writeScalarField(const std::vector<T>& field, const std::string& fieldName, unsigned int outputCounter) {
+    std::string filename = constructFilename(fieldName, outputCounter);
     std::ofstream outFile(filename);
     if (!outFile.is_open()) {
         std::cerr << "Failed to open " << filename << " for writing.\n";
@@ -86,15 +86,15 @@ void VTKWriter::writeScalarField(const std::vector<T>& field, const std::string&
     outFile << "LOOKUP_TABLE default\n";
 
     for (const auto& value : field) {
-        swapped = SwapBytes(value); // Swap bytes if necessary
-        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));
+        swapped = SwapBytes(static_cast<float>(value)); // Swap bytes if necessary
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(float));
     }
     outFile.close();
 }
 
 template<typename T>
-void VTKWriter::writeVectorField(const std::vector<T>& field, const std::string& fieldName, unsigned int iter) {
-    std::string filename = constructFilename(fieldName, iter);
+void VTKWriter::writeVectorField(const std::vector<T>& field, const std::string& fieldName, unsigned int outputCounter) {
+    std::string filename = constructFilename(fieldName, outputCounter);
     std::ofstream outFile(filename);
     if (!outFile.is_open()) {
         std::cerr << "Failed to open " << filename << " for writing.\n";
@@ -116,23 +116,23 @@ void VTKWriter::writeVectorField(const std::vector<T>& field, const std::string&
 
     for(size_t i = 0; i < _nY * _nX; ++i) {
         // x-value
-        swapped = SwapBytes(field[i * 2]);
-        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));
+        swapped = SwapBytes(static_cast<float>(field[i * 2]));
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(float));
     
         // y-value
-        swapped = SwapBytes(field[i * 2 + 1]);
-        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));
+        swapped = SwapBytes(static_cast<float>(field[i * 2 + 1]));
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(float));
 
         // z-value
         swapped = 0.0;
-        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));   
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(float));   
     }
     outFile.close();
 }
 
 template<typename T>
-void VTKWriter::writeVectorField(const std::vector<T>& vectorField, const std::vector<T>& scalarField, const std::string& fieldName, unsigned int iter) {
-    std::string filename = constructFilename(fieldName, iter);
+void VTKWriter::writeVectorField(const std::vector<T>& vectorField, const std::vector<T>& scalarField, const std::string& fieldName, T dt, unsigned int outputCounter) {
+    std::string filename = constructFilename(fieldName, outputCounter);
     std::ofstream outFile(filename);
     if (!outFile.is_open()) {
         std::cerr << "Failed to open " << filename << " for writing.\n";
@@ -154,16 +154,16 @@ void VTKWriter::writeVectorField(const std::vector<T>& vectorField, const std::v
 
     for(size_t i = 0; i < _nY * _nX; ++i) {
         // x-value
-        swapped = SwapBytes(vectorField[i * 2]/scalarField[i]);
-        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));
+        swapped = SwapBytes(static_cast<float>(vectorField[i * 2] * _delta / (dt * scalarField[i])));
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(float));
     
         // y-value
-        swapped = SwapBytes(vectorField[i * 2 + 1]/scalarField[i]);
-        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));
+        swapped = SwapBytes(static_cast<float>(vectorField[i * 2 + 1] * _delta / (dt * scalarField[i])));
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(float));
 
         // z-value
         swapped = 0.0;
-        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));   
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(float));   
     }
     outFile.close();
 }

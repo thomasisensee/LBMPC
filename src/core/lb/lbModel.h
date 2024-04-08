@@ -6,6 +6,7 @@
 #include <cuda_runtime.h>
 
 #include "core/constants.h"
+#include "core/utilities.h"
 
 /**********************/
 /***** Base class *****/
@@ -69,7 +70,7 @@ public:
     const unsigned int* getOppositePopualationPtr() const;
 
     /// Prints LB model details
-    void print() const;
+    void printParameters() const;
     
     /// Prints LB model details
     void printBoundaryMapping() const;

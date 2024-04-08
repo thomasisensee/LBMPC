@@ -35,6 +35,14 @@ LBGrid<T>::~LBGrid() {
 }
 
 template<typename T>
+void LBGrid<T>::printParameters() {
+    _gridGeometry->printParameters();
+    _lbModel->printParameters();
+    _collisionModel->printParameters();
+    _boundaryConditionManager->printParameters();
+}
+
+template<typename T>
 std::vector<T>& LBGrid<T>::getHostDistributions() {
     return _hostDistributions;
 }

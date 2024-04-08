@@ -12,25 +12,41 @@
 template<typename T>
 class Simulation {
 protected:
+    /// constant members
+    const T _dt;
+    const T _simTime;
     const unsigned int _totalIter;
     const unsigned int _outputFrequency;
-    std::unique_ptr<LBGrid<T>> _lbGrid; // For a single grid
-    // std::vector<std::unique_ptr<LBGrid<T>>> _lbGrids; // For multiple grids
-
+    std::unique_ptr<LBGrid<T>> _lbGrid;
     std::unique_ptr<VTKWriter> _vtkWriter;
+
+    /// Output counter
+    unsigned int _outputCounter;
+
+    /// Print output iteration to screen
+    void printOutput(unsigned int outputCounter);
+
+    /// Print simulation run time to screen
+    void outputSimulationEndTime(float elapsedTimeMs);
+
+    /// Check for output and trigger moment computation and output if ncesseary
+    void checkOutput(unsigned int iter);
 
 public:
     /// Constructor
-    Simulation(std::unique_ptr<LBGrid<T>>&& lbgrid, std::unique_ptr<VTKWriter>&& vtkWriter, unsigned int totalIter, unsigned int outputFrequency);
+    Simulation(std::unique_ptr<LBGrid<T>>&& lbgrid, std::unique_ptr<VTKWriter>&& vtkWriter, T dt, T simTime, unsigned int numberOutput);
   
     /// Destructor
     virtual ~Simulation();
 
-    /// Time loop
-    virtual void run() = 0;
+    /// Print parameters
+    void printParameters();
 
-    /// Check for output and trigger moment computation and output if ncesseary
-    void checkOutput(unsigned int iter);
+    /// Time loop
+    void run();
+
+    /// Simulation steps
+    virtual void simulationSteps(unsigned int iter);
 };
 
 
@@ -41,10 +57,10 @@ template<typename T>
 class LBFluidSimulation final : public Simulation<T> {
 public:
     /// Constructor
-    LBFluidSimulation(std::unique_ptr<LBGrid<T>>&& lbgrid, std::unique_ptr<VTKWriter>&& vtkWriter, unsigned int totalIter, unsigned int outputFrequency);
+    LBFluidSimulation(std::unique_ptr<LBGrid<T>>&& lbgrid, std::unique_ptr<VTKWriter>&& vtkWriter, T dt, T simTime, unsigned int numberOutput);
 
-    /// Run simulation
-    void run() override;
+    /// Simulation steps
+    void simulationSteps(unsigned int iter) override;
 };
 
 #include "simulation.hh"

@@ -11,7 +11,7 @@ void DisplayDeviceProperties()
     cudaErrorCheck(cudaGetDeviceProperties(&deviceProp, device))
     
     std::cout << "==========================================================================" << std::endl;
-    std::cout << "== Device Name\t" << deviceProp.name << "\t\t\t\t==" << std::endl;
+    std::cout << "== Device Name\t" << deviceProp.name << "\t\t\t\t\t==" << std::endl;
     std::cout << "== Device Index\t" << device << "\t\t\t\t\t\t\t==" << std::endl;
     std::cout << "==========================================================================" << std::endl;
     printf( "== Total Global Memory\t\t\t %ld KB\t\t\t==\n", (long int)(deviceProp.totalGlobalMem/1024) );
@@ -28,14 +28,13 @@ void DisplayDeviceProperties()
     printf( "== Texture Alignment                \t %ld bytes\t\t\t==\n", (long int)(deviceProp.textureAlignment) );
     printf( "== Device Overlap                   \t %s\t\t\t==\n", deviceProp. deviceOverlap?"Allowed":"Not Allowed" );
     printf( "== Number of Multi processors       \t %d\t\t\t\t==\n", deviceProp.multiProcessorCount );
-    std::cout << "==========================================================================" << std::endl;
+    std::cout << "==========================================================================" << std::endl << std::endl;
 }
 
 void SetDevice()
 {
     int cudaDeviceCount = getDeviceCount();
-    if (cudaDeviceCount < 1)
-    {
+    if (cudaDeviceCount < 1) {
         std::cout << "No CUDA devices with compute capability greater or equal to 2.0 found." << std::endl;
         return;
     }
@@ -44,16 +43,39 @@ void SetDevice()
     DisplayDeviceProperties();
 }
 
-int getDevice()
-{
+int getDevice() {
   int device{};
   cudaErrorCheck(cudaGetDevice(&device));
   return device;
 }
 
-int getDeviceCount()
-{
+int getDeviceCount() {
   int devices{};
   cudaErrorCheck(cudaGetDeviceCount(&devices));
   return devices;
+}
+
+CUDATimer::CUDATimer() {
+    cudaErrorCheck(cudaEventCreate(&start));
+    cudaErrorCheck(cudaEventCreate(&stop));
+}
+
+CUDATimer::~CUDATimer() {
+    cudaErrorCheck(cudaEventDestroy(start));
+    cudaErrorCheck(cudaEventDestroy(stop));
+}
+
+void CUDATimer::startTimer() {
+    cudaErrorCheck(cudaEventRecord(start, 0));
+}
+
+void CUDATimer::stopTimer() {
+    cudaErrorCheck(cudaEventRecord(stop, 0));
+    cudaErrorCheck(cudaEventSynchronize(stop));
+}
+
+float CUDATimer::getElapsedTime() {
+        float milliseconds = 0;
+        cudaErrorCheck(cudaEventElapsedTime(&milliseconds, start, stop));
+        return milliseconds;
 }
