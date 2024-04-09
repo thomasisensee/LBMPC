@@ -2,7 +2,7 @@
 #define SIMULAITION_HH
 
 #include "simulation.h"
-#include "cuda/cudaUtilities.cuh"
+#include "cuda/cudaUtilities.h"
 
 /**********************/
 /***** Base class *****/

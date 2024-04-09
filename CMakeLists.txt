@@ -37,8 +37,8 @@ set(SOURCES
     src/cuda/cudaErrorHandler.cuh
     src/cuda/cudaKernels.cuh
     src/cuda/cudaKernels.cu
-    src/cuda/cudaUtilities.cuh
-    src/cuda/cudaUtilities.cu
+    src/cuda/cudaUtilities.h
+    src/cuda/cudaUtilities.cpp
 )
 
 # Define the tinyxml2 library

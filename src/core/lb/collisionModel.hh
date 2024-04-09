@@ -3,11 +3,9 @@
 
 #include <cuda_runtime.h>
 
-#include "lbModel.h"
 #include "collisionModel.h"
 #include "cuda/cudaConstants.cuh"
 #include "cuda/cudaKernels.cuh"
-#include "cuda/cudaErrorHandler.cuh"
 
 /**********************/
 /***** Base class *****/
@@ -19,7 +17,6 @@ template<typename T>
 T CollisionModel<T>::getOmegaShear() const {
     return this->_omegaShear;
 }
-
 
 /*************************************************/
 /***** Derived class 01: BGK Collision model *****/

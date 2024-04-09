@@ -1,8 +1,6 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#include <string> // For std::string
-
 /// Allowed boundary locations
 enum class BoundaryLocation {
     WEST = 0,

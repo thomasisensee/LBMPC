@@ -3,6 +3,7 @@
 
 #include <iostream>     // For std::cout
 
+#include "cuda/cudaErrorHandler.cuh"
 
 /**********************************/
 /***** Base class (templated) *****/

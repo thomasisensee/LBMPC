@@ -1,6 +1,8 @@
 #ifndef CUDA_UTILITIES_CUH
 #define CUDA_UTILITIES_CUH
 
+#include <cuda_runtime.h>
+
 void DisplayDeviceProperties();
 void SetDevice();
 int getDevice();

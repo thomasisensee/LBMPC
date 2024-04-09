@@ -1,12 +1,16 @@
 #ifndef CONFIGURATION_MANAGER_HH
 #define CONFIGURATION_MANAGER_HH
 
+#include "configurationManager.h"
+
 #include "tinyxml2.h"
 
-#include "configurationManager.h"
 #include "core/constants.h"
+#include "core/simulation.h"
+#include "core/gridGeometry.h"
+#include "core/lb/lbModel.h"
+#include "core/lb/collisionModel.h"
 #include "core/lb/boundaryConditions.h"
-
 
 ConfigurationManager::ConfigurationManager(const std::string& configFile) : configFile(configFile) {}
 

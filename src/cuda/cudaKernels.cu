@@ -1,12 +1,11 @@
 #include <stdio.h>
-#include <cuda_runtime.h>
-#include <cstdio>     // For std::cout
+
+#include "cudaKernels.cuh"
 
 #include "core/constants.h"
-#include "core/kernelParameters.h"
 #include "core/lb/lbConstants.h"
+#include "core/kernelParameters.h"
 #include "core/lb/cell.h"
-#include "cudaKernels.cuh"
 #include "cudaErrorHandler.cuh"
 
 __device__ unsigned int pos(unsigned int i, unsigned int j, unsigned int width) {

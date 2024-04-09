@@ -2,8 +2,10 @@
 #define LB_MODEL_HH
 
 #include <iostream>
+#include <vector>
 
 #include "lbModel.h"
+#include "core/utilities.h"
 
 /**********************/
 /***** Base class *****/

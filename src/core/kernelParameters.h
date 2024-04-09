@@ -2,10 +2,7 @@
 #define KERNEL_PARAMETERS_H
 
 #include <vector>
-#include <cuda_runtime.h>
 #include "core/constants.h"
-#include "cuda/cudaConstants.cuh"
-#include "cuda/cudaErrorHandler.cuh"
 
 /***********************************************/
 /***** Structs for passing to cuda kernels *****/

@@ -1,12 +1,15 @@
 #include <iostream>
 
+#include <cuda_runtime.h>
+
+#include "cudaUtilities.h"
+
 #include "cudaErrorHandler.cuh"
-#include "cudaUtilities.cuh"
 
 void DisplayDeviceProperties()
 {
     cudaDeviceProp deviceProp;
-    memset( &deviceProp, 0, sizeof(deviceProp));
+    cudaMemset(&deviceProp, 0, sizeof(deviceProp));
     int device = getDevice();
     cudaErrorCheck(cudaGetDeviceProperties(&deviceProp, device))
     
@@ -39,7 +42,7 @@ void SetDevice()
         return;
     }
     unsigned int cudaDevice = 0;
-    cudaErrorCheck(cudaSetDevice(cudaDevice));
+    cudaSetDevice(cudaDevice);
     DisplayDeviceProperties();
 }
 

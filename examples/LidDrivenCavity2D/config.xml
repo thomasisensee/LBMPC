@@ -21,7 +21,6 @@
         <type>CHM</type>
         <relaxationShear>0.7</relaxationShear>
         <relaxationBulk>0.7</relaxationBulk>
-
     </collisionModel>
     <boundaryConditions>
         <WEST>

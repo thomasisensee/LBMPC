@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <map>
-#include <cuda_runtime.h>
 
 #include "core/constants.h"
 #include "core/utilities.h"

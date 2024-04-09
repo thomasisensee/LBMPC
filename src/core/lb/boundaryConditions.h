@@ -2,14 +2,10 @@
 #define BOUNDARY_CONDITIONS_H
 
 #include <stdio.h>
-#include <iostream>     // For std::cout
-#include <map>          // For std::map
-#include <memory>       // For std::unique_ptr
-#include <string>       // For std::string
+#include <memory>
 
 #include "core/constants.h"
 #include "core/lb/lbConstants.h"
-#include "core/kernelParameters.h"
 
 /**********************/
 /***** Base class *****/

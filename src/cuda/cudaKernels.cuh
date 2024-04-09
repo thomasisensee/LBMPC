@@ -1,8 +1,6 @@
 #ifndef CUDA_KERNELS_CUH
 #define CUDA_KERNELS_CUH
 
-#include <cuda_runtime.h>
-
 #include "core/kernelParameters.h"
 
 template<typename T>

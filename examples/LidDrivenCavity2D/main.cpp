@@ -1,15 +1,6 @@
 #include <stdio.h>
-#include <memory> // For std::unique_ptr and std::make_unique
 
-#include "core/constants.h"
-#include "core/lb/lbConstants.h"
-#include "core/gridGeometry.h"
-#include "core/simulation.h"
-#include "core/lb/lbModel.h"
-#include "core/lb/collisionModel.h"
-#include "core/lb/boundaryConditions.h"
-#include "core/lb/lbGrid.h"
-#include "cuda/cudaUtilities.cuh"
+#include "cuda/cudaUtilities.h"
 
 #include "io/configurationManager.h"
 

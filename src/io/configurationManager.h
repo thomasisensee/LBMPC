@@ -8,9 +8,6 @@
 
 #include "core/simulation.h"
 #include "core/gridGeometry.h"
-#include "core/lb/lbModel.h"
-#include "core/lb/collisionModel.h"
-#include "core/lb/lbGrid.h"
 #include "core/lb/boundaryConditions.h"
 
 class ConfigurationManager {
@@ -26,7 +23,6 @@ public:
 
     template<typename T>
     std::shared_ptr<LBFluidSimulation<T>> buildSimulation();
-    //int buildSimulation();
 };
 
 #include "configurationManager.hh"

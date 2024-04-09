@@ -2,6 +2,7 @@
 #define LATTICE_GRID_H
 
 #include <stdio.h>
+#include <memory>
 #include <vector>
 
 #include "lbModel.h"

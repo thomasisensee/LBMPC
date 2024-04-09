@@ -2,7 +2,7 @@
 #define COLLISION_MODEL_H
 
 #include <stdio.h>
-#include <vector>
+#include <utility>
 
 #include "core/kernelParameters.h"
 

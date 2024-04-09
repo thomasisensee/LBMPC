@@ -4,9 +4,9 @@
 #include <cuda_runtime.h>
 
 #include "boundaryConditions.h"
+
 #include "core/constants.h"
 #include "core/utilities.h"
-#include "cuda/cudaErrorHandler.cuh"
 
 /**********************/
 /***** Base class *****/
