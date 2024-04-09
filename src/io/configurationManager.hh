@@ -29,6 +29,7 @@ void ConfigurationManager::readBoundaryCondition(BoundaryLocation location, cons
             T v = vel->FirstChildElement("y")->FloatText();
             u *= dtdx;
             v *= dtdx;
+
             std::vector<T> wallVelocity = {u,v};
             boundaryConditionManager->addBoundaryCondition(std::make_unique<MovingWall<T>>(location, wallVelocity));
         }
@@ -115,34 +116,37 @@ std::shared_ptr<LBFluidSimulation<T>> ConfigurationManager::buildSimulation() {
 
     // Load collision model
     std::unique_ptr<CollisionModel<T>> collisionModel;
+    T tauShear = 0.0;
+    T tauBulk = 0.0;
     T omegaShear = 0.0;
     T omegaBulk = 0.0;
     const tinyxml2::XMLElement* CollisionModel = root->FirstChildElement("collisionModel");
     if (!LBModel) {
         std::cerr << "Failed to read LB model information." << std::endl;
     } 
-    const tinyxml2::XMLElement* oS = CollisionModel->FirstChildElement("relaxationShear");
+    const tinyxml2::XMLElement* oS = CollisionModel->FirstChildElement("relaxationTimeShear");
     if (!oS) {
         std::cerr << "Failed to read LB model information: omega shear." << std::endl;
     } else {
-        omegaShear = oS->FloatText();
+        tauShear = oS->FloatText();
+        omegaShear = 1.0 / tauShear;
         const char* modelType = CollisionModel->FirstChildElement("type")->GetText();
         if (std::string(modelType) == "BGK") {
             collisionModel = std::make_unique<CollisionBGK<T>>(omegaShear);
         } else if (std::string(modelType) == "CHM") {
-            const tinyxml2::XMLElement* oB = CollisionModel->FirstChildElement("relaxationBulk");
+            const tinyxml2::XMLElement* oB = CollisionModel->FirstChildElement("relaxationTimeBulk");
             if (!oB) {
                 std::cerr << "Failed to read LB model information: omega bulk." << std::endl;
             } else {
-                omegaBulk = oB->FloatText();
+                tauBulk = oB->FloatText();
+                omegaBulk = 1.0 / tauBulk;
                 collisionModel = std::make_unique<CollisionCHM<T>>(omegaShear, omegaBulk);
             }
         }
     }
 
     // Compute the time step
-	T dt = (omegaShear - 0.5) * dx * dx * reynoldsNumber * C_S_POW2;
-
+	T dt = (tauShear - 0.5) * dx * dx * reynoldsNumber * C_S_POW2;
 
     // Load boundary conditions
     auto boundaryConditionManager = std::make_unique<BoundaryConditionManager<T>>();
@@ -214,7 +218,7 @@ std::shared_ptr<LBFluidSimulation<T>> ConfigurationManager::buildSimulation() {
         std::move(boundaryConditionManager)
     );
     auto vtkWriter = std::make_unique<VTKWriter>(outputDirectory, "cavity");
-
+    printf("Δx = %g, Δt = %g, simTime = %g, omegaShear = %g, Re = %g, %g\n", dx, dt, simTime, omegaShear, reynoldsNumber, C_S_POW2);
     // Create and return the simulation object
     return std::make_shared<LBFluidSimulation<T>>(std::move(lbGrid), std::move(vtkWriter), dt, simTime, nOut);
 }

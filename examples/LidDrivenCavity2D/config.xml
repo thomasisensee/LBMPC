@@ -19,8 +19,8 @@
         <relaxationShear>0.6</relaxationShear>
     -->
         <type>CHM</type>
-        <relaxationShear>0.7</relaxationShear>
-        <relaxationBulk>0.7</relaxationBulk>
+        <relaxationTimeShear>0.7</relaxationTimeShear>
+        <relaxationTimeBulk>0.7</relaxationTimeBulk>
     </collisionModel>
     <boundaryConditions>
         <WEST>
@@ -41,7 +41,7 @@
         </NORTH>
     </boundaryConditions>
     <simulation>
-        <simTime>5</simTime>
+        <simTime>10</simTime>
     </simulation>
     <output>
         <numberOutputFiles>10</numberOutputFiles>

@@ -117,15 +117,15 @@ void VTKWriter::writeVectorField(const std::vector<T>& field, const std::string&
     for(size_t i = 0; i < _nY * _nX; ++i) {
         // x-value
         swapped = SwapBytes(static_cast<float>(field[i * 2]));
-        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(float));
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));
     
         // y-value
         swapped = SwapBytes(static_cast<float>(field[i * 2 + 1]));
-        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(float));
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));
 
         // z-value
         swapped = 0.0;
-        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(float));   
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));   
     }
     outFile.close();
 }
@@ -155,15 +155,15 @@ void VTKWriter::writeVectorField(const std::vector<T>& vectorField, const std::v
     for(size_t i = 0; i < _nY * _nX; ++i) {
         // x-value
         swapped = SwapBytes(static_cast<float>(vectorField[i * 2] * _delta / (dt * scalarField[i])));
-        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(float));
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));
     
         // y-value
         swapped = SwapBytes(static_cast<float>(vectorField[i * 2 + 1] * _delta / (dt * scalarField[i])));
-        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(float));
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));
 
         // z-value
         swapped = 0.0;
-        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(float));   
+        outFile.write(reinterpret_cast<const char*>(&swapped), sizeof(T));   
     }
     outFile.close();
 }
