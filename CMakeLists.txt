@@ -17,14 +17,10 @@ set(SOURCES
     src/core/utilities.h
     src/core/utilities.cpp
     src/core/lb/lbConstants.h
-    src/core/lb/cell.h
-    src/core/lb/cell.hh
     src/core/gridGeometry.h
     src/core/gridGeometry.hh
     src/core/lb/lbGrid.h
     src/core/lb/lbGrid.hh
-    src/core/lb/lbModel.h
-    src/core/lb/lbModel.hh
     src/core/lb/collisionModel.h
     src/core/lb/collisionModel.hh
     src/core/lb/boundaryConditions.h
@@ -36,6 +32,8 @@ set(SOURCES
     src/io/vtkWriter.h
     src/io/vtkWriter.hh
     src/cuda/cudaErrorHandler.cuh
+    src/cuda/cell.h
+    src/cuda/cell.hh
     src/cuda/cudaKernels.cuh
     src/cuda/cudaKernels.cu
     src/cuda/cudaUtilities.h
@@ -52,7 +50,3 @@ CUDA_ADD_EXECUTABLE(LidDrivenCavity2D examples/LidDrivenCavity2D/main.cpp ${SOUR
 target_link_libraries(LidDrivenCavity2D ${CUDA_LIBRARIES} tinyxml2)
 set_target_properties(LidDrivenCavity2D PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/LidDrivenCavity2D/build")
 set_target_properties(LidDrivenCavity2D PROPERTIES CUDA_ARCHITECTURES "native")
-
-
-## Example: Fluid-Heat Coupling
-#add_executable(fluid_heat_coupling examples/fluid_heat_coupling/main.cpp ${FLUID_SIMULATION_SOURCES} ${FLUID_SIMULATION_HEADERS})

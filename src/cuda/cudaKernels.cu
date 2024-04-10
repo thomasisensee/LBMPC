@@ -1,18 +1,23 @@
 #include <stdio.h>
 
 #include "cudaKernels.cuh"
+#include "cudaErrorHandler.cuh"
 
+#include "core/descriptors/descriptors.h"
+#include "cell.h"
 #include "core/constants.h"
 #include "core/lb/lbConstants.h"
 #include "core/kernelParameters.h"
-#include "core/lb/cell.h"
-#include "cudaErrorHandler.cuh"
+
+// Explicit instantiation
+template struct D2Q9Descriptor<float>;
+template struct D2Q9Descriptor<double>;
 
 __device__ unsigned int pos(unsigned int i, unsigned int j, unsigned int width) {
     return j * width + i;
 }
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 __global__ void initializeDistributionsKernel(T* collision, const LBParams<T>* const params) {
 
     const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -21,23 +26,23 @@ __global__ void initializeDistributionsKernel(T* collision, const LBParams<T>* c
     
     unsigned int idx = pos(i, j, params->Nx);
     
-    Cell<T> cell;
+    Cell<T, LatticeDescriptor> cell;
     T R = 1.0;
     T U = 0.0;
     T V = 0.0;
     
-    cell.setEquilibriumDistribution(&collision[params->Q * idx], params, R, U, V);
+    cell.setEquilibriumDistribution(&collision[LatticeDescriptor::Q * idx], R, U, V);
 }
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 void initializeDistributionsCaller(T* deviceCollision, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
-    initializeDistributionsKernel<<<gridSize, blockSize>>>(deviceCollision, params);
+    initializeDistributionsKernel<T, LatticeDescriptor><<<gridSize, blockSize>>>(deviceCollision, params);
     cudaErrorCheck(cudaDeviceSynchronize());
 }
-template void initializeDistributionsCaller<float>(float* deviceCollision, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
-template void initializeDistributionsCaller<double>(double* deviceCollision, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
+template void initializeDistributionsCaller<float, D2Q9Descriptor<float>>(float* deviceCollision, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
+template void initializeDistributionsCaller<double, D2Q9Descriptor<double>>(double* deviceCollision, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 __global__ void doStreamingKernel(const T *const collision, T *streaming, const LBParams<T>* const params) {
 
     const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -48,16 +53,16 @@ __global__ void doStreamingKernel(const T *const collision, T *streaming, const 
     unsigned int idxNeighbor;
     int cx, cy;
 
-    for (unsigned int l = 0; l < params->Q; ++l) {
-        cx = params->LATTICE_VELOCITIES[l * params->D];
-        cy = params->LATTICE_VELOCITIES[l * params->D + 1];
+    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) {
+        cx = LatticeDescriptor::latticeVelocities[l][0];
+        cy = LatticeDescriptor::latticeVelocities[l][1];
 
  	    idxNeighbor = pos(static_cast<int>(i) - cx, static_cast<int>(j) - cy, params->Nx);
-		streaming[params->Q * idx + l] = collision[params->Q * idxNeighbor + l];
+		streaming[LatticeDescriptor::Q * idx + l] = collision[LatticeDescriptor::Q * idxNeighbor + l];
 	}
 }
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 void doStreamingCaller(T** deviceCollision, T** deviceStreaming, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
     // Call the cuda kernel
     doStreamingKernel<<<gridSize, blockSize>>>(*deviceCollision, *deviceStreaming, params);
@@ -68,10 +73,10 @@ void doStreamingCaller(T** deviceCollision, T** deviceStreaming, const LBParams<
     *deviceCollision = *deviceStreaming;
     *deviceStreaming = swap;
 }
-template void doStreamingCaller<float>(float** deviceCollision, float** deviceStreaming, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
-template void doStreamingCaller<double>(double** deviceCollision, double** deviceStreaming, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
+//template void doStreamingCaller<float>(float** deviceCollision, float** deviceStreaming, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
+//template void doStreamingCaller<double>(double** deviceCollision, double** deviceStreaming, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 __global__ void doCollisionBGKKernel(T* collision, const LBParams<T>* const params) {
 
     const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -80,25 +85,25 @@ __global__ void doCollisionBGKKernel(T* collision, const LBParams<T>* const para
 
     unsigned int idx = pos(i, j, params->Nx);
 
-    Cell<T> cell;
-    T R = cell.getZeroMoment(&collision[idx * params->Q], params);
-    T U = cell.getVelocityX(&collision[idx * params->Q], params, R);
-    T V = cell.getVelocityY(&collision[idx * params->Q], params, R);
+    Cell<T, LatticeDescriptor> cell;
+    T R = cell.getZerothMoment(&collision[idx * LatticeDescriptor::Q], params);
+    T U = cell.getVelocityX(&collision[idx * LatticeDescriptor::Q], params, R);
+    T V = cell.getVelocityY(&collision[idx * LatticeDescriptor::Q], params, R);
 
-    cell.computePostCollisionDistributionBGK(&collision[idx * params->Q], params, R, U, V);
+    cell.computePostCollisionDistributionBGK(&collision[idx * LatticeDescriptor::Q], params, R, U, V);
 }
 
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 void doCollisionBGKCaller(T* deviceCollision, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
     doCollisionBGKKernel<<<gridSize, blockSize>>>(deviceCollision, params);
     cudaErrorCheck(cudaDeviceSynchronize());
 }
-template void doCollisionBGKCaller<float>(float* deviceCollision, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
-template void doCollisionBGKCaller<double>(double* deviceCollision, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
+//template void doCollisionBGKCaller<float>(float* deviceCollision, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
+//template void doCollisionBGKCaller<double>(double* deviceCollision, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
 
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 __global__ void doCollisionCHMKernel(T* collision, const CollisionParamsCHM<T>* const params) {
 
     const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -107,38 +112,38 @@ __global__ void doCollisionCHMKernel(T* collision, const CollisionParamsCHM<T>* 
 
     unsigned int idx = pos(i, j, params->Nx);
 
-    Cell<T> cell;
-    T R = cell.getZeroMoment(&collision[idx * params->Q], params);
-    T U = cell.getVelocityX(&collision[idx * params->Q], params, R);
-    T V = cell.getVelocityY(&collision[idx * params->Q], params, R);
+    Cell<T, LatticeDescriptor> cell;
+    T R = cell.getZerothMoment(&collision[idx * LatticeDescriptor::Q], params);
+    T U = cell.getVelocityX(&collision[idx * LatticeDescriptor::Q], params, R);
+    T V = cell.getVelocityY(&collision[idx * LatticeDescriptor::Q], params, R);
 
-    cell.computePostCollisionDistributionCHM(&collision[idx * params->Q], params, R, U, V);
+    cell.computePostCollisionDistributionCHM(&collision[idx * LatticeDescriptor::Q], params, R, U, V);
 }
 
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 void doCollisionCHMCaller(T* deviceCollision, const CollisionParamsCHM<T>* const params, dim3 gridSize, dim3 blockSize) {
     doCollisionCHMKernel<<<gridSize, blockSize>>>(deviceCollision, params);
     cudaErrorCheck(cudaDeviceSynchronize());
 }
-template void doCollisionCHMCaller<float>(float* deviceCollision, const CollisionParamsCHM<float>* const params, dim3 gridSize, dim3 blockSize);
-template void doCollisionCHMCaller<double>(double* deviceCollision, const CollisionParamsCHM<double>* const params, dim3 gridSize, dim3 blockSize);
+//template void doCollisionCHMCaller<float>(float* deviceCollision, const CollisionParamsCHM<float>* const params, dim3 gridSize, dim3 blockSize);
+//template void doCollisionCHMCaller<double>(double* deviceCollision, const CollisionParamsCHM<double>* const params, dim3 gridSize, dim3 blockSize);
 
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 __device__ void applyBC(T* collision, const BoundaryParams<T>* const params, unsigned int i, unsigned int j) {
     unsigned int idx, idxNeighbor, pop, popRev;
     int cx, cy;
-    Cell<T> cell;
+    Cell<T, LatticeDescriptor> cell;
     T R, dotProduct;
 
     idx = pos(i, j, params->Nx);
 
     for (unsigned int l = 0; l < 3; ++l) {
-        pop = params->POPULATION[l];
-        popRev = params->OPPOSITE_POPULATION[pop];
-        cx = params->LATTICE_VELOCITIES[pop*params->D];
-        cy = params->LATTICE_VELOCITIES[pop*params->D+1];
+        pop = LatticeDescriptor::boundaryMapping[static_cast<int>(params->location)];
+        popRev = LatticeDescriptor::Q - 1 - pop;
+        cx = LatticeDescriptor::latticeVelocities[l][0];
+        cy = LatticeDescriptor::latticeVelocities[l][1];
 
         // Check if the neighbor is outside the domain (i.e., a ghost cell)
         if (static_cast<int>(i) + cx < 1 || static_cast<int>(i) + cx > params->Nx - 2 || static_cast<int>(j) + cy < 1 || static_cast<int>(j) + cy > params->Ny - 2) { continue; }
@@ -154,15 +159,15 @@ __device__ void applyBC(T* collision, const BoundaryParams<T>* const params, uns
         }
 
         // Compute the zeroth moment (i.e., the density) of the neighbor cell
-        R = cell.getZeroMoment(&collision[params->Q * idxNeighbor], params);
+        R = cell.getZerothMoment(&collision[LatticeDescriptor::Q * idxNeighbor], params);
 
         // Apply the bounce-back boundary condition
-        collision[params->Q * idx + pop] = collision[params->Q * idxNeighbor + popRev] + 2.0 * params->LATTICE_WEIGHTS[pop] * R * C_S_POW2_INV * dotProduct;
+        collision[LatticeDescriptor::Q * idx + pop] = collision[LatticeDescriptor::Q * idxNeighbor + popRev] + 2.0 * LatticeDescriptor::latticeWeights[pop] * R * C_S_POW2_INV * dotProduct;
     }
        
 }
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 __global__ void applyBounceBackKernel(T* collision, const BoundaryParams<T>* const params) {
 
     unsigned int i, j;
@@ -199,15 +204,15 @@ __global__ void applyBounceBackKernel(T* collision, const BoundaryParams<T>* con
     }
 }
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 void applyBounceBackCaller(T* deviceCollision, const BoundaryParams<T>* const params, dim3 gridSize, dim3 blockSize) {
     applyBounceBackKernel<<<gridSize, blockSize>>>(deviceCollision, params);
     cudaErrorCheck(cudaDeviceSynchronize());
 }
-template void applyBounceBackCaller<float>(float* deviceCollision, const BoundaryParams<float>* const params, dim3 gridSize, dim3 blockSize);
-template void applyBounceBackCaller<double>(double* deviceCollision, const BoundaryParams<double>* const params, dim3 gridSize, dim3 blockSize);
+//template void applyBounceBackCaller<float>(float* deviceCollision, const BoundaryParams<float>* const params, dim3 gridSize, dim3 blockSize);
+//template void applyBounceBackCaller<double>(double* deviceCollision, const BoundaryParams<double>* const params, dim3 gridSize, dim3 blockSize);
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 __global__ void computeZerothMomentKernel(T* zerothMoment, const T* const collision, const LBParams<T>* const params) {
 
     const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -217,20 +222,20 @@ __global__ void computeZerothMomentKernel(T* zerothMoment, const T* const collis
     unsigned int idx        = pos(i, j, params->Nx);
     unsigned int idxMoment  = pos(i - 1, j - 1, params->Nx - 2); // Since the zerothMoment array does not contain the ghost cells
 
-    Cell<T> cell;
-    T R = cell.getZeroMoment(&collision[idx * params->Q], params);
+    Cell<T, LatticeDescriptor> cell;
+    T R = cell.getZerothMoment(&collision[idx * LatticeDescriptor::Q], params);
     zerothMoment[idxMoment] = R;
 }
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 void computeZerothMomentCaller(T* deviceZerothMoment, const T* const deviceCollision, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
     computeZerothMomentKernel<<<gridSize, blockSize>>>(deviceZerothMoment, deviceCollision, params);
     cudaErrorCheck(cudaDeviceSynchronize());
 }
-template void computeZerothMomentCaller<float>(float* deviceZerothMoment, const float* const deviceCollision, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
-template void computeZerothMomentCaller<double>(double* deviceZerothMoment, const double* const deviceCollision, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
+//template void computeZerothMomentCaller<float>(float* deviceZerothMoment, const float* const deviceCollision, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
+//template void computeZerothMomentCaller<double>(double* deviceZerothMoment, const double* const deviceCollision, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 __global__ void computeFirstMomentKernel(T* firstMoment, const T* const collision, const LBParams<T>* const params) {
 
     const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -240,38 +245,38 @@ __global__ void computeFirstMomentKernel(T* firstMoment, const T* const collisio
     unsigned int idx        = pos(i, j, params->Nx);
     unsigned int idxMoment  = pos(i - 1, j - 1, params->Nx - 2); // Since the zerothMoment array does not contain the ghost cells
 
-    Cell<T> cell;
-    T U = cell.getFirstMomentX(&collision[idx * params->Q], params);
-    T V = cell.getFirstMomentY(&collision[idx * params->Q], params);
+    Cell<T, LatticeDescriptor> cell;
+    T U = cell.getFirstMomentX(&collision[idx * LatticeDescriptor::Q], params);
+    T V = cell.getFirstMomentY(&collision[idx * LatticeDescriptor::Q], params);
 
-    firstMoment[idxMoment * params->D]      = U;
-    firstMoment[idxMoment * params->D + 1]  = V;
+    firstMoment[idxMoment * LatticeDescriptor::D]      = U;
+    firstMoment[idxMoment * LatticeDescriptor::D + 1]  = V;
 }
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 void computeFirstMomentCaller(T* deviceFirstMoment, const T* const deviceCollision, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
     computeFirstMomentKernel<<<gridSize, blockSize>>>(deviceFirstMoment, deviceCollision, params);
     cudaErrorCheck(cudaDeviceSynchronize());
 }
-template void computeFirstMomentCaller<float>(float* deviceFirstMoment, const float* const deviceCollision, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
-template void computeFirstMomentCaller<double>(double* deviceFirstMoment, const double* const deviceCollision, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
+//template void computeFirstMomentCaller<float>(float* deviceFirstMoment, const float* const deviceCollision, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
+//template void computeFirstMomentCaller<double>(double* deviceFirstMoment, const double* const deviceCollision, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
 
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 __global__ void testKernel(T* collision, const LBParams<T>* const params) {
     const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
     if (i < 1 || i > params->Nx - 2 || j < 1 || j > params->Ny - 2) { return; }
 
     unsigned int idx = pos(i, j, params->Nx);
-    Cell<T> cell;
-    T R = cell.getZeroMoment(&collision[params->Q * idx], params);
+    Cell<T, LatticeDescriptor> cell;
+    T R = cell.getZerothMoment(&collision[LatticeDescriptor::Q * idx], params);
 }
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 void testKernelCaller(T* deviceCollision, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
     testKernel<<<gridSize, blockSize>>>(deviceCollision, params);
     cudaErrorCheck(cudaDeviceSynchronize());
 }
-template void testKernelCaller<float>(float* deviceCollision, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
-template void testKernelCaller<double>(double* deviceCollision, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
+//template void testKernelCaller<float>(float* deviceCollision, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
+//template void testKernelCaller<double>(double* deviceCollision, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);

@@ -243,10 +243,13 @@ template<typename T>
 void BoundaryParamsWrapper<T>::setWallVelocity(const std::vector<T>& wallVelocity) {
     // Clean up existing data
     delete[] this->_hostParams.WALL_VELOCITY;
+
+    // Store the size of the wallVelocity vector
+    _D = wallVelocity.size();
     
     // Assign new deep copies
-    this->_hostParams.WALL_VELOCITY = new T[2];
-    std::copy(wallVelocity.data(), wallVelocity.data() + this->_hostParams.D, this->_hostParams.WALL_VELOCITY);
+    this->_hostParams.WALL_VELOCITY = new T[_D];
+    std::copy(wallVelocity.data(), wallVelocity.data() + _D, this->_hostParams.WALL_VELOCITY);
 
     allocateAndCopyToDevice();
 }
@@ -259,7 +262,7 @@ void BoundaryParamsWrapper<T>::allocateAndCopyToDevice() {
     // Allocate device memory for wall velocity and copy data, if wall velocity is specified, i.e., not nullptr
     T* deviceWallVelocity = nullptr;
     if (this->_hostParams.WALL_VELOCITY != nullptr) {
-        size_t sizeWallVelocity = this->_hostParams.D * sizeof(T);
+        size_t sizeWallVelocity = _D * sizeof(T);
         cudaErrorCheck(cudaMalloc(&deviceWallVelocity, sizeWallVelocity));
         cudaErrorCheck(cudaMemcpy(deviceWallVelocity, this->_hostParams.WALL_VELOCITY, sizeWallVelocity, cudaMemcpyHostToDevice));
     }

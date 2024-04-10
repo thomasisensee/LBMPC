@@ -5,7 +5,6 @@
 #include <memory>
 #include <vector>
 
-#include "lbModel.h"
 #include "collisionModel.h"
 #include "boundaryConditions.h"
 #include "core/gridGeometry.h"
@@ -15,10 +14,9 @@ template<typename T, typename LatticeDescriptor>
 class LBGrid {
 private:
     /// Required model objects
-    std::unique_ptr<LBModel<T, LatticeDescriptor>> _lbModel;
-    std::unique_ptr<CollisionModel<T>> _collisionModel;
     std::unique_ptr<GridGeometry2D<T>> _gridGeometry;
-    std::unique_ptr<BoundaryConditionManager<T>> _boundaryConditionManager;
+    std::unique_ptr<CollisionModel<T, LatticeDescriptor>> _collisionModel;
+    std::unique_ptr<BoundaryConditionManager<T, LatticeDescriptor>> _boundaryConditionManager;
 
     /// Distribution function, both for host and device
     std::vector<T> _hostDistributions;
@@ -41,10 +39,9 @@ private:
 public:
     /// Constructor
     LBGrid(
-        std::unique_ptr<LBModel<T, LatticeDescriptor>>&& model,
-        std::unique_ptr<CollisionModel<T>>&& collision, 
-        std::unique_ptr<GridGeometry2D<T>>&& geometry, 
-        std::unique_ptr<BoundaryConditionManager<T>>&& boundary
+        std::unique_ptr<GridGeometry2D<T>>&& geometry,
+        std::unique_ptr<CollisionModel<T, LatticeDescriptor>>&& collision, 
+        std::unique_ptr<BoundaryConditionManager<T, LatticeDescriptor>>&& boundary
     );
 
     /// Destructor

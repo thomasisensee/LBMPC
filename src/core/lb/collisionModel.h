@@ -9,7 +9,7 @@
 /**********************/
 /***** Base class *****/
 /**********************/
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 class CollisionModel {
 protected:
     /// Relaxation parameter associated with shear viscosity
@@ -37,8 +37,8 @@ public:
 /******************************************************/
 /***** Derived class 01: BGK Collision parameters *****/
 /******************************************************/
-template<typename T>
-class CollisionBGK final : public CollisionModel<T> {
+template<typename T, typename LatticeDescriptor>
+class CollisionBGK final : public CollisionModel<T, LatticeDescriptor> {
 private:
     /// Parameters to pass to cuda kernels
     CollisionParamsBGKWrapper<T> _params;
@@ -62,8 +62,8 @@ public:
 /******************************************************/
 /***** Derived class 02: CHM Collision parameters *****/
 /******************************************************/
-template<typename T>
-class CollisionCHM final : public CollisionModel<T> { // only implemented for D2Q9 lattices
+template<typename T, typename LatticeDescriptor>
+class CollisionCHM final : public CollisionModel<T, LatticeDescriptor> { // only implemented for D2Q9 lattices
 private:
     /// Relaxation parameter associated with bulk viscosity
     const T _omegaBulk;

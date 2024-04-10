@@ -41,7 +41,7 @@ struct CollisionParamsCHM : public LBParams<T> {
 template<typename T>
 struct BoundaryParams : public BaseParams {
     /// Properties needed for boundary conditions
-    T* WALL_VELOCITY                    = nullptr;
+    T* WALL_VELOCITY = nullptr;
     BoundaryLocation location;
 };
 
@@ -171,6 +171,10 @@ public:
 /********************************************/
 template<typename T>
 class BoundaryParamsWrapper : public ParamsWrapper<T, BoundaryParams<T>> {
+private:
+    // For keeping track of the wallVelocity dimension/size
+    unsigned int _D;
+
 public:
     /// Default constructor
     BoundaryParamsWrapper();

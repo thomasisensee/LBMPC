@@ -2,11 +2,13 @@
 #define Cell_HH
 
 #include "cell.h"
+#include "core/descriptors/descriptors.h"
+#include "core/lb/lbConstants.h"
 
-template<typename T>
-__device__ T Cell<T>::computeEquilibriumPopulation(unsigned int l, const LBParams<T>* const params, T R, T U, T V) const {
-    int cix = params->LATTICE_VELOCITIES[l * params->D];
-    int ciy = params->LATTICE_VELOCITIES[l * params->D+1];
+template<typename T, typename LatticeDescriptor>
+__device__ T Cell<T, LatticeDescriptor>::computeEquilibriumPopulation(unsigned int l, T R, T U, T V) const {
+    int cix = LatticeDescriptor::latticeVelocities[l][0];
+    int ciy = LatticeDescriptor::latticeVelocities[l][1];
     T cixcs2 = cix * cix - C_S_POW2;
     T ciycs2 = ciy * ciy - C_S_POW2;
     T firstOrder = C_S_POW2_INV * (U * cix + V * ciy);
@@ -14,85 +16,85 @@ __device__ T Cell<T>::computeEquilibriumPopulation(unsigned int l, const LBParam
     T thirdOrder = 0.5 * C_S_POW6_INV * (cixcs2 * ciy * U * U * V + ciycs2 * cix * U * V * V);
     T fourthOrder = 0.25 * C_S_POW8_INV * (cixcs2 * ciycs2 * U * U * V * V);
 
-    return params->LATTICE_WEIGHTS[l] * R * (1.0 + firstOrder + secondOrder + thirdOrder + fourthOrder);
+    return LatticeDescriptor::latticeWeights[l] * R * (1.0 + firstOrder + secondOrder + thirdOrder + fourthOrder);
 }
 
-template<typename T>
-__device__ T Cell<T>::getZeroMoment(const T* const population, const LBParams<T>* const params) const {
+template<typename T, typename LatticeDescriptor>
+__device__ T Cell<T, LatticeDescriptor>::getZerothMoment(const T* const population) const {
     T rho = 0.0;
-    for (unsigned int l = 0; l < params->Q; ++l) { rho += population[l]; }
+    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) { rho += population[l]; }
     return rho;
 }
 
-template<typename T>
-__device__ T Cell<T>::getFirstMomentX(const T* const population, const LBParams<T>* const params) const {
+template<typename T, typename LatticeDescriptor>
+__device__ T Cell<T, LatticeDescriptor>::getFirstMomentX(const T* const population) const {
     T m1x = 0.0;
-    for (unsigned int l = 0; l < params->Q; ++l) { m1x += population[l] * params->LATTICE_VELOCITIES[l * params->D]; }
+    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) { m1x += population[l] * LatticeDescriptor::latticeVelocities[l][0]; }
     return m1x;
 }
 
-template<typename T>
-__device__ T Cell<T>::getFirstMomentY(const T* const population, const LBParams<T>* const params) const {
+template<typename T, typename LatticeDescriptor>
+__device__ T Cell<T, LatticeDescriptor>::getFirstMomentY(const T* const population) const {
     T m1y = 0.0;
-    for (unsigned int l = 0; l < params->Q; ++l) { m1y += population[l] * params->LATTICE_VELOCITIES[l * params->D + 1]; }
+    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) { m1y += population[l] * LatticeDescriptor::latticeVelocities[l][1]; }
     return m1y;
 }
 
-template<typename T>
-__device__ T Cell<T>::getVelocityX(const T* const population, const LBParams<T>* const params) const {
+template<typename T, typename LatticeDescriptor>
+__device__ T Cell<T, LatticeDescriptor>::getVelocityX(const T* const population) const {
     T m1x = 0.0;
     T rho = 0.0;
-    for (unsigned int l = 0; l < params->Q; ++l) { m1x += population[l] * params->LATTICE_VELOCITIES[l * params->D]; rho += population[l]; }
+    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) { m1x += population[l] * LatticeDescriptor::latticeVelocities[l][0]; rho += population[l]; }
     return m1x / rho;
 }
 
-template<typename T>
-__device__ T Cell<T>::getVelocityX(const T* const population, const LBParams<T>* const params, T R) const {
+template<typename T, typename LatticeDescriptor>
+__device__ T Cell<T, LatticeDescriptor>::getVelocityX(const T* const population, T R) const {
     T m1x = 0.0;
-    for (unsigned int l = 0; l < params->Q; ++l) { m1x += population[l] * params->LATTICE_VELOCITIES[l * params->D]; }
+    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) { m1x += population[l] * LatticeDescriptor::latticeVelocities[l][0]; }
     return m1x / R;
 }
 
-template<typename T>
-__device__ T Cell<T>::getVelocityY(const T* const population, const LBParams<T>* const params) const {
+template<typename T, typename LatticeDescriptor>
+__device__ T Cell<T, LatticeDescriptor>::getVelocityY(const T* const population) const {
     T m1x = 0.0;
     T rho = 0.0;
-    for (unsigned int l = 0; l < params->Q; ++l) { m1x += population[l] * params->LATTICE_VELOCITIES[l * params->D + 1]; rho += population[l]; }
+    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) { m1x += population[l] * LatticeDescriptor::latticeVelocities[l][1]; rho += population[l]; }
     return m1x / rho;
 }
 
-template<typename T>
-__device__ T Cell<T>::getVelocityY(const T* const population, const LBParams<T>* const params, T R) const {
+template<typename T, typename LatticeDescriptor>
+__device__ T Cell<T, LatticeDescriptor>::getVelocityY(const T* const population, T R) const {
     T m1x = 0.0;
-    for (unsigned int l = 0; l < params->Q; ++l) { m1x += population[l] * params->LATTICE_VELOCITIES[l * params->D + 1]; }
+    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) { m1x += population[l] * LatticeDescriptor::latticeVelocities[l][1]; }
     return m1x / R;
 }
 
-template<typename T>
-__device__ void Cell<T>::getEquilibriumDistribution(const T* const population, T* eqDistr, const LBParams<T>* const params, T R, T U, T V) const {
-    for (unsigned int l = 0; l < params->Q; ++l)
+template<typename T, typename LatticeDescriptor>
+__device__ void Cell<T, LatticeDescriptor>::getEquilibriumDistribution(const T* const population, T* eqDistr, T R, T U, T V) const {
+    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l)
     {
-		eqDistr[l] = computeEquilibriumPopulation(l, params, R, U, V);
+		eqDistr[l] = computeEquilibriumPopulation(l, R, U, V);
 	}
 }
 
-template<typename T>
-__device__ void Cell<T>::setEquilibriumDistribution(T* population, const LBParams<T>* const params, T R, T U, T V) const {
-    for (unsigned int l = 0; l < params->Q; ++l)
+template<typename T, typename LatticeDescriptor>
+__device__ void Cell<T, LatticeDescriptor>::setEquilibriumDistribution(T* population, T R, T U, T V) const {
+    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l)
     {
-		population[l] = computeEquilibriumPopulation(l, params, R, U, V);
+		population[l] = computeEquilibriumPopulation(l, R, U, V);
 	}
 }
 
-template<typename T>
-__device__ void Cell<T>::computePostCollisionDistributionBGK(T* population, const LBParams<T>*const params, T R, T U, T V) const {
-    for (unsigned int l = 0; l < params->Q; ++l) {
+template<typename T, typename LatticeDescriptor>
+__device__ void Cell<T, LatticeDescriptor>::computePostCollisionDistributionBGK(T* population, const LBParams<T>*const params, T R, T U, T V) const {
+    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) {
         population[l] -= params->omegaShear * (population[l] - computeEquilibriumPopulation(l, params, R, U, V));// - Fext[l];	
 	}
 }
 
-template<typename T>
-__device__ void Cell<T>::computePostCollisionDistributionCHM(T* population, const LBParams<T>*const params, T R, T U, T V) const {
+template<typename T, typename LatticeDescriptor>
+__device__ void Cell<T, LatticeDescriptor>::computePostCollisionDistributionCHM(T* population, const LBParams<T>*const params, T R, T U, T V) const {
 /****************************************************************************************************************************************/
 /**** This implementation is specific to a predefined velocity set. Changing the velocity set would break the CHM collision operator ****/
 /****************************************************************************************************************************************/

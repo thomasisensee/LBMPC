@@ -10,7 +10,7 @@
 /**********************/
 /***** Base class *****/
 /**********************/
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 class BoundaryCondition {
 protected:
     /// location from enum class (only WEST, EAST, SOUTH, NORTH allowed)
@@ -43,8 +43,8 @@ public:
 /**************************************/
 /***** Derived class 01: Periodic *****/
 /**************************************/
-template<typename T>
-class Periodic final : public BoundaryCondition<T> {
+template<typename T, typename LatticeDescriptor>
+class Periodic final : public BoundaryCondition<T, LatticeDescriptor> {
 public:
     /// Constructor
     Periodic(BoundaryLocation loc);
@@ -60,8 +60,8 @@ public:
 /*****************************************/
 /***** Derived class 02: Bounce Back *****/
 /*****************************************/
-template<typename T>
-class BounceBack : public BoundaryCondition<T> {
+template<typename T, typename LatticeDescriptor>
+class BounceBack : public BoundaryCondition<T, LatticeDescriptor> {
 public:
     /// Constructor
     BounceBack(BoundaryLocation loc);
@@ -78,8 +78,8 @@ public:
 /**********************************************************/
 /***** Derived class 03: Fixed Velocity (Bounce Back) *****/
 /**********************************************************/
-template<typename T>
-class MovingWall final : public BounceBack<T> {
+template<typename T, typename LatticeDescriptor>
+class MovingWall final : public BounceBack<T, LatticeDescriptor> {
     /// Wall velocity
     std::vector<T> _wallVelocity;
 
@@ -106,10 +106,10 @@ public:
 /*************************/
 /***** Wrapper class *****/
 /*************************/
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 class BoundaryConditionManager {
     /// Vector of boundary condition objects
-    std::vector<std::unique_ptr<BoundaryCondition<T>>> boundaryConditions;
+    std::vector<std::unique_ptr<BoundaryCondition<T, LatticeDescriptor>>> boundaryConditions;
 
     /// Helper variables (currently only for printing the correct velocity in case of moving wall)
     T _dxdt; // dx/dt
@@ -124,7 +124,7 @@ public:
     /// Setter for _dxdt
     void setDxdt(T dxdt);
 
-    void addBoundaryCondition(std::unique_ptr<BoundaryCondition<T>> condition);
+    void addBoundaryCondition(std::unique_ptr<BoundaryCondition<T, LatticeDescriptor>> condition);
     void prepareKernelParams(const BaseParams& baseParams);
     void apply(T* lbField);
     void printParameters() const;

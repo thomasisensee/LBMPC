@@ -5,7 +5,6 @@
 #include "core/lb/lbConstants.h"
 #include "core/descriptors/descriptors.h"
 #include "core/gridGeometry.h"
-#include "core/lb/lbModel.h"
 #include "core/lb/collisionModel.h"
 #include "core/lb/boundaryConditions.h"
 #include "cuda/cudaUtilities.h"
@@ -21,6 +20,12 @@ int main() {
     // =======================
     SetDevice();
 
+
+    // ========================================
+    // === Set alias for lattice descriptor ===
+    // ========================================
+    using LatticeDescriptor = D2Q9Descriptor<T>;
+
     // ================================
     // === Set necessary components ===
     // ================================
@@ -29,24 +34,23 @@ int main() {
     auto gridGeometry = std::make_unique<GridGeometry2D<T>>(dx, nx, ny);
     gridGeometry->printParameters();
 
-    auto lbModel = std::make_unique<LBModel<T, D2Q9Descriptor<T>>>();
-    lbModel->printParameters();
-
     T tauShear = 0.7;
     T tauBulk = tauShear;
     T omegaShear = 1.0 / tauShear;
     T omegaBulk = 1.0 / tauBulk;
-    auto collisionModel = std::make_unique<CollisionBGK<T>>(omegaShear);
+    auto collisionModel = std::make_unique<CollisionBGK<T, LatticeDescriptor>>(omegaShear);
+    //auto collisionModel = std::make_unique<CollisionCHM<T, LatticeDescriptor>>(omegaShear, omegaBulk);
+
     collisionModel->printParameters();
 
     T reynoldsNumber = 100.0;
 	T dt = (tauShear - 0.5) * dx * dx * reynoldsNumber * C_S_POW2;
     std::vector<T> wallVelocity = {dt / dx, 0.0};
-    auto boundaryConditionManager = std::make_unique<BoundaryConditionManager<T>>();
-    boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T>>(BoundaryLocation::WEST));
-    boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T>>(BoundaryLocation::EAST));
-    boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T>>(BoundaryLocation::SOUTH));
-    boundaryConditionManager->addBoundaryCondition(std::make_unique<MovingWall<T>>(BoundaryLocation::NORTH, wallVelocity));
+    auto boundaryConditionManager = std::make_unique<BoundaryConditionManager<T, LatticeDescriptor>>();
+    boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T, LatticeDescriptor>>(BoundaryLocation::WEST));
+    boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T, LatticeDescriptor>>(BoundaryLocation::EAST));
+    boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T, LatticeDescriptor>>(BoundaryLocation::SOUTH));
+    boundaryConditionManager->addBoundaryCondition(std::make_unique<MovingWall<T, LatticeDescriptor>>(BoundaryLocation::NORTH, wallVelocity));
     boundaryConditionManager->printParameters();
 
     // ======================

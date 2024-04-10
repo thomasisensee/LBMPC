@@ -11,16 +11,16 @@
 /**********************/
 /***** Base class *****/
 /**********************/
-template<typename T>
-BoundaryCondition<T>::BoundaryCondition(BoundaryLocation loc) : _location(loc) {}
+template<typename T, typename LatticeDescriptor>
+BoundaryCondition<T, LatticeDescriptor>::BoundaryCondition(BoundaryLocation loc) : _location(loc) {}
 
-template<typename T>
-BoundaryLocation BoundaryCondition<T>::getLocation() const {
+template<typename T, typename LatticeDescriptor>
+BoundaryLocation BoundaryCondition<T, LatticeDescriptor>::getLocation() const {
     return _location;
 }
 
-template<typename T>
-void BoundaryCondition<T>::prepareKernelParams(const BaseParams& baseParams) {
+template<typename T, typename LatticeDescriptor>
+void BoundaryCondition<T, LatticeDescriptor>::prepareKernelParams(const BaseParams& baseParams) {
     // Set kernel parameters (and duplicate on device)
     _params.setValues(
         baseParams.Nx,
@@ -38,13 +38,13 @@ void BoundaryCondition<T>::prepareKernelParams(const BaseParams& baseParams) {
     }
 }
 
-template<typename T>
-void BoundaryCondition<T>::printBoundaryLocation() const {
+template<typename T, typename LatticeDescriptor>
+void BoundaryCondition<T, LatticeDescriptor>::printBoundaryLocation() const {
     std::cout << "== Boundary Location: " << boundaryLocationToString(_location) << "\t==" << std::endl;
 }
 
-template<typename T>
-void BoundaryCondition<T>::printParameters() const {
+template<typename T, typename LatticeDescriptor>
+void BoundaryCondition<T, LatticeDescriptor>::printParameters() const {
     printBoundaryLocation();
     std::cout << "== Condition: " << "Base" << "\t=="  << std::endl;
 }
@@ -53,82 +53,81 @@ void BoundaryCondition<T>::printParameters() const {
 /**************************************/
 /***** Derived class 01: Periodic *****/
 /**************************************/
-template<typename T>
-Periodic<T>::Periodic(BoundaryLocation loc) : BoundaryCondition<T>(loc) {}
+template<typename T, typename LatticeDescriptor>
+Periodic<T, LatticeDescriptor>::Periodic(BoundaryLocation loc) : BoundaryCondition<T, LatticeDescriptor>(loc) {}
 
-template<typename T>
-void Periodic<T>::apply(T* lbmField) {
+template<typename T, typename LatticeDescriptor>
+void Periodic<T, LatticeDescriptor>::apply(T* lbmField) {
 
 }
 
-template<typename T>
-void Periodic<T>::printParameters() const {
-    BoundaryCondition<T>::printBoundaryLocation();
+template<typename T, typename LatticeDescriptor>
+void Periodic<T, LatticeDescriptor>::printParameters() const {
+    BoundaryCondition<T, LatticeDescriptor>::printBoundaryLocation();
     std::cout << "== Condition: " << "Periodic" << "\t=="  << std::endl;
 }
 
 /*****************************************/
 /***** Derived class 02: Bounce Back *****/
 /*****************************************/
-template<typename T>
-BounceBack<T>::BounceBack(BoundaryLocation loc) : BoundaryCondition<T>(loc) {}
+template<typename T, typename LatticeDescriptor>
+BounceBack<T, LatticeDescriptor>::BounceBack(BoundaryLocation loc) : BoundaryCondition<T, LatticeDescriptor>(loc) {}
 
-template<typename T>
-void BounceBack<T>::apply(T* lbmField) {
-    //std::cout << boundaryLocationToString(this->_location) << "| V = {" << this->_params.getHostParams().WALL_VELOCITY[0] << ", " << this->_params.getHostParams().WALL_VELOCITY[1] << "}"  << std::endl;
+template<typename T, typename LatticeDescriptor>
+void BounceBack<T, LatticeDescriptor>::apply(T* lbmField) {
     dim3 blockSize(this->_threadsPerBlock);
     dim3 gridSize(this->_numBlocks);
-    applyBounceBackCaller(lbmField, this->_params.getDeviceParams(), gridSize, blockSize);
+    applyBounceBackCaller<T, LatticeDescriptor>(lbmField, this->_params.getDeviceParams(), gridSize, blockSize);
 }
 
-template<typename T>
-void BounceBack<T>::printParameters() const {
-    BoundaryCondition<T>::printBoundaryLocation();
+template<typename T, typename LatticeDescriptor>
+void BounceBack<T, LatticeDescriptor>::printParameters() const {
+    BoundaryCondition<T, LatticeDescriptor>::printBoundaryLocation();
     std::cout << "== Condition: " << "Bounce-back" << "\t=="  << std::endl;
 }
 
 /**********************************************************/
 /***** Derived class 03: Fixed Velocity (Bounce Back) *****/
 /**********************************************************/
-template<typename T>
-MovingWall<T>::MovingWall(BoundaryLocation loc, const std::vector<T>& velocity) : BounceBack<T>(loc), _wallVelocity(velocity), _dxdt(0.0) {}
+template<typename T, typename LatticeDescriptor>
+MovingWall<T, LatticeDescriptor>::MovingWall(BoundaryLocation loc, const std::vector<T>& velocity) : BounceBack<T, LatticeDescriptor>(loc), _wallVelocity(velocity), _dxdt(0.0) {}
 
-template<typename T>
-void MovingWall<T>::prepareKernelParams(const BaseParams& baseParams) {
-    BoundaryCondition<T>::prepareKernelParams(baseParams);
+template<typename T, typename LatticeDescriptor>
+void MovingWall<T, LatticeDescriptor>::prepareKernelParams(const BaseParams& baseParams) {
+    BoundaryCondition<T, LatticeDescriptor>::prepareKernelParams(baseParams);
     this->_params.setWallVelocity(getWallVelocity());
 }
 
-template<typename T>
-const std::vector<T>& MovingWall<T>::getWallVelocity() const {
+template<typename T, typename LatticeDescriptor>
+const std::vector<T>& MovingWall<T, LatticeDescriptor>::getWallVelocity() const {
     return _wallVelocity;
 }
 
-template<typename T>
-void MovingWall<T>::printParameters() const {
-    BoundaryCondition<T>::printBoundaryLocation();
+template<typename T, typename LatticeDescriptor>
+void MovingWall<T, LatticeDescriptor>::printParameters() const {
+    BoundaryCondition<T, LatticeDescriptor>::printBoundaryLocation();
     std::cout << "== Condition: " << "Bounce-Back with fixed velocity" << "\t=="  << std::endl;
     std::cout << "== Velocity = {" << getWallVelocity()[0] * _dxdt << ", " << getWallVelocity()[1] * _dxdt << "}\t=="  << std::endl;
 }
 
-template<typename T>
-void MovingWall<T>::setDxdt(T dxdt) {
+template<typename T, typename LatticeDescriptor>
+void MovingWall<T, LatticeDescriptor>::setDxdt(T dxdt) {
     _dxdt = dxdt;
 }
 
 /*************************/
 /***** Wrapper class *****/
 /*************************/
-template<typename T>
-BoundaryConditionManager<T>::BoundaryConditionManager() {}
+template<typename T, typename LatticeDescriptor>
+BoundaryConditionManager<T, LatticeDescriptor>::BoundaryConditionManager() {}
 
-template<typename T>
-void BoundaryConditionManager<T>::setDxdt(T dxdt) {
+template<typename T, typename LatticeDescriptor>
+void BoundaryConditionManager<T, LatticeDescriptor>::setDxdt(T dxdt) {
     _dxdt = dxdt;
 }
 
-template<typename T>
-void BoundaryConditionManager<T>::addBoundaryCondition(std::unique_ptr<BoundaryCondition<T>> condition) {
+template<typename T, typename LatticeDescriptor>
+void BoundaryConditionManager<T, LatticeDescriptor>::addBoundaryCondition(std::unique_ptr<BoundaryCondition<T, LatticeDescriptor>> condition) {
     for (const auto& existingCondition : boundaryConditions) {
         if (condition->getLocation() == existingCondition->getLocation()) {
             std::cerr << "Error: Boundary condition already exists for location " << boundaryLocationToString(condition->getLocation()) << std::endl;
@@ -137,7 +136,7 @@ void BoundaryConditionManager<T>::addBoundaryCondition(std::unique_ptr<BoundaryC
     }   
 
     // If MovingWall, then set dxdt
-    MovingWall<T>* MWCondition = dynamic_cast<MovingWall<T>*>(condition.get());
+    MovingWall<T, LatticeDescriptor>* MWCondition = dynamic_cast<MovingWall<T, LatticeDescriptor>*>(condition.get());
     if (MWCondition != nullptr) {
         MWCondition->setDxdt(_dxdt);
     }
@@ -145,22 +144,22 @@ void BoundaryConditionManager<T>::addBoundaryCondition(std::unique_ptr<BoundaryC
     boundaryConditions.push_back(std::move(condition));
 }
 
-template<typename T>
-void BoundaryConditionManager<T>::prepareKernelParams(const BaseParams& baseParams) {
+template<typename T, typename LatticeDescriptor>
+void BoundaryConditionManager<T, LatticeDescriptor>::prepareKernelParams(const BaseParams& baseParams) {
     for (const auto& condition : boundaryConditions) {
         condition->prepareKernelParams(baseParams);
     }
 }
 
-template<typename T>
-void BoundaryConditionManager<T>::apply(T* lbmField) {
+template<typename T, typename LatticeDescriptor>
+void BoundaryConditionManager<T, LatticeDescriptor>::apply(T* lbmField) {
     for (const auto& condition : boundaryConditions) {
         condition->apply(lbmField);
     }
 }
 
-template<typename T>
-void BoundaryConditionManager<T>::printParameters() const {
+template<typename T, typename LatticeDescriptor>
+void BoundaryConditionManager<T, LatticeDescriptor>::printParameters() const {
     std::cout << "====== Boundary conditions =======" << std::endl;
     for (const auto& condition : boundaryConditions) {
         condition->printParameters();
