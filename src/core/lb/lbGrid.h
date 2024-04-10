@@ -11,11 +11,11 @@
 #include "core/gridGeometry.h"
 #include "core/kernelParameters.h"
 
-template<typename T>
+template<typename T, typename LatticeDescriptor>
 class LBGrid {
 private:
     /// Required model objects
-    std::unique_ptr<LBModel<T>> _lbModel;
+    std::unique_ptr<LBModel<T, LatticeDescriptor>> _lbModel;
     std::unique_ptr<CollisionModel<T>> _collisionModel;
     std::unique_ptr<GridGeometry2D<T>> _gridGeometry;
     std::unique_ptr<BoundaryConditionManager<T>> _boundaryConditionManager;
@@ -32,7 +32,7 @@ private:
     T* _deviceFirstMoment = nullptr;
 
     /// Parameters to pass to cuda kernels
-    LBParamsWrapper<T> _params;
+    BaseParams _params;
 
     /// Cuda grid and block size
     std::pair<unsigned int, unsigned int> _threadsPerBlock;
@@ -41,7 +41,7 @@ private:
 public:
     /// Constructor
     LBGrid(
-        std::unique_ptr<LBModel<T>>&& model,
+        std::unique_ptr<LBModel<T, LatticeDescriptor>>&& model,
         std::unique_ptr<CollisionModel<T>>&& collision, 
         std::unique_ptr<GridGeometry2D<T>>&& geometry, 
         std::unique_ptr<BoundaryConditionManager<T>>&& boundary

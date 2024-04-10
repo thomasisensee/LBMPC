@@ -31,7 +31,7 @@ public:
     virtual ~BoundaryCondition() = default;
 
     BoundaryLocation getLocation() const;
-    virtual void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel);
+    virtual void prepareKernelParams(const BaseParams& baseParams);
     virtual void apply(T* lbField) = 0;
 
     virtual void printParameters() const;
@@ -93,7 +93,7 @@ public:
     /// Destructor
     virtual ~MovingWall() = default;
 
-    void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel) override;
+    void prepareKernelParams(const BaseParams& baseParams) override;
 
     const std::vector<T>& getWallVelocity() const;
     void printParameters() const override;
@@ -125,7 +125,7 @@ public:
     void setDxdt(T dxdt);
 
     void addBoundaryCondition(std::unique_ptr<BoundaryCondition<T>> condition);
-    void prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel);
+    void prepareKernelParams(const BaseParams& baseParams);
     void apply(T* lbField);
     void printParameters() const;
 };

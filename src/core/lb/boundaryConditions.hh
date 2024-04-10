@@ -20,17 +20,11 @@ BoundaryLocation BoundaryCondition<T>::getLocation() const {
 }
 
 template<typename T>
-void BoundaryCondition<T>::prepareKernelParams(const LBParams<T>& lbParams, const  LBModel<T>* lbModel) {
+void BoundaryCondition<T>::prepareKernelParams(const BaseParams& baseParams) {
     // Set kernel parameters (and duplicate on device)
     _params.setValues(
-        lbParams.D,
-        lbParams.Nx,
-        lbParams.Ny,
-        lbParams.Q,
-        lbParams.LATTICE_VELOCITIES,
-        lbParams.LATTICE_WEIGHTS,
-        lbModel->getPopulationPtr(this->getLocation()),
-        lbModel->getOppositePopualationPtr(),
+        baseParams.Nx,
+        baseParams.Ny,
         nullptr,
         this->_location
     );
@@ -38,9 +32,9 @@ void BoundaryCondition<T>::prepareKernelParams(const LBParams<T>& lbParams, cons
     // Set block and grid size for cuda kernel execution
     this->_threadsPerBlock = THREADS_PER_BLOCK_DIMENSION*THREADS_PER_BLOCK_DIMENSION;
     if (this->_location == BoundaryLocation::EAST || this->_location == BoundaryLocation::WEST) {
-        this->_numBlocks = (lbParams.Ny + this->_threadsPerBlock - 1) / this->_threadsPerBlock;
+        this->_numBlocks = (baseParams.Ny + this->_threadsPerBlock - 1) / this->_threadsPerBlock;
     } else {
-        this->_numBlocks = (lbParams.Nx + this->_threadsPerBlock - 1) / this->_threadsPerBlock;
+        this->_numBlocks = (baseParams.Nx + this->_threadsPerBlock - 1) / this->_threadsPerBlock;
     }
 }
 
@@ -100,8 +94,8 @@ template<typename T>
 MovingWall<T>::MovingWall(BoundaryLocation loc, const std::vector<T>& velocity) : BounceBack<T>(loc), _wallVelocity(velocity), _dxdt(0.0) {}
 
 template<typename T>
-void MovingWall<T>::prepareKernelParams(const LBParams<T>& lbmParams, const LBModel<T>* lbModel) {
-    BoundaryCondition<T>::prepareKernelParams(lbmParams, lbModel);
+void MovingWall<T>::prepareKernelParams(const BaseParams& baseParams) {
+    BoundaryCondition<T>::prepareKernelParams(baseParams);
     this->_params.setWallVelocity(getWallVelocity());
 }
 
@@ -152,9 +146,9 @@ void BoundaryConditionManager<T>::addBoundaryCondition(std::unique_ptr<BoundaryC
 }
 
 template<typename T>
-void BoundaryConditionManager<T>::prepareKernelParams(const LBParams<T>& lbParams, const LBModel<T>* lbModel) {
+void BoundaryConditionManager<T>::prepareKernelParams(const BaseParams& baseParams) {
     for (const auto& condition : boundaryConditions) {
-        condition->prepareKernelParams(lbParams, lbModel);
+        condition->prepareKernelParams(baseParams);
     }
 }
 

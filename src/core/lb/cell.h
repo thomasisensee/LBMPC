@@ -31,10 +31,10 @@ public:
     __device__ void setEquilibriumDistribution(T* population, const LBParams<T>*const params, T R, T U, T V) const;
 
     /// Computes the post-collision distribution via the BGK collision operator
-    __device__ void computePostCollisionDistributionBGK(T* population, const CollisionParamsBGK<T>*const params, T R, T U, T V) const;
+    __device__ void computePostCollisionDistributionBGK(T* population, const LBParams<T>*const params, T R, T U, T V) const;
 
     /// Computes the post-collision distribution via the CHM MRT collision operator
-    __device__ void computePostCollisionDistributionCHM(T* population, const CollisionParamsCHM<T>*const params, T R, T U, T V) const;
+    __device__ void computePostCollisionDistributionCHM(T* population, const LBParams<T>*const params, T R, T U, T V) const;
 };
 
 #include "cell.hh"

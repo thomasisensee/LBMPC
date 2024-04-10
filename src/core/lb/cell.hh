@@ -85,14 +85,14 @@ __device__ void Cell<T>::setEquilibriumDistribution(T* population, const LBParam
 }
 
 template<typename T>
-__device__ void Cell<T>::computePostCollisionDistributionBGK(T* population, const CollisionParamsBGK<T>*const params, T R, T U, T V) const {
+__device__ void Cell<T>::computePostCollisionDistributionBGK(T* population, const LBParams<T>*const params, T R, T U, T V) const {
     for (unsigned int l = 0; l < params->Q; ++l) {
         population[l] -= params->omegaShear * (population[l] - computeEquilibriumPopulation(l, params, R, U, V));// - Fext[l];	
 	}
 }
 
 template<typename T>
-__device__ void Cell<T>::computePostCollisionDistributionCHM(T* population, const CollisionParamsCHM<T>*const params, T R, T U, T V) const {
+__device__ void Cell<T>::computePostCollisionDistributionCHM(T* population, const LBParams<T>*const params, T R, T U, T V) const {
 /****************************************************************************************************************************************/
 /**** This implementation is specific to a predefined velocity set. Changing the velocity set would break the CHM collision operator ****/
 /****************************************************************************************************************************************/

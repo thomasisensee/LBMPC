@@ -72,7 +72,7 @@ template void doStreamingCaller<float>(float** deviceCollision, float** deviceSt
 template void doStreamingCaller<double>(double** deviceCollision, double** deviceStreaming, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
 
 template<typename T>
-__global__ void doCollisionBGKKernel(T* collision, const CollisionParamsBGK<T>* const params) {
+__global__ void doCollisionBGKKernel(T* collision, const LBParams<T>* const params) {
 
     const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
@@ -90,12 +90,12 @@ __global__ void doCollisionBGKKernel(T* collision, const CollisionParamsBGK<T>* 
 
 
 template<typename T>
-void doCollisionBGKCaller(T* deviceCollision, const CollisionParamsBGK<T>* const params, dim3 gridSize, dim3 blockSize) {
+void doCollisionBGKCaller(T* deviceCollision, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
     doCollisionBGKKernel<<<gridSize, blockSize>>>(deviceCollision, params);
     cudaErrorCheck(cudaDeviceSynchronize());
 }
-template void doCollisionBGKCaller<float>(float* deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
-template void doCollisionBGKCaller<double>(double* deviceCollision, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
+template void doCollisionBGKCaller<float>(float* deviceCollision, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
+template void doCollisionBGKCaller<double>(double* deviceCollision, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);
 
 
 template<typename T>
@@ -258,7 +258,7 @@ template void computeFirstMomentCaller<double>(double* deviceFirstMoment, const 
 
 
 template<typename T>
-__global__ void testKernel(T* collision, const CollisionParamsBGK<T>* const params) {
+__global__ void testKernel(T* collision, const LBParams<T>* const params) {
     const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
     if (i < 1 || i > params->Nx - 2 || j < 1 || j > params->Ny - 2) { return; }
@@ -269,9 +269,9 @@ __global__ void testKernel(T* collision, const CollisionParamsBGK<T>* const para
 }
 
 template<typename T>
-void testKernelCaller(T* deviceCollision, const CollisionParamsBGK<T>* const params, dim3 gridSize, dim3 blockSize) {
+void testKernelCaller(T* deviceCollision, const LBParams<T>* const params, dim3 gridSize, dim3 blockSize) {
     testKernel<<<gridSize, blockSize>>>(deviceCollision, params);
     cudaErrorCheck(cudaDeviceSynchronize());
 }
-template void testKernelCaller<float>(float* deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
-template void testKernelCaller<double>(double* deviceCollision, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
+template void testKernelCaller<float>(float* deviceCollision, const LBParams<float>* const params, dim3 gridSize, dim3 blockSize);
+template void testKernelCaller<double>(double* deviceCollision, const LBParams<double>* const params, dim3 gridSize, dim3 blockSize);

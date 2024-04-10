@@ -11,9 +11,9 @@
 #include "cuda/cudaKernels.cuh"
 #include "cuda/cudaErrorHandler.cuh"
 
-template<typename T>
-LBGrid<T>::LBGrid(
-        std::unique_ptr<LBModel<T>>&& model,
+template<typename T, typename LatticeDescriptor>
+LBGrid<T, LatticeDescriptor>::LBGrid(
+        std::unique_ptr<LBModel<T, LatticeDescriptor>>&& model,
         std::unique_ptr<CollisionModel<T>>&& collision,
         std::unique_ptr<GridGeometry2D<T>>&& geometry,
         std::unique_ptr<BoundaryConditionManager<T>>&& boundary
@@ -24,8 +24,8 @@ LBGrid<T>::LBGrid(
     initializeDistributions();
 }
 
-template<typename T>
-LBGrid<T>::~LBGrid() {
+template<typename T, typename LatticeDescriptor>
+LBGrid<T, LatticeDescriptor>::~LBGrid() {
     if (_deviceCollision != nullptr) {
         cudaErrorCheck(cudaFree(_deviceCollision));
     }
@@ -34,64 +34,64 @@ LBGrid<T>::~LBGrid() {
     }
 }
 
-template<typename T>
-void LBGrid<T>::printParameters() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::printParameters() {
     _gridGeometry->printParameters();
     _lbModel->printParameters();
     _collisionModel->printParameters();
     _boundaryConditionManager->printParameters();
 }
 
-template<typename T>
-std::vector<T>& LBGrid<T>::getHostDistributions() {
+template<typename T, typename LatticeDescriptor>
+std::vector<T>& LBGrid<T, LatticeDescriptor>::getHostDistributions() {
     return _hostDistributions;
 }
 
-template<typename T>
-std::vector<T>& LBGrid<T>::getHostZerothMoment() {
+template<typename T, typename LatticeDescriptor>
+std::vector<T>& LBGrid<T, LatticeDescriptor>::getHostZerothMoment() {
     return _hostZerothMoment;
 }
 
-template<typename T>
-std::vector<T>& LBGrid<T>::getHostFirstMoment() {
+template<typename T, typename LatticeDescriptor>
+std::vector<T>& LBGrid<T, LatticeDescriptor>::getHostFirstMoment() {
     return _hostFirstMoment;
 }
 
-template<typename T>
-T* LBGrid<T>::getDeviceCollision() const {
+template<typename T, typename LatticeDescriptor>
+T* LBGrid<T, LatticeDescriptor>::getDeviceCollision() const {
     return _deviceCollision;
 }
 
-template<typename T>
-T* LBGrid<T>::getDeviceStreaming() const {
+template<typename T, typename LatticeDescriptor>
+T* LBGrid<T, LatticeDescriptor>::getDeviceStreaming() const {
     return _deviceStreaming;
 }
 
-template<typename T>
-T* LBGrid<T>::getDeviceZerothMoment() const {
+template<typename T, typename LatticeDescriptor>
+T* LBGrid<T, LatticeDescriptor>::getDeviceZerothMoment() const {
     return _deviceZerothMoment;
 }
 
-template<typename T>
-T* LBGrid<T>::getDeviceFirstMoment() const {
+template<typename T, typename LatticeDescriptor>
+T* LBGrid<T, LatticeDescriptor>::getDeviceFirstMoment() const {
     return _deviceFirstMoment;
 }
 
-template<typename T>
-const GridGeometry2D<T>& LBGrid<T>::getGridGeometry() const {
+template<typename T, typename LatticeDescriptor>
+const GridGeometry2D<T>& LBGrid<T, LatticeDescriptor>::getGridGeometry() const {
     assert(_gridGeometry != nullptr); // Optional: Ensure the unique_ptr is not empty
     return *_gridGeometry;
 }
 
-template<typename T>
-void LBGrid<T>::allocateHostData() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::allocateHostData() {
     _hostDistributions.resize(_lbModel->getQ() * _gridGeometry->getGhostVolume(), static_cast<T>(0));
     _hostZerothMoment.resize(_gridGeometry->getVolume(), static_cast<T>(0));
     _hostFirstMoment.resize(_lbModel->getD() * _gridGeometry->getVolume(), static_cast<T>(0));
 }
 
-template<typename T>
-void LBGrid<T>::allocateDeviceData() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::allocateDeviceData() {
     if(this->getDeviceCollision() == nullptr) {
         cudaErrorCheck(cudaMalloc(&_deviceCollision, _lbModel->getQ() * _gridGeometry->getGhostVolume() * sizeof(T)));
     }
@@ -106,8 +106,8 @@ void LBGrid<T>::allocateDeviceData() {
     }
 }
 
-template<typename T>
-void LBGrid<T>::cleanupDevice() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::cleanupDevice() {
     if(this->getDeviceCollision() != nullptr) {
         cudaErrorCheck(cudaFree(this->getDeviceCollision()));
         _deviceCollision = nullptr;
@@ -126,16 +126,12 @@ void LBGrid<T>::cleanupDevice() {
     }
 }
 
-template<typename T>
-void LBGrid<T>::prepareKernelParams() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::prepareKernelParams() {
     // Own kernel parameters (and duplicate on device)
     _params.setValues(
-        _lbModel->getD(),
         _gridGeometry->getGhostNx(),
         _gridGeometry->getGhostNy(),
-        _lbModel->getQ(),
-        _lbModel->getLatticeVelocitiesPtr(),
-        _lbModel->getLatticeWeightsPtr()
     );
 
     // Set block and grid size for cuda kernel execution
@@ -149,72 +145,72 @@ void LBGrid<T>::prepareKernelParams() {
     _collisionModel->prepareKernelParams(_params.getHostParams());
 
     // Pass kernel parameters to boundary conditions
-    _boundaryConditionManager->prepareKernelParams(_params.getHostParams(), _lbModel.get());
+    _boundaryConditionManager->prepareKernelParams(_params.getHostParams());
 }
 
-template<typename T>
-void LBGrid<T>::fetchZerothMoment() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::fetchZerothMoment() {
     if(this->getDeviceZerothMoment() != nullptr) {
        cudaErrorCheck(cudaMemcpy(_hostZerothMoment.data(), _deviceZerothMoment, _gridGeometry->getVolume() * sizeof(T), cudaMemcpyDeviceToHost));
     }
 }
 
-template<typename T>
-void LBGrid<T>::fetchFirstMoment() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::fetchFirstMoment() {
     if(this->getDeviceFirstMoment() != nullptr) {
        cudaErrorCheck(cudaMemcpy(_hostFirstMoment.data(), _deviceFirstMoment, _lbModel->getD() * _gridGeometry->getVolume() * sizeof(T), cudaMemcpyDeviceToHost));
     }
 }
 
 
-template<typename T>
-void LBGrid<T>::copyToDevice() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::copyToDevice() {
     if(this->getDeviceCollision() != nullptr) {
        cudaErrorCheck(cudaMemcpy(_deviceCollision, _hostDistributions.data(), _gridGeometry->getGhostVolume() * sizeof(T), cudaMemcpyHostToDevice));
     }
 }
 
-template<typename T>
-void LBGrid<T>::copyToHost() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::copyToHost() {
     if(this->getDeviceStreaming() != nullptr) {
        cudaErrorCheck(cudaMemcpy(_hostDistributions.data(), _deviceCollision, _gridGeometry->getGhostVolume() * sizeof(T), cudaMemcpyDeviceToHost));
     }
 }
 
-template<typename T>
-void LBGrid<T>::initializeDistributions() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::initializeDistributions() {
     dim3 blockSize(_threadsPerBlock.first, _threadsPerBlock.second);
     dim3 gridSize(_numBlocks.first, _numBlocks.first);
 
     initializeDistributionsCaller(_deviceCollision, _params.getDeviceParams(), gridSize, blockSize);
 }
 
-template<typename T>
-void LBGrid<T>::performCollisionStep() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::performCollisionStep() {
     _collisionModel->doCollision(_deviceCollision, _numBlocks, _threadsPerBlock);
 }
 
-template<typename T>
-void LBGrid<T>::performStreamingStep() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::performStreamingStep() {
     dim3 blockSize(_threadsPerBlock.first, _threadsPerBlock.second);
     dim3 gridSize(_numBlocks.first, _numBlocks.first);
 
     doStreamingCaller(&_deviceCollision, &_deviceStreaming, _params.getDeviceParams(), gridSize, blockSize);
 }
 
-template<typename T>
-void LBGrid<T>::applyBoundaryConditions() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::applyBoundaryConditions() {
     _boundaryConditionManager->apply(_deviceCollision);
 }
 
-template<typename T>
-void LBGrid<T>::computeMoments() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::computeMoments() {
     computeZerothMoment();
     computeFirstMoment();
 }
 
-template<typename T>
-void LBGrid<T>::computeZerothMoment() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::computeZerothMoment() {
     dim3 blockSize(_threadsPerBlock.first, _threadsPerBlock.second);
     dim3 gridSize(_numBlocks.first, _numBlocks.first);
 
@@ -222,8 +218,8 @@ void LBGrid<T>::computeZerothMoment() {
     fetchZerothMoment();
 }
 
-template<typename T>
-void LBGrid<T>::computeFirstMoment() {
+template<typename T, typename LatticeDescriptor>
+void LBGrid<T, LatticeDescriptor>::computeFirstMoment() {
     dim3 blockSize(_threadsPerBlock.first, _threadsPerBlock.second);
     dim3 gridSize(_numBlocks.first, _numBlocks.first);
 
@@ -231,8 +227,8 @@ void LBGrid<T>::computeFirstMoment() {
     fetchFirstMoment();
 }
 
-template<typename T>
-unsigned int LBGrid<T>::pos(unsigned int i, unsigned int j, unsigned int Nx) {
+template<typename T, typename LatticeDescriptor>
+unsigned int LBGrid<T, LatticeDescriptor>::pos(unsigned int i, unsigned int j, unsigned int Nx) {
     return j * Nx + i;
 }
 
