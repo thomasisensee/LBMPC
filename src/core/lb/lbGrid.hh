@@ -77,7 +77,7 @@ T* LBGrid<T, LatticeDescriptor>::getDeviceFirstMoment() const {
 
 template<typename T, typename LatticeDescriptor>
 const GridGeometry2D<T>& LBGrid<T, LatticeDescriptor>::getGridGeometry() const {
-    assert(_gridGeometry != nullptr); // Optional: Ensure the unique_ptr is not empty
+    assert(_gridGeometry != nullptr);
     return *_gridGeometry;
 }
 
