@@ -89,15 +89,15 @@ void CollisionParamsBGKWrapper<T>::allocateAndCopyToDevice() {
     cleanupDevice();
 
     // Prepare the host-side copy of Params with device pointers
-    LBParams<T> paramsTemp = this->_hostParams; // Use a temporary host copy
+    CollisionParamsBGK<T> paramsTemp = this->_hostParams; // Use a temporary host copy
 
     // Allocate memory for the Params struct on the device if not already allocated
     if (this->_deviceParams == nullptr) {
-        cudaErrorCheck(cudaMalloc(&(this->_deviceParams), sizeof(LBParams<T>)));
+        cudaErrorCheck(cudaMalloc(&(this->_deviceParams), sizeof(CollisionParamsBGK<T>)));
     }
 
     // Copy the prepared Params (with device pointers) from the temporary host copy to the device
-    cudaErrorCheck(cudaMemcpy(this->_deviceParams, &paramsTemp, sizeof(LBParams<T>), cudaMemcpyHostToDevice));
+    cudaErrorCheck(cudaMemcpy(this->_deviceParams, &paramsTemp, sizeof(CollisionParamsBGK<T>), cudaMemcpyHostToDevice));
 }
 
 template<typename T>

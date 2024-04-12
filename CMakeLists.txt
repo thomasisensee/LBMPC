@@ -13,7 +13,7 @@ include_directories(${CUDA_INCLUDE_DIRS})
 # Add source files
 set(SOURCES
     src/core/constants.h
-    src/core/descriptors/descriptors.h
+    src/core/descriptors/latticeDescriptors.h
     src/core/utilities.h
     src/core/utilities.cpp
     src/core/lb/lbConstants.h
@@ -31,6 +31,8 @@ set(SOURCES
     src/core/kernelParameters.hh
     src/io/vtkWriter.h
     src/io/vtkWriter.hh
+    #src/io/configurationManager.h
+    #src/io/configurationManager.hh
     src/cuda/cudaErrorHandler.cuh
     src/cuda/cell.h
     src/cuda/cell.hh
@@ -38,6 +40,7 @@ set(SOURCES
     src/cuda/cudaKernels.cu
     src/cuda/cudaUtilities.h
     src/cuda/cudaUtilities.cpp
+    src/utilities/fraction.h
 )
 
 # Define the tinyxml2 library

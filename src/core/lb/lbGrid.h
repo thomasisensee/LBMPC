@@ -10,13 +10,13 @@
 #include "core/gridGeometry.h"
 #include "core/kernelParameters.h"
 
-template<typename T, typename LatticeDescriptor>
+template<typename T, unsigned int D, unsigned int Q>
 class LBGrid {
 private:
     /// Required model objects
     std::unique_ptr<GridGeometry2D<T>> _gridGeometry;
-    std::unique_ptr<CollisionModel<T, LatticeDescriptor>> _collisionModel;
-    std::unique_ptr<BoundaryConditionManager<T, LatticeDescriptor>> _boundaryConditionManager;
+    std::unique_ptr<CollisionModel<T,D,Q>> _collisionModel;
+    std::unique_ptr<BoundaryConditionManager<T,D,Q>> _boundaryConditionManager;
 
     /// Distribution function, both for host and device
     std::vector<T> _hostDistributions;
@@ -30,7 +30,7 @@ private:
     T* _deviceFirstMoment = nullptr;
 
     /// Parameters to pass to cuda kernels
-    BaseParams _params;
+    CollisionParamsBGKWrapper<T> _params;
 
     /// Cuda grid and block size
     std::pair<unsigned int, unsigned int> _threadsPerBlock;
@@ -40,8 +40,8 @@ public:
     /// Constructor
     LBGrid(
         std::unique_ptr<GridGeometry2D<T>>&& geometry,
-        std::unique_ptr<CollisionModel<T, LatticeDescriptor>>&& collision, 
-        std::unique_ptr<BoundaryConditionManager<T, LatticeDescriptor>>&& boundary
+        std::unique_ptr<CollisionModel<T,D,Q>>&& collision, 
+        std::unique_ptr<BoundaryConditionManager<T,D,Q>>&& boundary
     );
 
     /// Destructor

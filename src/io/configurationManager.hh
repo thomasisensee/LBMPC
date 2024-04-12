@@ -8,7 +8,6 @@
 #include "core/constants.h"
 #include "core/simulation.h"
 #include "core/gridGeometry.h"
-#include "core/lb/lbModel.h"
 #include "core/lb/collisionModel.h"
 #include "core/lb/boundaryConditions.h"
 
@@ -212,9 +211,8 @@ std::shared_ptr<LBFluidSimulation<T>> ConfigurationManager::buildSimulation() {
     // Create the objects that are needed for the simulation
     auto gridGeometry = std::make_unique<GridGeometry2D<T>>(dx, nX, nY);
     auto lbGrid = std::make_unique<LBGrid<T>>(
-        std::move(lbModel),
-        std::move(collisionModel), 
         std::move(gridGeometry), 
+        std::move(collisionModel), 
         std::move(boundaryConditionManager)
     );
     auto vtkWriter = std::make_unique<VTKWriter>(outputDirectory, "cavity");

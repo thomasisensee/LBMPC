@@ -2,99 +2,101 @@
 #define Cell_HH
 
 #include "cell.h"
-#include "core/descriptors/descriptors.h"
+#include "core/descriptors/latticeDescriptors.h"
 #include "core/lb/lbConstants.h"
 
-template<typename T, typename LatticeDescriptor>
-__device__ T Cell<T, LatticeDescriptor>::computeEquilibriumPopulation(unsigned int l, T R, T U, T V) const {
-    int cix = LatticeDescriptor::latticeVelocities[l][0];
-    int ciy = LatticeDescriptor::latticeVelocities[l][1];
-    T cixcs2 = cix * cix - C_S_POW2;
-    T ciycs2 = ciy * ciy - C_S_POW2;
-    T firstOrder = C_S_POW2_INV * (U * cix + V * ciy);
-    T secondOrder = 0.5 * C_S_POW4_INV * (cixcs2 * U * U + ciycs2 * V * V + 2.0 * cix * ciy * U * V);
-    T thirdOrder = 0.5 * C_S_POW6_INV * (cixcs2 * ciy * U * U * V + ciycs2 * cix * U * V * V);
-    T fourthOrder = 0.25 * C_S_POW8_INV * (cixcs2 * ciycs2 * U * U * V * V);
+using namespace latticeDescriptors;
 
-    return LatticeDescriptor::latticeWeights[l] * R * (1.0 + firstOrder + secondOrder + thirdOrder + fourthOrder);
+template<typename T, unsigned int D, unsigned int Q>
+__device__ T Cell<T,D,Q>::computeEquilibriumPopulation(unsigned int l, T R, T U, T V) const {
+    T cix = static_cast<T>(latticeVelocities<D,Q>(l, 0));
+    T ciy = static_cast<T>(latticeVelocities<D,Q>(l, 1));
+    T cixcs2 = cix * cix - cs2<T,D,Q>();
+    T ciycs2 = ciy * ciy - cs2<T,D,Q>();
+    T firstOrder = invCs2<T,D,Q>() * (U * cix + V * ciy);
+    T secondOrder = 0.5 * invCs2<T,D,Q>() * invCs2<T,D,Q>() * (cixcs2 * U * U + ciycs2 * V * V + 2.0 * cix * ciy * U * V);
+    T thirdOrder = 0.5 * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * (cixcs2 * ciy * U * U * V + ciycs2 * cix * U * V * V);
+    T fourthOrder = 0.25 * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * (cixcs2 * ciycs2 * U * U * V * V);
+
+    return latticeWeights<T,D,Q>(l) * R * (1.0 + firstOrder + secondOrder + thirdOrder + fourthOrder);
 }
 
-template<typename T, typename LatticeDescriptor>
-__device__ T Cell<T, LatticeDescriptor>::getZerothMoment(const T* const population) const {
+template<typename T, unsigned int D, unsigned int Q>
+__device__ T Cell<T,D,Q>::getZerothMoment(const T* const population) const {
     T rho = 0.0;
-    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) { rho += population[l]; }
+    for (unsigned int l = 0; l < Q; ++l) { rho += population[l]; }
     return rho;
 }
 
-template<typename T, typename LatticeDescriptor>
-__device__ T Cell<T, LatticeDescriptor>::getFirstMomentX(const T* const population) const {
+template<typename T, unsigned int D, unsigned int Q>
+__device__ T Cell<T,D,Q>::getFirstMomentX(const T* const population) const {
     T m1x = 0.0;
-    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) { m1x += population[l] * LatticeDescriptor::latticeVelocities[l][0]; }
+    for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(latticeVelocities<D,Q>(l, 0)); }
     return m1x;
 }
 
-template<typename T, typename LatticeDescriptor>
-__device__ T Cell<T, LatticeDescriptor>::getFirstMomentY(const T* const population) const {
+template<typename T, unsigned int D, unsigned int Q>
+__device__ T Cell<T,D,Q>::getFirstMomentY(const T* const population) const {
     T m1y = 0.0;
-    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) { m1y += population[l] * LatticeDescriptor::latticeVelocities[l][1]; }
+    for (unsigned int l = 0; l < Q; ++l) { m1y += population[l] * static_cast<T>(latticeVelocities<D,Q>(l, 1)); }
     return m1y;
 }
 
-template<typename T, typename LatticeDescriptor>
-__device__ T Cell<T, LatticeDescriptor>::getVelocityX(const T* const population) const {
+template<typename T, unsigned int D, unsigned int Q>
+__device__ T Cell<T,D,Q>::getVelocityX(const T* const population) const {
     T m1x = 0.0;
     T rho = 0.0;
-    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) { m1x += population[l] * LatticeDescriptor::latticeVelocities[l][0]; rho += population[l]; }
+    for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(latticeVelocities<D,Q>(l, 0)); rho += population[l]; }
     return m1x / rho;
 }
 
-template<typename T, typename LatticeDescriptor>
-__device__ T Cell<T, LatticeDescriptor>::getVelocityX(const T* const population, T R) const {
+template<typename T, unsigned int D, unsigned int Q>
+__device__ T Cell<T,D,Q>::getVelocityX(const T* const population, T R) const {
     T m1x = 0.0;
-    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) { m1x += population[l] * LatticeDescriptor::latticeVelocities[l][0]; }
+    for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(latticeVelocities<D,Q>(l, 0)); }
     return m1x / R;
 }
 
-template<typename T, typename LatticeDescriptor>
-__device__ T Cell<T, LatticeDescriptor>::getVelocityY(const T* const population) const {
+template<typename T, unsigned int D, unsigned int Q>
+__device__ T Cell<T,D,Q>::getVelocityY(const T* const population) const {
     T m1x = 0.0;
     T rho = 0.0;
-    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) { m1x += population[l] * LatticeDescriptor::latticeVelocities[l][1]; rho += population[l]; }
+    for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(latticeVelocities<D,Q>(l, 1)); rho += population[l]; }
     return m1x / rho;
 }
 
-template<typename T, typename LatticeDescriptor>
-__device__ T Cell<T, LatticeDescriptor>::getVelocityY(const T* const population, T R) const {
+template<typename T, unsigned int D, unsigned int Q>
+__device__ T Cell<T,D,Q>::getVelocityY(const T* const population, T R) const {
     T m1x = 0.0;
-    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) { m1x += population[l] * LatticeDescriptor::latticeVelocities[l][1]; }
+    for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(latticeVelocities<D,Q>(l, 1)); }
     return m1x / R;
 }
 
-template<typename T, typename LatticeDescriptor>
-__device__ void Cell<T, LatticeDescriptor>::getEquilibriumDistribution(const T* const population, T* eqDistr, T R, T U, T V) const {
-    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l)
+template<typename T, unsigned int D, unsigned int Q>
+__device__ void Cell<T,D,Q>::getEquilibriumDistribution(const T* const population, T* eqDistr, T R, T U, T V) const {
+    for (unsigned int l = 0; l < Q; ++l)
     {
 		eqDistr[l] = computeEquilibriumPopulation(l, R, U, V);
 	}
 }
 
-template<typename T, typename LatticeDescriptor>
-__device__ void Cell<T, LatticeDescriptor>::setEquilibriumDistribution(T* population, T R, T U, T V) const {
-    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l)
+template<typename T, unsigned int D, unsigned int Q>
+__device__ void Cell<T,D,Q>::setEquilibriumDistribution(T* population, T R, T U, T V) const {
+    for (unsigned int l = 0; l < Q; ++l)
     {
 		population[l] = computeEquilibriumPopulation(l, R, U, V);
 	}
 }
 
-template<typename T, typename LatticeDescriptor>
-__device__ void Cell<T, LatticeDescriptor>::computePostCollisionDistributionBGK(T* population, const LBParams<T>*const params, T R, T U, T V) const {
-    for (unsigned int l = 0; l < LatticeDescriptor::Q; ++l) {
-        population[l] -= params->omegaShear * (population[l] - computeEquilibriumPopulation(l, params, R, U, V));// - Fext[l];	
+template<typename T, unsigned int D, unsigned int Q>
+__device__ void Cell<T,D,Q>::computePostCollisionDistributionBGK(T* population, const CollisionParamsBGK<T>*const params, T R, T U, T V) const {
+    for (unsigned int l = 0; l < Q; ++l) {
+        population[l] -= params->omegaShear * (population[l] - computeEquilibriumPopulation(l, R, U, V));// - Fext[l];	
 	}
 }
 
-template<typename T, typename LatticeDescriptor>
-__device__ void Cell<T, LatticeDescriptor>::computePostCollisionDistributionCHM(T* population, const LBParams<T>*const params, T R, T U, T V) const {
+template<typename T, unsigned int D, unsigned int Q>
+__device__ void Cell<T,D,Q>::computePostCollisionDistributionCHM(T* population, const CollisionParamsCHM<T>*const params, T R, T U, T V) const {
 /****************************************************************************************************************************************/
 /**** This implementation is specific to a predefined velocity set. Changing the velocity set would break the CHM collision operator ****/
 /****************************************************************************************************************************************/
@@ -110,7 +112,7 @@ __device__ void Cell<T, LatticeDescriptor>::computePostCollisionDistributionCHM(
     T Fy = 0.0;
 
     // Central-hermite moments
-    T chm3 = f0*(U*U + V*V - 2.0*C_S_POW2) + f1*((U-1.0)*(U-1.0) + V*V - 2.0*C_S_POW2) + f2*((U+1.0)*(U+1.0) + V*V - 2.0*C_S_POW2) + f3*(U*U + (V-1.0)*(V-1.0) - 2.0*C_S_POW2) + f4*(U*U + (V+1.0)*(V+1.0) - 2.0*C_S_POW2) + f5*((U-1.0)*(U-1.0) + (V-1.0)*(V-1.0) - 2.0*C_S_POW2) + f6*((U+1.0)*(U+1.0) + (V+1.0)*(V+1.0) - 2.0*C_S_POW2) + f7*((U-1.0)*(U-1.0) + (V+1.0)*(V+1.0) - 2.0*C_S_POW2) + f8*((U+1)*(U+1) +(V-1.0)*(V-1.0) - 2.0*C_S_POW2);
+    T chm3 = f0*(U*U + V*V - 2.0*cs2<T,D,Q>()) + f1*((U-1.0)*(U-1.0) + V*V - 2.0*cs2<T,D,Q>()) + f2*((U+1.0)*(U+1.0) + V*V - 2.0*cs2<T,D,Q>()) + f3*(U*U + (V-1.0)*(V-1.0) - 2.0*cs2<T,D,Q>()) + f4*(U*U + (V+1.0)*(V+1.0) - 2.0*cs2<T,D,Q>()) + f5*((U-1.0)*(U-1.0) + (V-1.0)*(V-1.0) - 2.0*cs2<T,D,Q>()) + f6*((U+1.0)*(U+1.0) + (V+1.0)*(V+1.0) - 2.0*cs2<T,D,Q>()) + f7*((U-1.0)*(U-1.0) + (V+1.0)*(V+1.0) - 2.0*cs2<T,D,Q>()) + f8*((U+1)*(U+1) +(V-1.0)*(V-1.0) - 2.0*cs2<T,D,Q>());
 
     T chm4 = f0*(U*U - V*V) - f1*(-(U-1.0)*(U-1.0) + V*V) - f2*(-(U+1.0)*(U+1.0) + V*V) + f3*(U*U - (V-1.0)*(V-1.0)) + f4*(U*U - (V+1.0)*(V+1.0)) + f5*((U-1.0)*(U-1.0) - (V-1.0)*(V-1.0)) +f6*((U+1.0)*(U+1.0) - (V+1.0)*(V+1.0)) + f7*((U-1.0)*(U-1.0) - (V+1.0)*(V+1.0)) + f8*((U+1.0)*(U+1.0) - (V-1.0)*(V-1.0));
 

@@ -9,7 +9,7 @@
 /**********************/
 /***** Base class *****/
 /**********************/
-template<typename T, typename LatticeDescriptor>
+template<typename T, unsigned int D, unsigned int Q>
 class CollisionModel {
 protected:
     /// Relaxation parameter associated with shear viscosity
@@ -23,7 +23,7 @@ public:
     virtual ~CollisionModel() = default;
 
     T getOmegaShear() const;
-    virtual void prepareKernelParams(const LBParams<T>& lbParams) = 0;
+    virtual void prepareKernelParams(const CollisionParamsBGK<T>& CollisionParamsBGK) = 0;
     virtual void doCollision(
         T* distribution,
         std::pair<unsigned int, unsigned int> numBlocks,
@@ -37,8 +37,8 @@ public:
 /******************************************************/
 /***** Derived class 01: BGK Collision parameters *****/
 /******************************************************/
-template<typename T, typename LatticeDescriptor>
-class CollisionBGK final : public CollisionModel<T, LatticeDescriptor> {
+template<typename T, unsigned int D, unsigned int Q>
+class CollisionBGK final : public CollisionModel<T,D,Q> {
 private:
     /// Parameters to pass to cuda kernels
     CollisionParamsBGKWrapper<T> _params;
@@ -50,7 +50,7 @@ public:
     /// Destructor
     virtual ~CollisionBGK();
 
-    virtual void prepareKernelParams(const LBParams<T>& lbParams) override;
+    virtual void prepareKernelParams(const CollisionParamsBGK<T>& CollisionParamsBGK) override;
     virtual void doCollision(
         T* distribution,
         std::pair<unsigned int, unsigned int> numBlocks,
@@ -62,8 +62,8 @@ public:
 /******************************************************/
 /***** Derived class 02: CHM Collision parameters *****/
 /******************************************************/
-template<typename T, typename LatticeDescriptor>
-class CollisionCHM final : public CollisionModel<T, LatticeDescriptor> { // only implemented for D2Q9 lattices
+template<typename T, unsigned int D, unsigned int Q>
+class CollisionCHM final : public CollisionModel<T,D,Q> { // only implemented for D2Q9 lattices
 private:
     /// Relaxation parameter associated with bulk viscosity
     const T _omegaBulk;
@@ -79,7 +79,7 @@ public:
     virtual ~CollisionCHM();
 
     T getOmegaBulk() const;
-    virtual void prepareKernelParams(const LBParams<T>& lbParams) override;
+    virtual void prepareKernelParams(const CollisionParamsBGK<T>& CollisionParamsBGK) override;
     virtual void doCollision(
         T* distribution,
         std::pair<unsigned int, unsigned int> numBlocks,

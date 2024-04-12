@@ -21,7 +21,7 @@ struct BaseParams {
 /***** Derived struct 01: LBParams (BGK) ****/
 /************************************************/
 template<typename T>
-struct LBParams : public BaseParams {
+struct CollisionParamsBGK : public BaseParams {
     /// Relaxation parameter related to shear viscosity
     T omegaShear;
 };
@@ -30,7 +30,7 @@ struct LBParams : public BaseParams {
 /***** Derived struct 02: CollisionParamsCHM ****/
 /************************************************/
 template<typename T>
-struct CollisionParamsCHM : public LBParams<T> {
+struct CollisionParamsCHM : public CollisionParamsBGK<T> {
     /// Relaxation parameter related to bulk viscosity
     T omegaBulk;
 };
@@ -96,7 +96,7 @@ public:
 /***** Derived class 02: CollisionParamsBGK *****/
 /************************************************/
 template<typename T>
-class CollisionParamsBGKWrapper : public ParamsWrapper<T, LBParams<T>> {
+class CollisionParamsBGKWrapper : public ParamsWrapper<T, CollisionParamsBGK<T>> {
 public:
     /// Default constructor
     CollisionParamsBGKWrapper();
@@ -132,7 +132,7 @@ public:
 /***** Derived class 03: CollisionParamsCHM *****/
 /************************************************/
 template<typename T>
-class CollisionParamsCHMWrapper : public ParamsWrapper<T, CollisionParamsCHM<T>> {
+class CollisionParamsCHMWrapper : public CollisionParamsBGKWrapper<T> {
 public:
     /// Default constructor
     CollisionParamsCHMWrapper();
