@@ -6,7 +6,6 @@
 #include "core/descriptors/latticeDescriptors.h"
 #include "cell.h"
 #include "core/constants.h"
-#include "core/lb/lbConstants.h"
 #include "core/kernelParameters.h"
 
 

@@ -3,7 +3,6 @@
 
 #include "cell.h"
 #include "core/descriptors/latticeDescriptors.h"
-#include "core/lb/lbConstants.h"
 
 using namespace latticeDescriptors;
 

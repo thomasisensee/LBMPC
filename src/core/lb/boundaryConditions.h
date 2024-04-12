@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "core/constants.h"
-#include "core/lb/lbConstants.h"
 
 /**********************/
 /***** Base class *****/

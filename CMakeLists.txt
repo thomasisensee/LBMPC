@@ -16,7 +16,6 @@ set(SOURCES
     src/core/descriptors/latticeDescriptors.h
     src/core/utilities.h
     src/core/utilities.cpp
-    src/core/lb/lbConstants.h
     src/core/gridGeometry.h
     src/core/gridGeometry.hh
     src/core/lb/lbGrid.h

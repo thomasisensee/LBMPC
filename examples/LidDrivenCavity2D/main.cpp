@@ -2,7 +2,6 @@
 #include <memory>
 #include <cuda_runtime.h>
 
-#include "core/lb/lbConstants.h"
 #include "core/descriptors/latticeDescriptors.h"
 #include "core/gridGeometry.h"
 #include "core/lb/collisionModel.h"
