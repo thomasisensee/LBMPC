@@ -41,8 +41,7 @@ void Simulation<T,D,Q>::outputSimulationEndTime(float elapsedTimeMs) {
 
 template<typename T, unsigned int D, unsigned int Q>
 void Simulation<T,D,Q>::checkOutput(unsigned int iter) {
-    //if (_outputFrequency && iter % _outputFrequency == 0) {
-     {
+    if (_outputFrequency && iter % _outputFrequency == 0) {
         _lbGrid->computeMoments();
         _vtkWriter->writeScalarField(_lbGrid->getHostZerothMoment(), "Rho", _outputCounter);
         _vtkWriter->writeVectorField(_lbGrid->getHostFirstMoment(), _lbGrid->getHostZerothMoment(), "Vel", _dt, _outputCounter);
@@ -75,8 +74,7 @@ void Simulation<T,D,Q>::run() {
 
 	this->checkOutput(0);
  
-    //for (unsigned int iter = 1; iter <= this->_totalIter; ++iter) {
-    for (unsigned int iter = 1; iter <= 3; ++iter) {
+    for (unsigned int iter = 1; iter <= this->_totalIter; ++iter) {
         this->simulationSteps(iter);
     }
 

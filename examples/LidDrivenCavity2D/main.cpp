@@ -42,8 +42,8 @@ int main() {
     T tauBulk = tauShear;
     T omegaShear = 1.0 / tauShear;
     T omegaBulk = 1.0 / tauBulk;
-    auto collisionModel = std::make_unique<CollisionBGK<T,D,Q>>(omegaShear);
-    //auto collisionModel = std::make_unique<CollisionCHM<T,D,Q>>(omegaShear, omegaBulk);
+    //auto collisionModel = std::make_unique<CollisionBGK<T,D,Q>>(omegaShear);
+    auto collisionModel = std::make_unique<CollisionCHM<T,D,Q>>(omegaShear, omegaBulk);
     //collisionModel->printParameters();
 
 
@@ -71,7 +71,7 @@ int main() {
     // === Run simulation ===
     // ======================
     std::string outputDirectory = "./output";
-    std::string baseFileName = "LidDrivenCavity2D";
+    std::string baseFileName = "cavity";
     T simTime = 10.0;
     unsigned int nOut = 10;
     auto vtkWriter = std::make_unique<VTKWriter>(outputDirectory, baseFileName);

@@ -108,7 +108,7 @@ x_lbm_re100, y_lbm_re100, u_lbm_re100, v_lbm_re100, speed_lbm_re100 = convert_ve
 ##############
 
 ### colors
-cmap = plt.get_cmap('Greens')
+cmap = plt.get_cmap('Blues')
 color_ghia = 'black'
 color_line = 'black'
 color_nast_x = 'tab:cyan'

@@ -122,17 +122,17 @@ public:
     virtual void allocateAndCopyToDevice() override;
 
     /// Cleans up host memory
-    void cleanupHost() override;
+    virtual void cleanupHost() override;
 
     /// Cleans up device memory
-    void cleanupDevice() override;
+    virtual void cleanupDevice() override;
 };
 
 /************************************************/
 /***** Derived class 03: CollisionParamsCHM *****/
 /************************************************/
 template<typename T>
-class CollisionParamsCHMWrapper : public CollisionParamsBGKWrapper<T> {
+class CollisionParamsCHMWrapper final : public ParamsWrapper<T, CollisionParamsCHM<T>> {
 public:
     /// Default constructor
     CollisionParamsCHMWrapper();
@@ -146,10 +146,10 @@ public:
     );
 
     /// Destructor
-    virtual ~CollisionParamsCHMWrapper();
+    ~CollisionParamsCHMWrapper();
 
     /// Set values and trigger allocateAndCopyToDevice
-    virtual void setValues(
+    void setValues(
         unsigned int nx,
         unsigned int ny,
         T omegaShear,
@@ -157,7 +157,7 @@ public:
     );
 
     /// Allocates device memory and copies data from the host instance
-    virtual void allocateAndCopyToDevice() override;
+    void allocateAndCopyToDevice() override;
 
     /// Cleans up host memory
     void cleanupHost() override;

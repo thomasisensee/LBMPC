@@ -150,10 +150,10 @@ void CollisionParamsCHMWrapper<T>::setValues(
     cleanupHost();
 
     // Assign new deep copies
-    this->_hostParams.Nx                 = nx;
-    this->_hostParams.Ny                 = ny;
-    this->_hostParams.omegaShear         = omegaShear;
-    this->_hostParams.omegaBulk          = omegaBulk;
+    this->_hostParams.Nx            = nx;
+    this->_hostParams.Ny            = ny;
+    this->_hostParams.omegaShear    = omegaShear;
+    this->_hostParams.omegaBulk     = omegaBulk;
 
     allocateAndCopyToDevice();
 }

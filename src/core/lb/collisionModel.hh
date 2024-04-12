@@ -43,7 +43,6 @@ void CollisionBGK<T,D,Q>::doCollision(T* distribution, std::pair<unsigned int, u
     dim3 gridSize(numBlocks.first, numBlocks.first);
 
     doCollisionBGKCaller<T,D,Q>(distribution, _params.getDeviceParams(), gridSize, blockSize);
-    //testKernelCaller(distribution, _params.getDeviceParams(), gridSize, blockSize);
 }
 
 template<typename T, unsigned int D, unsigned int Q>
@@ -85,7 +84,6 @@ void CollisionCHM<T,D,Q>::doCollision(T* distribution, std::pair<unsigned int, u
     dim3 gridSize(numBlocks.first, numBlocks.first);
 
     doCollisionCHMCaller<T,D,Q>(distribution, _params.getDeviceParams(), gridSize, blockSize);
-    //testKernelCaller(distribution, _params.getDeviceParams(), gridSize, blockSize);
 }
 
 template<typename T, unsigned int D, unsigned int Q>

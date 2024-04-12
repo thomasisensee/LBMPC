@@ -112,33 +112,33 @@ __device__ void Cell<T,D,Q>::computePostCollisionDistributionCHM(T* population, 
     T Fy = 0.0;
 
     // Central-hermite moments
-    T chm3 = f0*(U*U + V*V - 2.0*cs2<T,D,Q>()) + f1*((U-1.0)*(U-1.0) + V*V - 2.0*cs2<T,D,Q>()) + f2*((U+1.0)*(U+1.0) + V*V - 2.0*cs2<T,D,Q>()) + f3*(U*U + (V-1.0)*(V-1.0) - 2.0*cs2<T,D,Q>()) + f4*(U*U + (V+1.0)*(V+1.0) - 2.0*cs2<T,D,Q>()) + f5*((U-1.0)*(U-1.0) + (V-1.0)*(V-1.0) - 2.0*cs2<T,D,Q>()) + f6*((U+1.0)*(U+1.0) + (V+1.0)*(V+1.0) - 2.0*cs2<T,D,Q>()) + f7*((U-1.0)*(U-1.0) + (V+1.0)*(V+1.0) - 2.0*cs2<T,D,Q>()) + f8*((U+1)*(U+1) +(V-1.0)*(V-1.0) - 2.0*cs2<T,D,Q>());
+    T chm3 = f0*(U*U + V*V - 2.0 * cs2<T,D,Q>()) + f1*((U-1.0)*(U-1.0) + V*V - 2.0 * cs2<T,D,Q>()) + f2*((U-1.0)*(U-1.0) + (V-1.0)*(V-1.0) - 2.0 * cs2<T,D,Q>()) + f3*(U*U + (V-1.0)*(V-1.0) - 2.0 * cs2<T,D,Q>()) + f4*((U+1.0)*(U+1.0) + (V-1.0)*(V-1.0) - 2.0 * cs2<T,D,Q>()) + f5*((U-1.0)*(U-1.0) + (V+1.0)*(V+1.0) - 2.0 * cs2<T,D,Q>()) + f6*(U*U + (V+1.0)*(V+1.0) - 2.0 * cs2<T,D,Q>()) + f7*((U+1.0)*(U+1.0) + (V+1.0)*(V+1.0) - 2.0 * cs2<T,D,Q>()) + f8*((U+1)*(U+1) + V*V - 2.0 * cs2<T,D,Q>());
 
-    T chm4 = f0*(U*U - V*V) - f1*(-(U-1.0)*(U-1.0) + V*V) - f2*(-(U+1.0)*(U+1.0) + V*V) + f3*(U*U - (V-1.0)*(V-1.0)) + f4*(U*U - (V+1.0)*(V+1.0)) + f5*((U-1.0)*(U-1.0) - (V-1.0)*(V-1.0)) +f6*((U+1.0)*(U+1.0) - (V+1.0)*(V+1.0)) + f7*((U-1.0)*(U-1.0) - (V+1.0)*(V+1.0)) + f8*((U+1.0)*(U+1.0) - (V-1.0)*(V-1.0));
+    T chm4 = f0*(U*U - V*V) - f1*(-(U-1.0)*(U-1.0) + V*V) + f2*((U-1.0)*(U-1.0) - (V-1.0)*(V-1.0)) + f3*(U*U - (V-1.0)*(V-1.0)) + f4*((U+1.0)*(U+1.0) - (V-1.0)*(V-1.0)) + f5*((U-1.0)*(U-1.0) - (V+1.0)*(V+1.0)) + f6*(U*U - (V+1.0)*(V+1.0)) + f7*((U+1.0)*(U+1.0) - (V+1.0)*(V+1.0)) - f8*(-(U+1.0)*(U+1.0) + V*V);
 
-    T chm5 = f0*U*V + f1*(U-1.0)*V + f2*(U+1.0)*V + f3*U*(V-1.0) + f4*U*(V+1.0) + f5*(U-1.0)*(V-1.0) + f6*(U+1.0)*(V+1.0) + f7*(U-1.0)*(V+1.0) + f8*(U+1.0)*(V-1.0);
+    T chm5 = f0*U*V + f1*(U-1.0)*V + f2*(U-1.0)*(V-1.0) + f3*U*(V-1.0) + f4*(U+1.0)*(V-1.0) + f5*(U-1.0)*(V+1.0) + f6*U*(V+1.0) + f7*(U+1.0)*(V+1.0) + f8*(U+1.0)*V;
 
     // Compute raw moments from collision in contral-hermite moment space
     rm0 = R;
     rm1 = 0.5*Fx + U*R;
     rm2 = 0.5*Fy + V*R;
-    rm3 = Fx*U + Fy*V + (U*U + V*V + 2.0/3.0)*R + (1.0-params->omegaBulk)*chm3;
-    rm4 = Fx*U - Fy*V + (1.0-params->omegaShear)*chm4 + R*(U*U - V*V);
-    rm5 = 0.5*(Fx*V + Fy*U) + U*V*R + (1.0-params->omegaShear)*chm5;
-    rm6 = Fx*U*V + Fy*(3.0*U*U+1.0)/6.0 + 0.5*V*(1.0-params->omegaBulk)*chm3 + 0.5*V*(1.0-params->omegaShear)*chm4 + 2.0*U*(1.0-params->omegaShear)*chm5 + V*R*(3.0*U*U+1.0)/3.0;
-    rm7 = Fy*U*V + Fx*(3.0*V*V+1.0)/6.0 + 0.5*U*(1.0-params->omegaBulk)*chm3 - 0.5*U*(1.0-params->omegaShear)*chm4 + 2.0*V*(1.0-params->omegaShear)*chm5 + U*R*(3.0*V*V+1.0)/3.0;
-    rm8 = (Fx*U*(3.0*V*V+1.0) + Fy*V*(3.0*U*U+1.0))/3.0 + 4.0*U*V*(1.0-params->omegaShear)*chm5 + (1.0-params->omegaBulk)*chm3*(3.0*U*U+3.0*V*V+2.0)/6.0 - 0.5*(1.0-params->omegaShear)*chm4*(U*U-V*V) + R*(9.0*U*U*V*V+3.0*U*U+3.0*V*V+1.0)/9.0;
+    rm3 = Fx*U + Fy*V + (U*U + V*V + 2.0/3.0)*R + (1.0 - params->omegaBulk)*chm3;
+    rm4 = Fx*U - Fy*V + (1.0 - params->omegaShear)*chm4 + R*(U*U - V*V);
+    rm5 = 0.5*(Fx*V + Fy*U) + U*V*R + (1.0 - params->omegaShear)*chm5;
+    rm6 = Fx*U*V + Fy*(3.0*U*U + 1.0)/6.0 + 0.5*V*(1.0 - params->omegaBulk)*chm3 + 0.5*V*(1.0-params->omegaShear)*chm4 + 2.0*U*(1.0 - params->omegaShear)*chm5 + V*R*(3.0*U*U + 1.0)/3.0;
+    rm7 = Fy*U*V + Fx*(3.0*V*V + 1.0)/6.0 + 0.5*U*(1.0 - params->omegaBulk)*chm3 - 0.5*U*(1.0-params->omegaShear)*chm4 + 2.0*V*(1.0 - params->omegaShear)*chm5 + U*R*(3.0*V*V + 1.0)/3.0;
+    rm8 = (Fx*U*(3.0*V*V + 1.0) + Fy*V*(3.0*U*U + 1.0))/3.0 + 4.0*U*V*(1.0 - params->omegaShear)*chm5 + (1.0 - params->omegaBulk)*chm3*(3.0*U*U + 3.0*V*V + 2.0)/6.0 - 0.5*(1.0 - params->omegaShear)*chm4*(U*U - V*V) + R*(9.0*U*U*V*V + 3.0*U*U + 3.0*V*V + 1.0)/9.0;
 
     // Compute populations in real space from raw moments
 	population[0] = rm0 - rm3 + rm8;	
-	population[1] =  0.5*( rm1 + 0.5*(rm3 + rm4) - rm7 - rm8);	
-	population[2] =  0.5*(-rm1 + 0.5*(rm3 + rm4) + rm7 - rm8);
-	population[3] =  0.5*( rm2 + 0.5*(rm3 - rm4) - rm6 - rm8);
-	population[4] =  0.5*(-rm2 + 0.5*(rm3 - rm4) + rm6 - rm8);
-	population[5] = 0.25*(rm5  + rm6 + rm7 + rm8);
-	population[6] = 0.25*(rm5  - rm6 - rm7 + rm8);
-	population[7] = 0.25*(-rm5 - rm6 + rm7 + rm8);
-	population[8] = 0.25*(-rm5 + rm6 - rm7 + rm8);
+	population[1] =  0.5*( rm1 + 0.5*(rm3 + rm4) - rm7 - rm8);
+    population[2] = 0.25*(rm5  + rm6 + rm7 + rm8);
+    population[3] =  0.5*( rm2 + 0.5*(rm3 - rm4) - rm6 - rm8);
+    population[4] = 0.25*(-rm5 + rm6 - rm7 + rm8);
+    population[5] = 0.25*(-rm5 - rm6 + rm7 + rm8);
+    population[6] =  0.5*(-rm2 + 0.5*(rm3 - rm4) + rm6 - rm8);
+	population[7] = 0.25*(rm5  - rm6 - rm7 + rm8);
+	population[8] =  0.5*(-rm1 + 0.5*(rm3 + rm4) + rm7 - rm8);
 }
 
 #endif // CELL_HH

@@ -147,14 +147,14 @@ __device__ void applyBC(T* collision, const BoundaryParams<T>* const params, uns
 
     for (unsigned int l = 0; l < 3; ++l) {
         iPop = latticeDescriptors::boundaryMapping<D,Q>(static_cast<unsigned int>(params->location), l);
-        iPopRev = Q - 1 - iPop;
-        cix = latticeDescriptors::latticeVelocities<D,Q>(l, 0);
-        ciy = latticeDescriptors::latticeVelocities<D,Q>(l, 1);
-
-        if (params->location == BoundaryLocation::NORTH) {
+        iPopRev = Q - iPop;
+        cix = latticeDescriptors::latticeVelocities<D,Q>(iPop, 0);
+        ciy = latticeDescriptors::latticeVelocities<D,Q>(iPop, 1);
+/*
+        if (params->location == BoundaryLocation::EAST) {
             printf("iPop = %d | (cix,ciy) = (%d,%d)\n",iPop,cix,ciy);
         }
-
+*/
         // Check if the neighbor is outside the domain (i.e., a ghost cell)
         if (static_cast<int>(i) + cix < 1 || static_cast<int>(i) + cix > params->Nx - 2 || static_cast<int>(j) + ciy < 1 || static_cast<int>(j) + ciy > params->Ny - 2) { continue; }
 
@@ -173,10 +173,11 @@ __device__ void applyBC(T* collision, const BoundaryParams<T>* const params, uns
 
         // Apply the bounce-back boundary condition
         collision[idx * Q + iPop] = collision[idxNeighbor * Q + iPopRev] + 2.0 * R * dotProduct * latticeDescriptors::latticeWeights<T,D,Q>(iPop) * latticeDescriptors::invCs2<T,D,Q>();
-
+/*
         if (params->location == BoundaryLocation::NORTH) {
             printf("coll = %g, additional term = %g\n",collision[idxNeighbor * Q + iPopRev],2.0 * R * dotProduct * latticeDescriptors::latticeWeights<T,D,Q>(iPop) * latticeDescriptors::invCs2<T,D,Q>());
         }
+        */
     }
        
 }

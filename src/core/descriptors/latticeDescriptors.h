@@ -1,4 +1,4 @@
-#ifndef LATTICE_DESCRIPTORS_H
+ #ifndef LATTICE_DESCRIPTORS_H
 #define LATTICE_DESCRIPTORS_H
 
 #include "utilities/fraction.h"
@@ -22,7 +22,7 @@ namespace latticeDescriptors {
     struct LATTICE_DESCRIPTOR_BASE { };
 
     /// Base descriptor of a D-dimensional lattice with Q directions and a list of additional fields
-    template <unsigned int dim, unsigned int q>
+    template <unsigned int dim, unsigned int q, unsigned int npop>
     struct LATTICE_DESCRIPTOR : public LATTICE_DESCRIPTOR_BASE {
 
         /// Number of dimensions
@@ -30,15 +30,18 @@ namespace latticeDescriptors {
 
         /// Number of velocities
         static constexpr int Q = q;
+
+        /// Number of populations per boundary
+        static constexpr unsigned int nPop = npop;
     };
 
     /// D2Q9 lattice descriptor
-    struct D2Q9 : public LATTICE_DESCRIPTOR<2,9> {
+    struct D2Q9 : public LATTICE_DESCRIPTOR<2,9,3> {
         D2Q9() = delete; // Deleted default constructor prevents instantiation
     };
 
     /// D2Q5 lattice descriptor
-    struct D2Q5 : public LATTICE_DESCRIPTOR<2,5> {
+    struct D2Q5 : public LATTICE_DESCRIPTOR<2,5,1> {
         D2Q5() = delete; // Deleted default constructor prevents instantiation
     };
 
@@ -60,20 +63,20 @@ namespace latticeDescriptors {
 
         /// Specializations for D2Q9
         template <>
-        platform_constant int latticeVelocities<2,9>[9][2] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}};
+        platform_constant int latticeVelocities<2,9>[9][2] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}};
 
         template <>
-        platform_constant Fraction latticeWeights<2,9>[9] = {{4, 9}, {1, 9}, {1, 36}, {1, 9}, {1, 36}, {1, 9}, {1, 36}, {1, 9}, {1, 36}};
+        platform_constant Fraction latticeWeights<2,9>[9] = {{4, 9}, {1, 9}, {1, 36}, {1, 9}, {1, 36}, {1, 36}, {1, 9}, {1, 36}, {1, 9}};
 
         template <>
         platform_constant Fraction cs2<2,9> = {1, 3};
 
         template <>
-        platform_constant unsigned int boundaryMapping<2,9>[4][3] = {{1, 2, 5}, {4, 7, 8}, {2, 3, 4}, {1, 2, 5}};
+        platform_constant unsigned int boundaryMapping<2,9>[4][3] = {{1, 2, 5}, {4, 7, 8}, {2, 3, 4}, {5, 6, 7}};
 
         /// Specializations for D2Q5
         template <>
-        platform_constant int latticeVelocities<2,5>[5][2] = {{0, 0}, {1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+        platform_constant int latticeVelocities<2,5>[5][2] = {{0, 0}, {1, 0}, {0, 1}, {0, -1}, {-1, 0}};
 
         template <>
         platform_constant Fraction latticeWeights<2,5>[5] = {{1, 3}, {1, 6}, {1, 6}, {1, 6}, {1, 6}};
@@ -82,7 +85,7 @@ namespace latticeDescriptors {
         platform_constant Fraction cs2<2,5> = {1, 3};
 
         template <>
-        platform_constant unsigned int boundaryMapping<2,5>[4][1] = {{1}, {3}, {2}, {4}};
+        platform_constant unsigned int boundaryMapping<2,5>[4][1] = {{1}, {4}, {2}, {3}};
 
     } // namespace data
 
