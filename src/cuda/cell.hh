@@ -4,13 +4,13 @@
 #include "cell.h"
 #include "core/descriptors/descriptors.h"
 
-using namespace latticeDescriptors;
+using namespace descriptors;
 
 template<typename T,typename LATTICE_DESCRIPTOR>
 __device__ T Cell<T,LATTICE_DESCRIPTOR>::computeEquilibriumPopulation(unsigned int l, T R, T U, T V) const {
     // Local constants for easier access
-    constexpr unsigned int D = LATTICE_DESCRIPTOR::D;
-    constexpr unsigned int Q = LATTICE_DESCRIPTOR::Q;
+    constexpr unsigned int D = LATTICE_DESCRIPTOR::LATTICE::D;
+    constexpr unsigned int Q = LATTICE_DESCRIPTOR::LATTICE::Q;
 
     T cix = static_cast<T>(c<D,Q>(l, 0));
     T ciy = static_cast<T>(c<D,Q>(l, 1));
@@ -21,24 +21,24 @@ __device__ T Cell<T,LATTICE_DESCRIPTOR>::computeEquilibriumPopulation(unsigned i
     T thirdOrder = 0.5 * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * (cixcs2 * ciy * U * U * V + ciycs2 * cix * U * V * V);
     T fourthOrder = 0.25 * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * (cixcs2 * ciycs2 * U * U * V * V);
 
-    return w<T,D,Q>(l) * (R * (1.0 + firstOrder + secondOrder + thirdOrder + fourthOrder) - 1.0); // minus one for suppress inaccuracy from round-off errors
+    return w<T,D,Q>(l) * R * (1.0 + firstOrder + secondOrder + thirdOrder + fourthOrder);
 }
 
 template<typename T,typename LATTICE_DESCRIPTOR>
 __device__ T Cell<T,LATTICE_DESCRIPTOR>::getZerothMoment(const T* const population) const {
     // Local constants for easier access
-    constexpr unsigned int Q = LATTICE_DESCRIPTOR::Q;
+    constexpr unsigned int Q = LATTICE_DESCRIPTOR::LATTICE::Q;
 
     T rho = 0.0;
     for (unsigned int l = 0; l < Q; ++l) { rho += population[l]; }
-    return rho + 1.0; // plus one because of the above minus one
+    return rho;
 }
 
 template<typename T,typename LATTICE_DESCRIPTOR>
 __device__ T Cell<T,LATTICE_DESCRIPTOR>::getFirstMomentX(const T* const population) const {
     // Local constants for easier access
-    constexpr unsigned int D = LATTICE_DESCRIPTOR::D;
-    constexpr unsigned int Q = LATTICE_DESCRIPTOR::Q;
+    constexpr unsigned int D = LATTICE_DESCRIPTOR::LATTICE::D;
+    constexpr unsigned int Q = LATTICE_DESCRIPTOR::LATTICE::Q;
 
     T m1x = 0.0;
     for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(c<D,Q>(l, 0)); }
@@ -48,8 +48,8 @@ __device__ T Cell<T,LATTICE_DESCRIPTOR>::getFirstMomentX(const T* const populati
 template<typename T,typename LATTICE_DESCRIPTOR>
 __device__ T Cell<T,LATTICE_DESCRIPTOR>::getFirstMomentY(const T* const population) const {
     // Local constants for easier access
-    constexpr unsigned int D = LATTICE_DESCRIPTOR::D;
-    constexpr unsigned int Q = LATTICE_DESCRIPTOR::Q;
+    constexpr unsigned int D = LATTICE_DESCRIPTOR::LATTICE::D;
+    constexpr unsigned int Q = LATTICE_DESCRIPTOR::LATTICE::Q;
 
     T m1y = 0.0;
     for (unsigned int l = 0; l < Q; ++l) { m1y += population[l] * static_cast<T>(c<D,Q>(l, 1)); }
@@ -59,8 +59,8 @@ __device__ T Cell<T,LATTICE_DESCRIPTOR>::getFirstMomentY(const T* const populati
 template<typename T,typename LATTICE_DESCRIPTOR>
 __device__ T Cell<T,LATTICE_DESCRIPTOR>::getVelocityX(const T* const population) const {
     // Local constants for easier access
-    constexpr unsigned int D = LATTICE_DESCRIPTOR::D;
-    constexpr unsigned int Q = LATTICE_DESCRIPTOR::Q;
+    constexpr unsigned int D = LATTICE_DESCRIPTOR::LATTICE::D;
+    constexpr unsigned int Q = LATTICE_DESCRIPTOR::LATTICE::Q;
 
     T m1x = 0.0;
     T rho = 0.0;
@@ -71,8 +71,8 @@ __device__ T Cell<T,LATTICE_DESCRIPTOR>::getVelocityX(const T* const population)
 template<typename T,typename LATTICE_DESCRIPTOR>
 __device__ T Cell<T,LATTICE_DESCRIPTOR>::getVelocityX(const T* const population, T R) const {
     // Local constants for easier access
-    constexpr unsigned int D = LATTICE_DESCRIPTOR::D;
-    constexpr unsigned int Q = LATTICE_DESCRIPTOR::Q;
+    constexpr unsigned int D = LATTICE_DESCRIPTOR::LATTICE::D;
+    constexpr unsigned int Q = LATTICE_DESCRIPTOR::LATTICE::Q;
 
     T m1x = 0.0;
     for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(c<D,Q>(l, 0)); }
@@ -82,8 +82,8 @@ __device__ T Cell<T,LATTICE_DESCRIPTOR>::getVelocityX(const T* const population,
 template<typename T,typename LATTICE_DESCRIPTOR>
 __device__ T Cell<T,LATTICE_DESCRIPTOR>::getVelocityY(const T* const population) const {
     // Local constants for easier access
-    constexpr unsigned int D = LATTICE_DESCRIPTOR::D;
-    constexpr unsigned int Q = LATTICE_DESCRIPTOR::Q;
+    constexpr unsigned int D = LATTICE_DESCRIPTOR::LATTICE::D;
+    constexpr unsigned int Q = LATTICE_DESCRIPTOR::LATTICE::Q;
 
     T m1x = 0.0;
     T rho = 0.0;
@@ -94,8 +94,8 @@ __device__ T Cell<T,LATTICE_DESCRIPTOR>::getVelocityY(const T* const population)
 template<typename T,typename LATTICE_DESCRIPTOR>
 __device__ T Cell<T,LATTICE_DESCRIPTOR>::getVelocityY(const T* const population, T R) const {
     // Local constants for easier access
-    constexpr unsigned int D = LATTICE_DESCRIPTOR::D;
-    constexpr unsigned int Q = LATTICE_DESCRIPTOR::Q;
+    constexpr unsigned int D = LATTICE_DESCRIPTOR::LATTICE::D;
+    constexpr unsigned int Q = LATTICE_DESCRIPTOR::LATTICE::Q;
 
     T m1x = 0.0;
     for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(c<D,Q>(l, 1)); }
@@ -105,7 +105,7 @@ __device__ T Cell<T,LATTICE_DESCRIPTOR>::getVelocityY(const T* const population,
 template<typename T,typename LATTICE_DESCRIPTOR>
 __device__ void Cell<T,LATTICE_DESCRIPTOR>::getEquilibriumDistribution(const T* const population, T* eqDistr, T R, T U, T V) const {
     // Local constants for easier access
-    constexpr unsigned int Q = LATTICE_DESCRIPTOR::Q;
+    constexpr unsigned int Q = LATTICE_DESCRIPTOR::LATTICE::Q;
 
     for (unsigned int l = 0; l < Q; ++l)
     {
@@ -116,7 +116,7 @@ __device__ void Cell<T,LATTICE_DESCRIPTOR>::getEquilibriumDistribution(const T* 
 template<typename T,typename LATTICE_DESCRIPTOR>
 __device__ void Cell<T,LATTICE_DESCRIPTOR>::setEquilibriumDistribution(T* population, T R, T U, T V) const {
     // Local constants for easier access
-    constexpr unsigned int Q = LATTICE_DESCRIPTOR::Q;
+    constexpr unsigned int Q = LATTICE_DESCRIPTOR::LATTICE::Q;
 
     for (unsigned int l = 0; l < Q; ++l)
     {
@@ -127,7 +127,7 @@ __device__ void Cell<T,LATTICE_DESCRIPTOR>::setEquilibriumDistribution(T* popula
 template<typename T,typename LATTICE_DESCRIPTOR>
 __device__ void Cell<T,LATTICE_DESCRIPTOR>::computePostCollisionDistributionBGK(T* population, const CollisionParamsBGK<T>*const params, T R, T U, T V) const {
     // Local constants for easier access
-    constexpr unsigned int Q = LATTICE_DESCRIPTOR::Q;
+    constexpr unsigned int Q = LATTICE_DESCRIPTOR::LATTICE::Q;
 
     for (unsigned int l = 0; l < Q; ++l) {
         population[l] -= params->omegaShear * (population[l] - computeEquilibriumPopulation(l, R, U, V));// - Fext[l];	
@@ -137,8 +137,8 @@ __device__ void Cell<T,LATTICE_DESCRIPTOR>::computePostCollisionDistributionBGK(
 template<typename T,typename LATTICE_DESCRIPTOR>
 __device__ void Cell<T,LATTICE_DESCRIPTOR>::computePostCollisionDistributionCHM(T* population, const CollisionParamsCHM<T>*const params, T R, T U, T V) const {
     // Local constants for easier access
-    constexpr unsigned int D = LATTICE_DESCRIPTOR::D;
-    constexpr unsigned int Q = LATTICE_DESCRIPTOR::Q;
+    constexpr unsigned int D = LATTICE_DESCRIPTOR::LATTICE::D;
+    constexpr unsigned int Q = LATTICE_DESCRIPTOR::LATTICE::Q;
 
 /****************************************************************************************************************************************/
 /**** This implementation is specific to a predefined velocity set. Changing the velocity set would break the CHM collision operator ****/

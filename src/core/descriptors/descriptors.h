@@ -10,11 +10,13 @@ namespace descriptors {
     struct DESCRIPTOR_BASE {};
 
     /// Base descriptor of a D-dimensional lattice with Q directions and a list of additional fields
-    template<typename LATTICE_DESCRIPTOR, typename EQUILIBRIUM_FUNCTOR, typename EXTERNAL_FORCE_FUNCTOR>
+    template<typename LATTICE_DESCRIPTOR,template<typename, typename> typename EQUILIBRIUM_FUNCTOR>//,template<typename, typename> typename EXTERNAL_FORCE_FUNCTOR>
     struct DESCRIPTOR : public DESCRIPTOR_BASE {
-        using LatticeType = LATTICE_DESCRIPTOR;
-        using EquilibriumType = EQUILIBRIUM_FUNCTOR;
-        using ForceType = EXTERNAL_FORCE_FUNCTOR;
+        using LATTICE = LATTICE_DESCRIPTOR;
+
+        template<typename T>
+        using EQUILIBRIUM = EQUILIBRIUM_FUNCTOR<T,LATTICE_DESCRIPTOR>;
+        //using FORCE = EXTERNAL_FORCE_FUNCTOR;
 
     };
 

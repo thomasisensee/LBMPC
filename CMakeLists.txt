@@ -17,6 +17,7 @@ set(SOURCES
     src/core/descriptors/descriptors.h
     src/core/descriptors/latticeDescriptors.h
     src/core/functors/functors.h
+    src/core/functors/functors.hh
     src/core/utilities.h
     src/core/utilities.cpp
     src/core/gridGeometry.h
@@ -39,6 +40,7 @@ set(SOURCES
     src/cuda/cell.h
     src/cuda/cell.hh
     src/cuda/cudaKernels.cuh
+    #src/cuda/template_instantiations.cu
     src/cuda/cudaKernels.cu
     src/cuda/cudaUtilities.h
     src/cuda/cudaUtilities.cpp

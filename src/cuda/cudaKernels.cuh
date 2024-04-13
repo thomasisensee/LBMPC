@@ -2,6 +2,9 @@
 #define CUDA_KERNELS_CUH
 
 #include "core/kernelParameters.h"
+#include "core/descriptors/aliases.h"
+
+__device__ unsigned int pos(unsigned int i, unsigned int j, unsigned int width);
 
 /************************************/
 /***** Initialize Distributions *****/
@@ -38,7 +41,6 @@ __global__ void doCollisionCHMKernel(T* collision, const CollisionParamsCHM<T>* 
 
 template<typename T,typename LATTICE_DESCRIPTOR>
 void doCollisionCHMCaller(T* deviceCollision, const CollisionParamsCHM<T>* const params, dim3 gridSize, dim3 blockSize);
-
 
 /*******************************/
 /***** Boundary conditions *****/

@@ -4,7 +4,7 @@
 #include "core/platform_definitions.h"
 #include "utilities/fraction.h"
 
-namespace latticeDescriptors {
+namespace descriptors {
 
     struct LATTICE_DESCRIPTOR_BASE {};
 
