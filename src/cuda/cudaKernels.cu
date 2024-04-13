@@ -52,8 +52,8 @@ __global__ void doStreamingKernel(const T *const collision, T *streaming, const 
     int cx, cy;
 
     for (unsigned int l = 0; l < Q; ++l) {
-        cx = latticeDescriptors::latticeVelocities<D,Q>(l, 0);
-        cy = latticeDescriptors::latticeVelocities<D,Q>(l, 1);
+        cx = latticeDescriptors::c<D,Q>(l, 0);
+        cy = latticeDescriptors::c<D,Q>(l, 1);
 
  	    idxNeighbor = pos(static_cast<int>(i) - cx, static_cast<int>(j) - cy, params->Nx);
 		streaming[Q * idx + l] = collision[Q * idxNeighbor + l];
@@ -145,10 +145,10 @@ __device__ void applyBC(T* collision, const BoundaryParams<T>* const params, uns
     idx = pos(i, j, params->Nx);
 
     for (unsigned int l = 0; l < 3; ++l) {
-        iPop = latticeDescriptors::boundaryMapping<D,Q>(static_cast<unsigned int>(params->location), l);
+        iPop = latticeDescriptors::b<D,Q>(static_cast<unsigned int>(params->location), l);
         iPopRev = Q - iPop;
-        cix = latticeDescriptors::latticeVelocities<D,Q>(iPop, 0);
-        ciy = latticeDescriptors::latticeVelocities<D,Q>(iPop, 1);
+        cix = latticeDescriptors::c<D,Q>(iPop, 0);
+        ciy = latticeDescriptors::c<D,Q>(iPop, 1);
 /*
         if (params->location == BoundaryLocation::EAST) {
             printf("iPop = %d | (cix,ciy) = (%d,%d)\n",iPop,cix,ciy);
@@ -171,10 +171,10 @@ __device__ void applyBC(T* collision, const BoundaryParams<T>* const params, uns
         R = cell.getZerothMoment(&collision[idxNeighbor * Q]);
 
         // Apply the bounce-back boundary condition
-        collision[idx * Q + iPop] = collision[idxNeighbor * Q + iPopRev] + 2.0 * R * dotProduct * latticeDescriptors::latticeWeights<T,D,Q>(iPop) * latticeDescriptors::invCs2<T,D,Q>();
+        collision[idx * Q + iPop] = collision[idxNeighbor * Q + iPopRev] + 2.0 * R * dotProduct * latticeDescriptors::w<T,D,Q>(iPop) * latticeDescriptors::invCs2<T,D,Q>();
 /*
         if (params->location == BoundaryLocation::NORTH) {
-            printf("coll = %g, additional term = %g\n",collision[idxNeighbor * Q + iPopRev],2.0 * R * dotProduct * latticeDescriptors::latticeWeights<T,D,Q>(iPop) * latticeDescriptors::invCs2<T,D,Q>());
+            printf("coll = %g, additional term = %g\n",collision[idxNeighbor * Q + iPopRev],2.0 * R * dotProduct * latticeDescriptors::w<T,D,Q>(iPop) * latticeDescriptors::invCs2<T,D,Q>());
         }
         */
     }

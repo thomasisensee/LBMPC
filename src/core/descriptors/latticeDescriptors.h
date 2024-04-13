@@ -50,54 +50,54 @@ namespace latticeDescriptors {
         using utilities::Fraction;
 
         template <unsigned int D, unsigned int Q>
-        platform_constant int latticeVelocities[Q][D] = {};
+        platform_constant int c[Q][D] = {};
 
         template <unsigned int D, unsigned int Q>
-        platform_constant Fraction latticeWeights[Q] = {};
+        platform_constant Fraction w[Q] = {};
 
         template <unsigned int D, unsigned int Q>
         platform_constant Fraction cs2 = {};
 
         template <unsigned int D, unsigned int Q>
-        platform_constant unsigned int boundaryMapping[Q][D] = {};
+        platform_constant unsigned int b[Q][D] = {}; // Boundary mapping
 
         /// Specializations for D2Q9
         template <>
-        platform_constant int latticeVelocities<2,9>[9][2] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}};
+        platform_constant int c<2,9>[9][2] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}};
 
         template <>
-        platform_constant Fraction latticeWeights<2,9>[9] = {{4, 9}, {1, 9}, {1, 36}, {1, 9}, {1, 36}, {1, 36}, {1, 9}, {1, 36}, {1, 9}};
+        platform_constant Fraction w<2,9>[9] = {{4, 9}, {1, 9}, {1, 36}, {1, 9}, {1, 36}, {1, 36}, {1, 9}, {1, 36}, {1, 9}};
 
         template <>
         platform_constant Fraction cs2<2,9> = {1, 3};
 
         template <>
-        platform_constant unsigned int boundaryMapping<2,9>[4][3] = {{1, 2, 5}, {4, 7, 8}, {2, 3, 4}, {5, 6, 7}};
+        platform_constant unsigned int b<2,9>[4][3] = {{1, 2, 5}, {4, 7, 8}, {2, 3, 4}, {5, 6, 7}};
 
         /// Specializations for D2Q5
         template <>
-        platform_constant int latticeVelocities<2,5>[5][2] = {{0, 0}, {1, 0}, {0, 1}, {0, -1}, {-1, 0}};
+        platform_constant int c<2,5>[5][2] = {{0, 0}, {1, 0}, {0, 1}, {0, -1}, {-1, 0}};
 
         template <>
-        platform_constant Fraction latticeWeights<2,5>[5] = {{1, 3}, {1, 6}, {1, 6}, {1, 6}, {1, 6}};
+        platform_constant Fraction w<2,5>[5] = {{1, 3}, {1, 6}, {1, 6}, {1, 6}, {1, 6}};
 
         template <>
         platform_constant Fraction cs2<2,5> = {1, 3};
 
         template <>
-        platform_constant unsigned int boundaryMapping<2,5>[4][1] = {{1}, {4}, {2}, {3}};
+        platform_constant unsigned int b<2,5>[4][1] = {{1}, {4}, {2}, {3}};
 
     } // namespace data
 
     /// Functions to access lattice descriptors
     template <unsigned int D, unsigned int Q>
-    any_platform constexpr int latticeVelocities(unsigned int iPop, unsigned int iDim) {
-        return data::latticeVelocities<D,Q>[iPop][iDim];
+    any_platform constexpr int c(unsigned int iPop, unsigned int iDim) {
+        return data::c<D,Q>[iPop][iDim];
     }
 
     template <typename T, unsigned D, unsigned Q>
-    any_platform constexpr T latticeWeights(unsigned iPop) {
-        return data::latticeWeights<D,Q>[iPop].template as<T>();
+    any_platform constexpr T w(unsigned iPop) {
+        return data::w<D,Q>[iPop].template as<T>();
     }
 
     template <typename T, unsigned D, unsigned Q>
@@ -111,8 +111,8 @@ namespace latticeDescriptors {
     }
 
     template <unsigned int D, unsigned int Q>
-    any_platform constexpr unsigned int boundaryMapping(unsigned int iBoundary, unsigned int iPop) {
-        return data::boundaryMapping<D,Q>[iBoundary][iPop];
+    any_platform constexpr unsigned int b(unsigned int iBoundary, unsigned int iPop) {
+        return data::b<D,Q>[iBoundary][iPop];
     }
 
     template <typename LATTICE_DESCRIPTOR>

@@ -8,8 +8,8 @@ using namespace latticeDescriptors;
 
 template<typename T, unsigned int D, unsigned int Q>
 __device__ T Cell<T,D,Q>::computeEquilibriumPopulation(unsigned int l, T R, T U, T V) const {
-    T cix = static_cast<T>(latticeVelocities<D,Q>(l, 0));
-    T ciy = static_cast<T>(latticeVelocities<D,Q>(l, 1));
+    T cix = static_cast<T>(c<D,Q>(l, 0));
+    T ciy = static_cast<T>(c<D,Q>(l, 1));
     T cixcs2 = cix * cix - cs2<T,D,Q>();
     T ciycs2 = ciy * ciy - cs2<T,D,Q>();
     T firstOrder = invCs2<T,D,Q>() * (U * cix + V * ciy);
@@ -17,7 +17,7 @@ __device__ T Cell<T,D,Q>::computeEquilibriumPopulation(unsigned int l, T R, T U,
     T thirdOrder = 0.5 * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * (cixcs2 * ciy * U * U * V + ciycs2 * cix * U * V * V);
     T fourthOrder = 0.25 * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * (cixcs2 * ciycs2 * U * U * V * V);
 
-    return latticeWeights<T,D,Q>(l) * R * (1.0 + firstOrder + secondOrder + thirdOrder + fourthOrder);
+    return w<T,D,Q>(l) * R * (1.0 + firstOrder + secondOrder + thirdOrder + fourthOrder);
 }
 
 template<typename T, unsigned int D, unsigned int Q>
@@ -30,14 +30,14 @@ __device__ T Cell<T,D,Q>::getZerothMoment(const T* const population) const {
 template<typename T, unsigned int D, unsigned int Q>
 __device__ T Cell<T,D,Q>::getFirstMomentX(const T* const population) const {
     T m1x = 0.0;
-    for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(latticeVelocities<D,Q>(l, 0)); }
+    for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(c<D,Q>(l, 0)); }
     return m1x;
 }
 
 template<typename T, unsigned int D, unsigned int Q>
 __device__ T Cell<T,D,Q>::getFirstMomentY(const T* const population) const {
     T m1y = 0.0;
-    for (unsigned int l = 0; l < Q; ++l) { m1y += population[l] * static_cast<T>(latticeVelocities<D,Q>(l, 1)); }
+    for (unsigned int l = 0; l < Q; ++l) { m1y += population[l] * static_cast<T>(c<D,Q>(l, 1)); }
     return m1y;
 }
 
@@ -45,14 +45,14 @@ template<typename T, unsigned int D, unsigned int Q>
 __device__ T Cell<T,D,Q>::getVelocityX(const T* const population) const {
     T m1x = 0.0;
     T rho = 0.0;
-    for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(latticeVelocities<D,Q>(l, 0)); rho += population[l]; }
+    for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(c<D,Q>(l, 0)); rho += population[l]; }
     return m1x / rho;
 }
 
 template<typename T, unsigned int D, unsigned int Q>
 __device__ T Cell<T,D,Q>::getVelocityX(const T* const population, T R) const {
     T m1x = 0.0;
-    for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(latticeVelocities<D,Q>(l, 0)); }
+    for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(c<D,Q>(l, 0)); }
     return m1x / R;
 }
 
@@ -60,14 +60,14 @@ template<typename T, unsigned int D, unsigned int Q>
 __device__ T Cell<T,D,Q>::getVelocityY(const T* const population) const {
     T m1x = 0.0;
     T rho = 0.0;
-    for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(latticeVelocities<D,Q>(l, 1)); rho += population[l]; }
+    for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(c<D,Q>(l, 1)); rho += population[l]; }
     return m1x / rho;
 }
 
 template<typename T, unsigned int D, unsigned int Q>
 __device__ T Cell<T,D,Q>::getVelocityY(const T* const population, T R) const {
     T m1x = 0.0;
-    for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(latticeVelocities<D,Q>(l, 1)); }
+    for (unsigned int l = 0; l < Q; ++l) { m1x += population[l] * static_cast<T>(c<D,Q>(l, 1)); }
     return m1x / R;
 }
 
