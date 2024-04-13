@@ -10,25 +10,25 @@
 /**********************/
 /***** Base class *****/
 /**********************/
-template<typename T, unsigned int D, unsigned int Q>
-CollisionModel<T,D,Q>::CollisionModel(T omega) : _omegaShear(omega) {}
+template<typename T,typename LATTICE_DESCRIPTOR>
+CollisionModel<T,LATTICE_DESCRIPTOR>::CollisionModel(T omega) : _omegaShear(omega) {}
 
-template<typename T, unsigned int D, unsigned int Q>
-T CollisionModel<T,D,Q>::getOmegaShear() const {
+template<typename T,typename LATTICE_DESCRIPTOR>
+T CollisionModel<T,LATTICE_DESCRIPTOR>::getOmegaShear() const {
     return this->_omegaShear;
 }
 
 /*************************************************/
 /***** Derived class 01: BGK Collision model *****/
 /*************************************************/
-template<typename T, unsigned int D, unsigned int Q>
-CollisionBGK<T,D,Q>::CollisionBGK(T omegaS) : CollisionModel<T,D,Q>(omegaS) {}
+template<typename T,typename LATTICE_DESCRIPTOR>
+CollisionBGK<T,LATTICE_DESCRIPTOR>::CollisionBGK(T omegaS) : CollisionModel<T,LATTICE_DESCRIPTOR>(omegaS) {}
 
-template<typename T, unsigned int D, unsigned int Q>
-CollisionBGK<T,D,Q>::~CollisionBGK() {}
+template<typename T,typename LATTICE_DESCRIPTOR>
+CollisionBGK<T,LATTICE_DESCRIPTOR>::~CollisionBGK() {}
 
-template<typename T, unsigned int D, unsigned int Q>
-void CollisionBGK<T,D,Q>::prepareKernelParams(const CollisionParamsBGK<T>& CollisionParamsBGK) {
+template<typename T,typename LATTICE_DESCRIPTOR>
+void CollisionBGK<T,LATTICE_DESCRIPTOR>::prepareKernelParams(const CollisionParamsBGK<T>& CollisionParamsBGK) {
     // Set kernel parameters (and duplicate on device)
     _params.setValues(
         CollisionParamsBGK.Nx,
@@ -37,16 +37,16 @@ void CollisionBGK<T,D,Q>::prepareKernelParams(const CollisionParamsBGK<T>& Colli
     );
 }
 
-template<typename T, unsigned int D, unsigned int Q>
-void CollisionBGK<T,D,Q>::doCollision(T* distribution, std::pair<unsigned int, unsigned int> numBlocks, std::pair<unsigned int, unsigned int> threadsPerBlock) {
+template<typename T,typename LATTICE_DESCRIPTOR>
+void CollisionBGK<T,LATTICE_DESCRIPTOR>::doCollision(T* distribution, std::pair<unsigned int, unsigned int> numBlocks, std::pair<unsigned int, unsigned int> threadsPerBlock) {
     dim3 blockSize(threadsPerBlock.first, threadsPerBlock.second);
     dim3 gridSize(numBlocks.first, numBlocks.first);
 
-    doCollisionBGKCaller<T,D,Q>(distribution, _params.getDeviceParams(), gridSize, blockSize);
+    doCollisionBGKCaller<T,LATTICE_DESCRIPTOR>(distribution, _params.getDeviceParams(), gridSize, blockSize);
 }
 
-template<typename T, unsigned int D, unsigned int Q>
-void CollisionBGK<T,D,Q>::printParameters() {
+template<typename T,typename LATTICE_DESCRIPTOR>
+void CollisionBGK<T,LATTICE_DESCRIPTOR>::printParameters() {
     std::cout << "============= Collision Model: BGK ===============" << std::endl;
     std::cout << "== Omega shear:\t" << this->getOmegaShear() << "\t\t\t==" << std::endl;
     std::cout << "==================================================\n" << std::endl;
@@ -56,19 +56,19 @@ void CollisionBGK<T,D,Q>::printParameters() {
 /*************************************************/
 /***** Derived class 02: CHM Collision model *****/
 /*************************************************/
-template<typename T, unsigned int D, unsigned int Q>
-CollisionCHM<T,D,Q>::CollisionCHM(T omegaS, T omegaB) : CollisionModel<T,D,Q>(omegaS), _omegaBulk(omegaB) {}
+template<typename T,typename LATTICE_DESCRIPTOR>
+CollisionCHM<T,LATTICE_DESCRIPTOR>::CollisionCHM(T omegaS, T omegaB) : CollisionModel<T,LATTICE_DESCRIPTOR>(omegaS), _omegaBulk(omegaB) {}
 
-template<typename T, unsigned int D, unsigned int Q>
-CollisionCHM<T,D,Q>::~CollisionCHM() {}
+template<typename T,typename LATTICE_DESCRIPTOR>
+CollisionCHM<T,LATTICE_DESCRIPTOR>::~CollisionCHM() {}
 
-template<typename T, unsigned int D, unsigned int Q>
-T CollisionCHM<T,D,Q>::getOmegaBulk() const {
+template<typename T,typename LATTICE_DESCRIPTOR>
+T CollisionCHM<T,LATTICE_DESCRIPTOR>::getOmegaBulk() const {
     return this->_omegaBulk;
 }
 
-template<typename T, unsigned int D, unsigned int Q>
-void CollisionCHM<T,D,Q>::prepareKernelParams(const CollisionParamsBGK<T>& CollisionParamsBGK) {
+template<typename T,typename LATTICE_DESCRIPTOR>
+void CollisionCHM<T,LATTICE_DESCRIPTOR>::prepareKernelParams(const CollisionParamsBGK<T>& CollisionParamsBGK) {
     // Set kernel parameters (and duplicate on device)
     _params.setValues(
         CollisionParamsBGK.Nx,
@@ -78,16 +78,16 @@ void CollisionCHM<T,D,Q>::prepareKernelParams(const CollisionParamsBGK<T>& Colli
     );
 }
 
-template<typename T, unsigned int D, unsigned int Q>
-void CollisionCHM<T,D,Q>::doCollision(T* distribution, std::pair<unsigned int, unsigned int> numBlocks, std::pair<unsigned int, unsigned int> threadsPerBlock) {
+template<typename T,typename LATTICE_DESCRIPTOR>
+void CollisionCHM<T,LATTICE_DESCRIPTOR>::doCollision(T* distribution, std::pair<unsigned int, unsigned int> numBlocks, std::pair<unsigned int, unsigned int> threadsPerBlock) {
     dim3 blockSize(threadsPerBlock.first, threadsPerBlock.second);
     dim3 gridSize(numBlocks.first, numBlocks.first);
 
-    doCollisionCHMCaller<T,D,Q>(distribution, _params.getDeviceParams(), gridSize, blockSize);
+    doCollisionCHMCaller<T,LATTICE_DESCRIPTOR>(distribution, _params.getDeviceParams(), gridSize, blockSize);
 }
 
-template<typename T, unsigned int D, unsigned int Q>
-void CollisionCHM<T,D,Q>::printParameters() {
+template<typename T,typename LATTICE_DESCRIPTOR>
+void CollisionCHM<T,LATTICE_DESCRIPTOR>::printParameters() {
     std::cout << "============= Collision Model: CHM ===============" << std::endl;
     std::cout << "== Omega shear:\t" << this->getOmegaShear() << "\t\t\t\t==" << std::endl;
     std::cout << "== Omega bulk:\t" << this->getOmegaBulk() << "\t\t\t\t\t==" << std::endl;

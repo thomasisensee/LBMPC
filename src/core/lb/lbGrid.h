@@ -10,13 +10,13 @@
 #include "core/gridGeometry.h"
 #include "core/kernelParameters.h"
 
-template<typename T, unsigned int D, unsigned int Q>
+template<typename T,typename LATTICE_DESCRIPTOR>
 class LBGrid {
 private:
     /// Required model objects
     std::unique_ptr<GridGeometry2D<T>> _gridGeometry;
-    std::unique_ptr<CollisionModel<T,D,Q>> _collisionModel;
-    std::unique_ptr<BoundaryConditionManager<T,D,Q>> _boundaryConditionManager;
+    std::unique_ptr<CollisionModel<T,LATTICE_DESCRIPTOR>> _collisionModel;
+    std::unique_ptr<BoundaryConditionManager<T,LATTICE_DESCRIPTOR>> _boundaryConditionManager;
 
     /// Distribution function, both for host and device
     std::vector<T> _hostDistributions;
@@ -40,8 +40,8 @@ public:
     /// Constructor
     LBGrid(
         std::unique_ptr<GridGeometry2D<T>>&& geometry,
-        std::unique_ptr<CollisionModel<T,D,Q>>&& collision, 
-        std::unique_ptr<BoundaryConditionManager<T,D,Q>>&& boundary
+        std::unique_ptr<CollisionModel<T,LATTICE_DESCRIPTOR>>&& collision, 
+        std::unique_ptr<BoundaryConditionManager<T,LATTICE_DESCRIPTOR>>&& boundary
     );
 
     /// Destructor

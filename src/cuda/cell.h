@@ -1,7 +1,7 @@
 #ifndef CELL_H
 #define CELL_H
 
-template<typename T, unsigned int D, unsigned int Q>
+template<typename T,typename LATTICE_DESCRIPTOR>
 class Cell {
 private:
     __device__ T computeEquilibriumPopulation(unsigned int l, T R, T U, T V) const;
