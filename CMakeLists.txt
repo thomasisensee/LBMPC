@@ -13,7 +13,10 @@ include_directories(${CUDA_INCLUDE_DIRS})
 # Add source files
 set(SOURCES
     src/core/constants.h
+    src/core/platform_definitions.h
+    src/core/descriptors/descriptors.h
     src/core/descriptors/latticeDescriptors.h
+    src/core/functors/functors.h
     src/core/utilities.h
     src/core/utilities.cpp
     src/core/gridGeometry.h

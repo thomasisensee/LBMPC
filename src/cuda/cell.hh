@@ -2,7 +2,7 @@
 #define CELL_HH
 
 #include "cell.h"
-#include "core/descriptors/latticeDescriptors.h"
+#include "core/descriptors/descriptors.h"
 
 using namespace latticeDescriptors;
 

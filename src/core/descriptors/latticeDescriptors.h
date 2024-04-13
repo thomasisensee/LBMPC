@@ -1,21 +1,8 @@
- #ifndef LATTICE_DESCRIPTORS_H
+#ifndef LATTICE_DESCRIPTORS_H
 #define LATTICE_DESCRIPTORS_H
 
+#include "core/platform_definitions.h"
 #include "utilities/fraction.h"
-
-/// Define preprocessor macros for conditional compilation of device-side functions and constant storage
-#ifdef __CUDACC__
-  #define any_platform __device__ __host__
-  #ifdef __CUDA_ARCH__
-    #define platform_constant constexpr __constant__
-  #else
-    #define platform_constant constexpr
-  #endif
-#else
-  #define any_platform
-  #define platform_constant constexpr
-#endif
-
 
 namespace latticeDescriptors {
 
@@ -113,16 +100,6 @@ namespace latticeDescriptors {
     template <unsigned int D, unsigned int Q>
     any_platform constexpr unsigned int b(unsigned int iBoundary, unsigned int iPop) {
         return data::b<D,Q>[iBoundary][iPop];
-    }
-
-    template <typename LATTICE_DESCRIPTOR>
-    constexpr int D() any_platform {
-        return LATTICE_DESCRIPTOR::D;
-    }
-
-    template <typename LATTICE_DESCRIPTOR>
-    constexpr int Q() any_platform {
-        return LATTICE_DESCRIPTOR::Q;
     }
 } // namespace latticeDescriptors
 

@@ -2,7 +2,7 @@
 #include <memory>
 #include <cuda_runtime.h>
 
-#include "core/descriptors/latticeDescriptors.h"
+#include "core/descriptors/descriptors.h"
 #include "core/gridGeometry.h"
 #include "core/lb/collisionModel.h"
 #include "core/lb/boundaryConditions.h"

@@ -3,7 +3,7 @@
 #include "cudaKernels.cuh"
 #include "cudaErrorHandler.cuh"
 
-#include "core/descriptors/latticeDescriptors.h"
+#include "core/descriptors/descriptors.h"
 #include "cell.h"
 #include "core/constants.h"
 #include "core/kernelParameters.h"
