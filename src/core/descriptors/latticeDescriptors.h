@@ -19,7 +19,7 @@
 
 namespace latticeDescriptors {
 
-    struct LATTICE_DESCRIPTOR_BASE { };
+    struct LATTICE_DESCRIPTOR_BASE {};
 
     /// Base descriptor of a D-dimensional lattice with Q directions and a list of additional fields
     template <unsigned int dim, unsigned int q, unsigned int npop>

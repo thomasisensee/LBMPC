@@ -39,8 +39,8 @@ int main() {
     T tauBulk = tauShear;
     T omegaShear = 1.0 / tauShear;
     T omegaBulk = 1.0 / tauBulk;
-    //auto collisionModel = std::make_unique<CollisionBGK<T,D2Q9>>(omegaShear);
-    auto collisionModel = std::make_unique<CollisionCHM<T,D2Q9>>(omegaShear, omegaBulk);
+    auto collisionModel = std::make_unique<CollisionBGK<T,D2Q9>>(omegaShear);
+    //auto collisionModel = std::make_unique<CollisionCHM<T,D2Q9>>(omegaShear, omegaBulk);
     //collisionModel->printParameters();
 
 

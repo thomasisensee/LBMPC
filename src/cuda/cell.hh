@@ -1,5 +1,5 @@
-#ifndef Cell_HH
-#define Cell_HH
+#ifndef CELL_HH
+#define CELL_HH
 
 #include "cell.h"
 #include "core/descriptors/latticeDescriptors.h"
@@ -21,7 +21,7 @@ __device__ T Cell<T,LATTICE_DESCRIPTOR>::computeEquilibriumPopulation(unsigned i
     T thirdOrder = 0.5 * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * (cixcs2 * ciy * U * U * V + ciycs2 * cix * U * V * V);
     T fourthOrder = 0.25 * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * (cixcs2 * ciycs2 * U * U * V * V);
 
-    return w<T,D,Q>(l) * R * (1.0 + firstOrder + secondOrder + thirdOrder + fourthOrder);
+    return w<T,D,Q>(l) * (R * (1.0 + firstOrder + secondOrder + thirdOrder + fourthOrder) - 1.0); // minus one for suppress inaccuracy from round-off errors
 }
 
 template<typename T,typename LATTICE_DESCRIPTOR>
@@ -31,7 +31,7 @@ __device__ T Cell<T,LATTICE_DESCRIPTOR>::getZerothMoment(const T* const populati
 
     T rho = 0.0;
     for (unsigned int l = 0; l < Q; ++l) { rho += population[l]; }
-    return rho;
+    return rho + 1.0; // plus one because of the above minus one
 }
 
 template<typename T,typename LATTICE_DESCRIPTOR>
