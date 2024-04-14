@@ -48,15 +48,15 @@ public:
     CollisionBGK(T omegaS);
 
     /// Destructor
-    virtual ~CollisionBGK();
+    ~CollisionBGK();
 
-    virtual void prepareKernelParams(const CollisionParamsBGK<T>& CollisionParamsBGK) override;
-    virtual void doCollision(
+    void prepareKernelParams(const CollisionParamsBGK<T>& CollisionParamsBGK) override;
+    void doCollision(
         T* distribution,
         std::pair<unsigned int, unsigned int> numBlocks,
         std::pair<unsigned int, unsigned int> threadsPerBlock
     ) override;
-    virtual void printParameters();
+    void printParameters();
 };
 
 /******************************************************/
@@ -76,16 +76,16 @@ public:
     CollisionCHM(T omegaS, T omegaB);
 
     /// Destructor
-    virtual ~CollisionCHM();
+    ~CollisionCHM();
 
     T getOmegaBulk() const;
-    virtual void prepareKernelParams(const CollisionParamsBGK<T>& CollisionParamsBGK) override;
-    virtual void doCollision(
+    void prepareKernelParams(const CollisionParamsBGK<T>& CollisionParamsBGK) override;
+    void doCollision(
         T* distribution,
         std::pair<unsigned int, unsigned int> numBlocks,
         std::pair<unsigned int, unsigned int> threadsPerBlock
     ) override;
-    virtual void printParameters() override;
+    void printParameters() override;
 };
 
 #include "collisionModel.hh"

@@ -9,7 +9,7 @@
 /**********************/
 /***** Base class *****/
 /**********************/
-template<typename T,typename LATTICE_DESCRIPTOR>
+template<typename T,typename DESCRIPTOR>
 class Simulation {
 protected:
     /// constant members
@@ -17,7 +17,7 @@ protected:
     const T _simTime;
     const unsigned int _totalIter;
     const unsigned int _outputFrequency;
-    std::unique_ptr<LBGrid<T,LATTICE_DESCRIPTOR>> _lbGrid;
+    std::unique_ptr<LBGrid<T,DESCRIPTOR>> _lbGrid;
     std::unique_ptr<VTKWriter> _vtkWriter;
 
     /// Output counter
@@ -34,7 +34,7 @@ protected:
 
 public:
     /// Constructor
-    Simulation(std::unique_ptr<LBGrid<T,LATTICE_DESCRIPTOR>>&& lbgrid, std::unique_ptr<VTKWriter>&& vtkWriter, T dt, T simTime, unsigned int numberOutput);
+    Simulation(std::unique_ptr<LBGrid<T,DESCRIPTOR>>&& lbgrid, std::unique_ptr<VTKWriter>&& vtkWriter, T dt, T simTime, unsigned int numberOutput);
   
     /// Destructor
     virtual ~Simulation();
@@ -53,11 +53,11 @@ public:
 /***************************/
 /***** Derived classes *****/
 /***************************/
-template<typename T,typename LATTICE_DESCRIPTOR>
-class LBFluidSimulation final : public Simulation<T,LATTICE_DESCRIPTOR> {
+template<typename T,typename DESCRIPTOR>
+class LBFluidSimulation final : public Simulation<T,DESCRIPTOR> {
 public:
     /// Constructor
-    LBFluidSimulation(std::unique_ptr<LBGrid<T,LATTICE_DESCRIPTOR>>&& lbgrid, std::unique_ptr<VTKWriter>&& vtkWriter, T dt, T simTime, unsigned int numberOutput);
+    LBFluidSimulation(std::unique_ptr<LBGrid<T,DESCRIPTOR>>&& lbgrid, std::unique_ptr<VTKWriter>&& vtkWriter, T dt, T simTime, unsigned int numberOutput);
 
     /// Simulation steps
     void simulationSteps(unsigned int iter) override;

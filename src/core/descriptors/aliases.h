@@ -11,7 +11,10 @@ namespace descriptors {
     using D2Q9Standard = DESCRIPTOR<D2Q9,functors::StandardEquilibrium>;
 
     template<typename T>
-    using D2Q5Standard = DESCRIPTOR<D2Q5,functors::StandardEquilibrium>;
+    using D2Q9Scalar = DESCRIPTOR<D2Q9,functors::ScalarEquilibrium>;
+
+    template<typename T>
+    using D2Q5Standard = DESCRIPTOR<D2Q5,functors::ScalarEquilibrium>;
 
 } // namespace descriptors
 

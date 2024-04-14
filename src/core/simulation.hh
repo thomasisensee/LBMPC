@@ -7,9 +7,9 @@
 /**********************/
 /***** Base class *****/
 /**********************/
-template<typename T,typename LATTICE_DESCRIPTOR>
-Simulation<T,LATTICE_DESCRIPTOR>::Simulation(
-    std::unique_ptr<LBGrid<T,LATTICE_DESCRIPTOR>>&& lbgrid,
+template<typename T,typename DESCRIPTOR>
+Simulation<T,DESCRIPTOR>::Simulation(
+    std::unique_ptr<LBGrid<T,DESCRIPTOR>>&& lbgrid,
     std::unique_ptr<VTKWriter>&& vtkWriter,
     T dt,
     T simTime,
@@ -18,11 +18,11 @@ Simulation<T,LATTICE_DESCRIPTOR>::Simulation(
         _vtkWriter->setNonInherent(this->_lbGrid->getGridGeometry().getNx(), this->_lbGrid->getGridGeometry().getNy(), static_cast<float>(this->_lbGrid->getGridGeometry().getDelta()));
     }
 
-template<typename T,typename LATTICE_DESCRIPTOR>
-Simulation<T,LATTICE_DESCRIPTOR>::~Simulation() {}
+template<typename T,typename DESCRIPTOR>
+Simulation<T,DESCRIPTOR>::~Simulation() {}
 
-template<typename T,typename LATTICE_DESCRIPTOR>
-void Simulation<T,LATTICE_DESCRIPTOR>::printOutput(unsigned int outputCounter) {
+template<typename T,typename DESCRIPTOR>
+void Simulation<T,DESCRIPTOR>::printOutput(unsigned int outputCounter) {
     std::ostringstream iterStr;
     iterStr.fill('0');  // Set the fill character for padding
     iterStr.width(5);   // Set the width. Adjust according to your needs
@@ -31,16 +31,16 @@ void Simulation<T,LATTICE_DESCRIPTOR>::printOutput(unsigned int outputCounter) {
     std::cout << "Output " << iterStr.str() << " written." << std::endl;
 }
 
-template<typename T,typename LATTICE_DESCRIPTOR>
-void Simulation<T,LATTICE_DESCRIPTOR>::outputSimulationEndTime(float elapsedTimeMs) {
+template<typename T,typename DESCRIPTOR>
+void Simulation<T,DESCRIPTOR>::outputSimulationEndTime(float elapsedTimeMs) {
     std::string formattedTime = formatElapsedTime(elapsedTimeMs);
     std::cout << "==================================" << std::endl;
     std::cout << "== Simulation run time: " << formattedTime << "\t==" << std::endl;
     std::cout << "==================================" << std::endl;
 }
 
-template<typename T,typename LATTICE_DESCRIPTOR>
-void Simulation<T,LATTICE_DESCRIPTOR>::checkOutput(unsigned int iter) {
+template<typename T,typename DESCRIPTOR>
+void Simulation<T,DESCRIPTOR>::checkOutput(unsigned int iter) {
     if (_outputFrequency && iter % _outputFrequency == 0) {
         _lbGrid->computeMoments();
         _vtkWriter->writeScalarField(_lbGrid->getHostZerothMoment(), "Rho", _outputCounter);
@@ -50,8 +50,8 @@ void Simulation<T,LATTICE_DESCRIPTOR>::checkOutput(unsigned int iter) {
     }
 }
 
-template<typename T,typename LATTICE_DESCRIPTOR>
-void Simulation<T,LATTICE_DESCRIPTOR>::printParameters() {
+template<typename T,typename DESCRIPTOR>
+void Simulation<T,DESCRIPTOR>::printParameters() {
     // Call member functions to print parameters
     _lbGrid->printParameters();
 
@@ -65,8 +65,8 @@ void Simulation<T,LATTICE_DESCRIPTOR>::printParameters() {
     std::cout << "==================================" << std::endl << std::endl;
 }
 
-template<typename T,typename LATTICE_DESCRIPTOR>
-void Simulation<T,LATTICE_DESCRIPTOR>::run() {
+template<typename T,typename DESCRIPTOR>
+void Simulation<T,DESCRIPTOR>::run() {
     CUDATimer timer;
 
     // Start the timer
@@ -86,25 +86,25 @@ void Simulation<T,LATTICE_DESCRIPTOR>::run() {
     this->outputSimulationEndTime(elapsedTimeMs);
 }
 
-template<typename T,typename LATTICE_DESCRIPTOR>
-void Simulation<T,LATTICE_DESCRIPTOR>::simulationSteps(unsigned int iter) {
+template<typename T,typename DESCRIPTOR>
+void Simulation<T,DESCRIPTOR>::simulationSteps(unsigned int iter) {
     std::cerr << "Simulation steps not implemented." << std::endl;
 }
 
 /********************************************************************************/
 /***** Derived class 01: Simple fluid simulation without any external force *****/
 /********************************************************************************/
-template<typename T,typename LATTICE_DESCRIPTOR>
-LBFluidSimulation<T,LATTICE_DESCRIPTOR>::LBFluidSimulation(
-    std::unique_ptr<LBGrid<T,LATTICE_DESCRIPTOR>>&& lbgrid,
+template<typename T,typename DESCRIPTOR>
+LBFluidSimulation<T,DESCRIPTOR>::LBFluidSimulation(
+    std::unique_ptr<LBGrid<T,DESCRIPTOR>>&& lbgrid,
     std::unique_ptr<VTKWriter>&& vtkWriter,
     T dt,
     T simTime,
     unsigned int numberOutput)
-    : Simulation<T,LATTICE_DESCRIPTOR>(std::move(lbgrid), std::move(vtkWriter), dt, simTime, numberOutput) {}
+    : Simulation<T,DESCRIPTOR>(std::move(lbgrid), std::move(vtkWriter), dt, simTime, numberOutput) {}
 
-template<typename T,typename LATTICE_DESCRIPTOR>
-void LBFluidSimulation<T,LATTICE_DESCRIPTOR>::simulationSteps(unsigned int iter) {
+template<typename T,typename DESCRIPTOR>
+void LBFluidSimulation<T,DESCRIPTOR>::simulationSteps(unsigned int iter) {
         this->_lbGrid->applyBoundaryConditions();
         this->_lbGrid->performStreamingStep();
         this->_lbGrid->performCollisionStep();

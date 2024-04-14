@@ -56,3 +56,10 @@ CUDA_ADD_EXECUTABLE(LidDrivenCavity2D examples/LidDrivenCavity2D/main.cpp ${SOUR
 target_link_libraries(LidDrivenCavity2D ${CUDA_LIBRARIES} tinyxml2)
 set_target_properties(LidDrivenCavity2D PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/LidDrivenCavity2D/build")
 set_target_properties(LidDrivenCavity2D PROPERTIES CUDA_ARCHITECTURES "native")
+
+# Example: ThermalDiffusion2D
+#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=sm_61)  # Example for compute capability 6.1
+CUDA_ADD_EXECUTABLE(ThermalDiffusion2D examples/ThermalDiffusion2D/main.cpp ${SOURCES})
+target_link_libraries(ThermalDiffusion2D ${CUDA_LIBRARIES} tinyxml2)
+set_target_properties(ThermalDiffusion2D PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/ThermalDiffusion2D/build")
+set_target_properties(ThermalDiffusion2D PROPERTIES CUDA_ARCHITECTURES "native")

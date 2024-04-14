@@ -5,10 +5,9 @@
 
 template<typename T,typename LATTICE_DESCRIPTOR>
 class Cell {
-private:
+public:
     __device__ T computeEquilibriumPopulation(unsigned int l, T R, T U, T V) const;
 
-public:
     /// Computes the 0th moment (density)
     __device__ T getZerothMoment(const T*const population) const;
 

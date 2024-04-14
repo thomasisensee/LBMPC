@@ -110,6 +110,30 @@ void MovingWall<T,LATTICE_DESCRIPTOR>::printParameters() const {
     std::cout << "== Velocity = {" << getWallVelocity()[0] * _dxdt << ", " << getWallVelocity()[1] * _dxdt << "}\t=="  << std::endl;
 }
 
+/**********************************************************/
+/***** Derived class 03: Fixed Velocity (Bounce Back) *****/
+/**********************************************************/
+template<typename T,typename LATTICE_DESCRIPTOR>
+AntiBounceBack<T,LATTICE_DESCRIPTOR>::AntiBounceBack(BoundaryLocation loc, T wallValue) : BounceBack<T,LATTICE_DESCRIPTOR>(loc), _wallValue(wallValue) {}
+
+template<typename T,typename LATTICE_DESCRIPTOR>
+void AntiBounceBack<T,LATTICE_DESCRIPTOR>::prepareKernelParams(const BaseParams& baseParams) {
+    BoundaryCondition<T,LATTICE_DESCRIPTOR>::prepareKernelParams(baseParams);
+    this->_params.setWallValue(getWallValue());
+}
+
+template<typename T,typename LATTICE_DESCRIPTOR>
+const T AntiBounceBack<T,LATTICE_DESCRIPTOR>::getWallValue() const {
+    return _wallValue;
+}
+
+template<typename T,typename LATTICE_DESCRIPTOR>
+void AntiBounceBack<T,LATTICE_DESCRIPTOR>::printParameters() const {
+    BoundaryCondition<T,LATTICE_DESCRIPTOR>::printBoundaryLocation();
+    std::cout << "== Condition: " << "Bounce-Back with fixed velocity" << "\t=="  << std::endl;
+    std::cout << "== Value = {" << getWallValue()  << "\t=="  << std::endl;
+}
+
 template<typename T,typename LATTICE_DESCRIPTOR>
 void MovingWall<T,LATTICE_DESCRIPTOR>::setDxdt(T dxdt) {
     _dxdt = dxdt;

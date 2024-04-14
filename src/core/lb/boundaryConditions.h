@@ -79,6 +79,7 @@ public:
 /**********************************************************/
 template<typename T,typename LATTICE_DESCRIPTOR>
 class MovingWall final : public BounceBack<T,LATTICE_DESCRIPTOR> {
+private:
     /// Wall velocity
     std::vector<T> _wallVelocity;
 
@@ -101,6 +102,27 @@ public:
     void setDxdt(T dxdt);
 };
 
+/**********************************************/
+/***** Derived class 04: Anti Bounce Back *****/
+/**********************************************/
+template<typename T,typename LATTICE_DESCRIPTOR>
+class AntiBounceBack : public BoundaryCondition<T,LATTICE_DESCRIPTOR> {
+private:
+    /// Value of the scalar field (temperature) at the wall
+    T _wallValue;
+
+public:
+    /// Constructor
+    AntiBounceBack(BoundaryLocation loc, T wallValue);
+
+    /// Destructor
+    virtual ~AntiBounceBack() = default;
+
+    void prepareKernelParams(const BaseParams& baseParams) override;
+
+    const T getWallValue() const;
+    void printParameters() const override;
+};
 
 /*************************/
 /***** Wrapper class *****/
