@@ -5,8 +5,11 @@ namespace functors {
 
 template<typename T,typename LATTICE_DESCRIPTOR>
 class StandardEquilibrium {
+private:
+    T _R, _U, _V;
 public:
-    void operator()(T* population, T R, T U, T V) const;
+    __device__ StandardEquilibrium(T* population);
+    __device__ T operator()(unsigned int l) const;
 };
 
 } // namespace functors

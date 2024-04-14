@@ -26,7 +26,7 @@ int main() {
     // === Set lattice descriptor ===
     // ==============================
     using D2Q9 = descriptors::D2Q9;
-    using Descriptor = descriptors::D2Q9Standard<T>;
+    using DESCRIPTOR = descriptors::D2Q9Standard<T>;
 
     // ================================
     // === Set necessary components ===
@@ -41,8 +41,8 @@ int main() {
     T tauBulk = tauShear;
     T omegaShear = 1.0 / tauShear;
     T omegaBulk = 1.0 / tauBulk;
-    auto collisionModel = std::make_unique<CollisionBGK<T,Descriptor>>(omegaShear);
-    //auto collisionModel = std::make_unique<CollisionCHM<T,D2Q9>>(omegaShear, omegaBulk);
+    auto collisionModel = std::make_unique<CollisionBGK<T,DESCRIPTOR>>(omegaShear);
+    //auto collisionModel = std::make_unique<CollisionCHM<T,DESCRIPTOR>>(omegaShear, omegaBulk);
     //collisionModel->printParameters();
 
 
@@ -53,16 +53,16 @@ int main() {
     u *= dt / dx;
     v *= dt / dx;
     std::vector<T> wallVelocity = {u, v};
-    auto boundaryConditionManager = std::make_unique<BoundaryConditionManager<T,Descriptor>>();
+    auto boundaryConditionManager = std::make_unique<BoundaryConditionManager<T,DESCRIPTOR>>();
     boundaryConditionManager->setDxdt(dx/dt);
-    boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T,Descriptor>>(BoundaryLocation::WEST));
-    boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T,Descriptor>>(BoundaryLocation::EAST));
-    boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T,Descriptor>>(BoundaryLocation::SOUTH));
-    boundaryConditionManager->addBoundaryCondition(std::make_unique<MovingWall<T,Descriptor>>(BoundaryLocation::NORTH, wallVelocity));
+    boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T,DESCRIPTOR>>(BoundaryLocation::WEST));
+    boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T,DESCRIPTOR>>(BoundaryLocation::EAST));
+    boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T,DESCRIPTOR>>(BoundaryLocation::SOUTH));
+    boundaryConditionManager->addBoundaryCondition(std::make_unique<MovingWall<T,DESCRIPTOR>>(BoundaryLocation::NORTH, wallVelocity));
     //boundaryConditionManager->printParameters();
 
  
-    auto lbGrid = std::make_unique<LBGrid<T,Descriptor>>(std::move(gridGeometry), std::move(collisionModel), std::move(boundaryConditionManager));
+    auto lbGrid = std::make_unique<LBGrid<T,DESCRIPTOR>>(std::move(gridGeometry), std::move(collisionModel), std::move(boundaryConditionManager));
     //lbGrid->printParameters();
 
 
@@ -74,7 +74,7 @@ int main() {
     T simTime = 10.0;
     unsigned int nOut = 10;
     auto vtkWriter = std::make_unique<VTKWriter>(outputDirectory, baseFileName);
-    auto simulation = std::make_unique<LBFluidSimulation<T,Descriptor>>(std::move(lbGrid), std::move(vtkWriter), dt, simTime, nOut);
+    auto simulation = std::make_unique<LBFluidSimulation<T,DESCRIPTOR>>(std::move(lbGrid), std::move(vtkWriter), dt, simTime, nOut);
     simulation->printParameters();
 
     simulation->run();

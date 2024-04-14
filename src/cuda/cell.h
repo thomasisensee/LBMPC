@@ -1,6 +1,8 @@
 #ifndef CELL_H
 #define CELL_H
 
+#include "core/kernelParameters.h"
+
 template<typename T,typename LATTICE_DESCRIPTOR>
 class Cell {
 private:

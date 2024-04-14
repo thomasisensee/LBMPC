@@ -25,7 +25,7 @@ __global__ void initializeDistributionsKernel(T* collision, const CollisionParam
     
     unsigned int idx = pos(i, j, params->Nx);
     
-    Cell<T,DESCRIPTOR> cell;
+    Cell<T,typename DESCRIPTOR::LATTICE> cell;
     T R = 1.0;
     T U = 0.0;
     T V = 0.0;
@@ -85,14 +85,13 @@ __global__ void doCollisionBGKKernel(T* collision, const CollisionParamsBGK<T>* 
 
     unsigned int idx = pos(i, j, params->Nx);
 
-    Cell<T,DESCRIPTOR> cell;
-    T R = cell.getZerothMoment(&collision[idx * Q]);
-    T U = cell.getVelocityX(&collision[idx * Q], R);
-    T V = cell.getVelocityY(&collision[idx * Q], R);
+    // Instantiate the equilibrium functor
+    typename DESCRIPTOR::template EQUILIBRIUM<T> equilibrium(&collision[idx * Q]);
 
-    cell.computePostCollisionDistributionBGK(&collision[idx * Q], params, R, U, V);
+    for (unsigned int l = 0; l < Q; ++l) {
+        collision[idx * Q + l] -= params->omegaShear * (collision[idx * Q + l] - equilibrium(l));
+	}
 }
-
 
 template<typename T,typename DESCRIPTOR>
 void doCollisionBGKCaller(T* deviceCollision, const CollisionParamsBGK<T>* const params, dim3 gridSize, dim3 blockSize) {
@@ -111,7 +110,7 @@ __global__ void doCollisionCHMKernel(T* collision, const CollisionParamsCHM<T>* 
 
     unsigned int idx = pos(i, j, params->Nx);
 
-    Cell<T,DESCRIPTOR> cell;
+    Cell<T,typename DESCRIPTOR::LATTICE> cell;
     T R = cell.getZerothMoment(&collision[idx * Q]);
     T U = cell.getVelocityX(&collision[idx * Q], R);
     T V = cell.getVelocityY(&collision[idx * Q], R);
@@ -134,7 +133,7 @@ __device__ void applyBC(T* collision, const BoundaryParams<T>* const params, uns
 
     unsigned int idx, idxNeighbor, iPop, iPopRev;
     int cix, ciy;
-    Cell<T,DESCRIPTOR> cell;
+    Cell<T,typename DESCRIPTOR::LATTICE> cell;
     T R, dotProduct;
 
     idx = pos(i, j, params->Nx);
@@ -221,7 +220,7 @@ __global__ void computeZerothMomentKernel(T* zerothMoment, const T* const collis
     unsigned int idx        = pos(i, j, params->Nx);
     unsigned int idxMoment  = pos(i - 1, j - 1, params->Nx - 2); // Since the zerothMoment array does not contain the ghost cells
 
-    Cell<T,DESCRIPTOR> cell;
+    Cell<T,typename DESCRIPTOR::LATTICE> cell;
     T R = cell.getZerothMoment(&collision[idx * Q]);
     zerothMoment[idxMoment] = R;
 }
@@ -245,7 +244,7 @@ __global__ void computeFirstMomentKernel(T* firstMoment, const T* const collisio
     unsigned int idx        = pos(i, j, params->Nx);
     unsigned int idxMoment  = pos(i - 1, j - 1, params->Nx - 2); // Since the zerothMoment array does not contain the ghost cells
 
-    Cell<T,DESCRIPTOR> cell;
+    Cell<T,typename DESCRIPTOR::LATTICE> cell;
     T U = cell.getFirstMomentX(&collision[idx * Q]);
     T V = cell.getFirstMomentY(&collision[idx * Q]);
 
@@ -260,6 +259,10 @@ void computeFirstMomentCaller(T* deviceFirstMoment, const T* const deviceCollisi
 }
 
 
+
+/********************************************/
+/***** Explicit template instantiations *****/
+/********************************************/
 template void initializeDistributionsCaller<float,descriptors::D2Q9Standard<float>>(float* deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
 template void initializeDistributionsCaller<float,descriptors::D2Q5Standard<float>>(float* deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
 template void initializeDistributionsCaller<double,descriptors::D2Q9Standard<double>>(double* deviceCollision, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);

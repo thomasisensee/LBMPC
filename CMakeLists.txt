@@ -40,7 +40,6 @@ set(SOURCES
     src/cuda/cell.h
     src/cuda/cell.hh
     src/cuda/cudaKernels.cuh
-    #src/cuda/template_instantiations.cu
     src/cuda/cudaKernels.cu
     src/cuda/cudaUtilities.h
     src/cuda/cudaUtilities.cpp
