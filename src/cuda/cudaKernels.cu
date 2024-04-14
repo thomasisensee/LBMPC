@@ -134,15 +134,18 @@ __device__ void applyBC(T* collision, const BoundaryParams<T>* const params, uns
     unsigned int idx, idxNeighbor, iPop, iPopRev;
     int cix, ciy;
     Cell<T,typename DESCRIPTOR::LATTICE> cell;
-    T R, dotProduct;
+    T R;
 
     idx = pos(i, j, params->Nx);
 
     for (unsigned int l = 0; l < 3; ++l) {
         iPop = descriptors::b<D,Q>(static_cast<unsigned int>(params->location), l);
         iPopRev = Q - iPop;
-        cix = descriptors::c<D,Q>(iPop, 0);
-        ciy = descriptors::c<D,Q>(iPop, 1);
+        cix = static_cast<T>(descriptors::c<D,Q>(iPop, 0));
+        ciy = static_cast<T>(descriptors::c<D,Q>(iPop, 1));
+        T uWall = 0.0, vWall = 0.0;
+        T cixcs2 = 0.0, ciycs2 = 0.0;
+        T firstOrder = 0.0, thirdOrder = 0.0;
 
         // Check if the neighbor is outside the domain (i.e., a ghost cell)
         if (static_cast<int>(i) + cix < 1 || static_cast<int>(i) + cix > params->Nx - 2 || static_cast<int>(j) + ciy < 1 || static_cast<int>(j) + ciy > params->Ny - 2) { continue; }
@@ -152,16 +155,19 @@ __device__ void applyBC(T* collision, const BoundaryParams<T>* const params, uns
 
         // Compute the dot product if WALL_VELOCITY is not null
         if (params->WALL_VELOCITY != nullptr) {
-            dotProduct = static_cast<T>(cix) * params->WALL_VELOCITY[0] + static_cast<T>(ciy) * params->WALL_VELOCITY[1];
-        } else {
-            dotProduct = 0.0;
+            uWall = params->WALL_VELOCITY[0];
+            vWall = params->WALL_VELOCITY[1];
+            cixcs2 = cix * cix - cs2<T,D,Q>();
+            ciycs2 = ciy * ciy - cs2<T,D,Q>();
+            firstOrder = descriptors::invCs2<T,D,Q>() * (uWall * cix + vWall * ciy);
+            thirdOrder = 0.5 * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * (cixcs2 * ciy * uWall * uWall * vWall + ciycs2 * cix * uWall * vWall * vWall);
         }
 
         // Compute the zeroth moment (i.e., the density) of the neighbor cell
         R = cell.getZerothMoment(&collision[idxNeighbor * Q]);
 
         // Apply the bounce-back boundary condition
-        collision[idx * Q + iPop] = collision[idxNeighbor * Q + iPopRev] + 2.0 * R * dotProduct * descriptors::w<T,D,Q>(iPop) * descriptors::invCs2<T,D,Q>();
+        collision[idx * Q + iPop] = collision[idxNeighbor * Q + iPopRev] + 2.0 * R * descriptors::w<T,D,Q>(iPop) * (firstOrder + thirdOrder);
     }
        
 }
