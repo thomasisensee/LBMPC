@@ -11,6 +11,7 @@ namespace descriptors {
     /// Base descriptor of a D-dimensional lattice with Q directions and a list of additional fields
     template <unsigned int dim, unsigned int q, unsigned int npop>
     struct LATTICE_DESCRIPTOR : public LATTICE_DESCRIPTOR_BASE {
+        LATTICE_DESCRIPTOR() = delete; // Deleted default constructor prevents instantiation, enforces pure usage as type
 
         /// Number of dimensions
         static constexpr int D = dim;
@@ -24,12 +25,12 @@ namespace descriptors {
 
     /// D2Q9 lattice descriptor
     struct D2Q9 : public LATTICE_DESCRIPTOR<2,9,3> {
-        D2Q9() = delete; // Deleted default constructor prevents instantiation
+        D2Q9() = delete; // Deleted default constructor prevents instantiation, enforces pure usage as type
     };
 
     /// D2Q5 lattice descriptor
     struct D2Q5 : public LATTICE_DESCRIPTOR<2,5,1> {
-        D2Q5() = delete; // Deleted default constructor prevents instantiation
+        D2Q5() = delete; // Deleted default constructor prevents instantiation, enforces pure usage as type
     };
 
     namespace data {
