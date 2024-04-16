@@ -16,6 +16,7 @@ set(SOURCES
     src/core/platform_definitions.h
     src/core/descriptors/descriptors.h
     src/core/descriptors/latticeDescriptors.h
+    src/core/descriptors/fieldTags.h
     src/core/functors/functors.h
     src/core/functors/functors.hh
     src/core/utilities.h
