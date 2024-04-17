@@ -8,13 +8,13 @@
 namespace descriptors {
 
     template<typename T>
-    using D2Q9Standard = DESCRIPTOR<D2Q9,functors::StandardEquilibrium>;
+    using D2Q9Standard = DESCRIPTOR<D2Q9>;
 
     template<typename T>
-    using D2Q9Scalar = DESCRIPTOR<D2Q9,functors::ScalarEquilibrium>;
+    using D2Q9Scalar = DESCRIPTOR<D2Q9,VelocityField>;
 
     template<typename T>
-    using D2Q5Standard = DESCRIPTOR<D2Q5,functors::ScalarEquilibrium>;
+    using D2Q5Standard = DESCRIPTOR<D2Q5,VelocityField>;
 
 } // namespace descriptors
 

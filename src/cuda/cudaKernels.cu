@@ -1,9 +1,12 @@
 #include <stdio.h>
+#include <tuple>
+#include <type_traits>
 
 #include "cudaKernels.cuh"
 #include "cudaErrorHandler.cuh"
 
 #include "core/descriptors/descriptors.h"
+#include "core/descriptors/fieldTags.h"
 #include "core/functors/functors.h"
 #include "cell.h"
 #include "core/constants.h"
@@ -74,9 +77,10 @@ void doStreamingCaller(T** deviceCollision, T** deviceStreaming, const Collision
     *deviceStreaming = swap;
 }
 
-template<typename T,typename DESCRIPTOR>
-__global__ void doCollisionBGKKernel(T* collision, const CollisionParamsBGK<T>* const params) {
+template<typename T,typename DESCRIPTOR, typename... FieldPtrs>
+__global__ void doCollisionBGKKernel(T* collision, const CollisionParamsBGK<T>* const params, FieldPtrs... fields) {
     // Local constants for easier access
+    constexpr unsigned int D = DESCRIPTOR::LATTICE::D;
     constexpr unsigned int Q = DESCRIPTOR::LATTICE::Q;
 
     const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -85,17 +89,42 @@ __global__ void doCollisionBGKKernel(T* collision, const CollisionParamsBGK<T>* 
 
     unsigned int idx = pos(i, j, params->Nx);
 
-    // Instantiate the equilibrium functor
-    typename DESCRIPTOR::template EQUILIBRIUM<T> equilibrium(&collision[idx * Q]);
+    T U, V;
+    T* velocityField = nullptr;
+    Cell<T,typename DESCRIPTOR::LATTICE> cell;
+    T R = cell.getZerothMoment(&collision[idx * Q]);
 
-    for (unsigned int l = 0; l < Q; ++l) {
-        collision[idx * Q + l] -= params->omegaShear * (collision[idx * Q + l] - equilibrium(l));
-	}
+    /*********************************************************************************************************/
+    /****** Compile-time logic in order to determine if the velocity field is present in the descriptor ******/
+    /****** This corresponds to the case where the velocity of the momentum conservation is used in the ******/
+    /****** collision step of the energy conservation. If the velocity field is not present, the        ******/
+    /****** velocity is computed from the distribution function.                                        ******/
+    /*********************************************************************************************************/
+    constexpr int hasVelocityField = Contains<descriptors::VelocityField, typename DESCRIPTOR::FIELDS>::value;;
+
+    if constexpr (hasVelocityField) {
+        constexpr int velocityIdx = IndexOf<descriptors::VelocityField, typename DESCRIPTOR::FIELDS>::value;
+        velocityField = get_field<velocityIdx>(fields...);
+        U = velocityField[idx * D];
+        V = velocityField[idx * D + 1];
+    } else {
+        U = cell.getVelocityX(&collision[idx * Q], R);
+        V = cell.getVelocityY(&collision[idx * Q], R);
+    }
+
+    cell.computePostCollisionDistributionBGK(&collision[idx * Q], params, R, U, V);
+}
+
+
+template<typename T,typename DESCRIPTOR, typename... FieldPtrs, typename std::enable_if_t<(sizeof...(FieldPtrs) > 0), int> = 0>
+void doCollisionBGKCaller(T* deviceCollision, const CollisionParamsBGK<T>* const params, dim3 gridSize, dim3 blockSize, FieldPtrs... fields) {
+    doCollisionBGKKernel<T,DESCRIPTOR,FieldPtrs...><<<gridSize, blockSize>>>(deviceCollision, params, fields...);
+    cudaErrorCheck(cudaDeviceSynchronize());
 }
 
 template<typename T,typename DESCRIPTOR>
 void doCollisionBGKCaller(T* deviceCollision, const CollisionParamsBGK<T>* const params, dim3 gridSize, dim3 blockSize) {
-    doCollisionBGKKernel<T,DESCRIPTOR><<<gridSize, blockSize>>>(deviceCollision, params);
+    doCollisionBGKKernel<T,DESCRIPTOR,T*><<<gridSize, blockSize>>>(deviceCollision, params, nullptr);
     cudaErrorCheck(cudaDeviceSynchronize());
 }
 
@@ -272,48 +301,27 @@ void computeFirstMomentCaller(T* deviceFirstMoment, const T* const deviceCollisi
 template void initializeDistributionsCaller<float,descriptors::D2Q9Standard<float>>(float* deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
 template void initializeDistributionsCaller<float,descriptors::D2Q9Scalar<float>>(float* deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
 template void initializeDistributionsCaller<float,descriptors::D2Q5Standard<float>>(float* deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
-template void initializeDistributionsCaller<double,descriptors::D2Q9Standard<double>>(double* deviceCollision, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
-template void initializeDistributionsCaller<double,descriptors::D2Q9Scalar<double>>(double* deviceCollision, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
-template void initializeDistributionsCaller<double,descriptors::D2Q5Standard<double>>(double* deviceCollision, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
 
 template void doStreamingCaller<float,descriptors::D2Q9Standard<float>>(float** deviceCollision, float** deviceStreaming, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
 template void doStreamingCaller<float,descriptors::D2Q9Scalar<float>>(float** deviceCollision, float** deviceStreaming, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
 template void doStreamingCaller<float,descriptors::D2Q5Standard<float>>(float** deviceCollision, float** deviceStreaming, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
-template void doStreamingCaller<double,descriptors::D2Q9Standard<double>>(double** deviceCollision, double** deviceStreaming, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
-template void doStreamingCaller<double,descriptors::D2Q9Scalar<double>>(double** deviceCollision, double** deviceStreaming, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
-template void doStreamingCaller<double,descriptors::D2Q5Standard<double>>(double** deviceCollision, double** deviceStreaming, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
 
 template void doCollisionBGKCaller<float,descriptors::D2Q9Standard<float>>(float* deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
-template void doCollisionBGKCaller<float,descriptors::D2Q9Scalar<float>>(float* deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
-template void doCollisionBGKCaller<float,descriptors::D2Q5Standard<float>>(float* deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
-template void doCollisionBGKCaller<double,descriptors::D2Q9Standard<double>>(double* deviceCollision, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
-template void doCollisionBGKCaller<double,descriptors::D2Q9Scalar<double>>(double* deviceCollision, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
-template void doCollisionBGKCaller<double,descriptors::D2Q5Standard<double>>(double* deviceCollision, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
+template void doCollisionBGKCaller<float,descriptors::D2Q9Scalar<float>>(float* deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize, float* velocityField);
+template void doCollisionBGKCaller<float,descriptors::D2Q5Standard<float>>(float* deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize, float* velocityField);
 
 template void doCollisionCHMCaller<float,descriptors::D2Q9Standard<float>>(float* deviceCollision, const CollisionParamsCHM<float>* const params, dim3 gridSize, dim3 blockSize);
 template void doCollisionCHMCaller<float,descriptors::D2Q9Scalar<float>>(float* deviceCollision, const CollisionParamsCHM<float>* const params, dim3 gridSize, dim3 blockSize);
 template void doCollisionCHMCaller<float,descriptors::D2Q5Standard<float>>(float* deviceCollision, const CollisionParamsCHM<float>* const params, dim3 gridSize, dim3 blockSize);
-template void doCollisionCHMCaller<double,descriptors::D2Q9Standard<double>>(double* deviceCollision, const CollisionParamsCHM<double>* const params, dim3 gridSize, dim3 blockSize);
-template void doCollisionCHMCaller<double,descriptors::D2Q9Scalar<double>>(double* deviceCollision, const CollisionParamsCHM<double>* const params, dim3 gridSize, dim3 blockSize);
-template void doCollisionCHMCaller<double,descriptors::D2Q5Standard<double>>(double* deviceCollision, const CollisionParamsCHM<double>* const params, dim3 gridSize, dim3 blockSize);
 
 template void applyBounceBackCaller<float,descriptors::D2Q9Standard<float>>(float* deviceCollision, const BoundaryParams<float>* const params, dim3 gridSize, dim3 blockSize);
 template void applyBounceBackCaller<float,descriptors::D2Q9Scalar<float>>(float* deviceCollision, const BoundaryParams<float>* const params, dim3 gridSize, dim3 blockSize);
 template void applyBounceBackCaller<float,descriptors::D2Q5Standard<float>>(float* deviceCollision, const BoundaryParams<float>* const params, dim3 gridSize, dim3 blockSize);
-template void applyBounceBackCaller<double,descriptors::D2Q9Standard<double>>(double* deviceCollision, const BoundaryParams<double>* const params, dim3 gridSize, dim3 blockSize);
-template void applyBounceBackCaller<double,descriptors::D2Q9Scalar<double>>(double* deviceCollision, const BoundaryParams<double>* const params, dim3 gridSize, dim3 blockSize);
-template void applyBounceBackCaller<double,descriptors::D2Q5Standard<double>>(double* deviceCollision, const BoundaryParams<double>* const params, dim3 gridSize, dim3 blockSize);
 
 template void computeZerothMomentCaller<float,descriptors::D2Q9Standard<float>>(float* deviceZerothMoment, const float* const deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
 template void computeZerothMomentCaller<float,descriptors::D2Q9Scalar<float>>(float* deviceZerothMoment, const float* const deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
 template void computeZerothMomentCaller<float,descriptors::D2Q5Standard<float>>(float* deviceZerothMoment, const float* const deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
-template void computeZerothMomentCaller<double,descriptors::D2Q9Standard<double>>(double* deviceZerothMoment, const double* const deviceCollision, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
-template void computeZerothMomentCaller<double,descriptors::D2Q9Scalar<double>>(double* deviceZerothMoment, const double* const deviceCollision, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
-template void computeZerothMomentCaller<double,descriptors::D2Q5Standard<double>>(double* deviceZerothMoment, const double* const deviceCollision, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
 
 template void computeFirstMomentCaller<float,descriptors::D2Q9Standard<float>>(float* deviceFirstMoment, const float* const deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
 template void computeFirstMomentCaller<float,descriptors::D2Q9Scalar<float>>(float* deviceFirstMoment, const float* const deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
 template void computeFirstMomentCaller<float,descriptors::D2Q5Standard<float>>(float* deviceFirstMoment, const float* const deviceCollision, const CollisionParamsBGK<float>* const params, dim3 gridSize, dim3 blockSize);
-template void computeFirstMomentCaller<double,descriptors::D2Q9Standard<double>>(double* deviceFirstMoment, const double* const deviceCollision, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
-template void computeFirstMomentCaller<double,descriptors::D2Q9Scalar<double>>(double* deviceFirstMoment, const double* const deviceCollision, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);
-template void computeFirstMomentCaller<double,descriptors::D2Q5Standard<double>>(double* deviceFirstMoment, const double* const deviceCollision, const CollisionParamsBGK<double>* const params, dim3 gridSize, dim3 blockSize);

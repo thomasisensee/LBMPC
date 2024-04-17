@@ -1,7 +1,10 @@
 #ifndef FIELD_TAGS_H
 #define FIELD_TAGS_H
 
-namespace field_tags {
+namespace descriptors {
+
+    struct NoField {
+    };
 
     struct VelocityField {
         VelocityField() = delete; // Deleted default constructor prevents instantiation, enforces pure usage as type

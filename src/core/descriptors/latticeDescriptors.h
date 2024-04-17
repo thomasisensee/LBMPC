@@ -102,6 +102,6 @@ namespace descriptors {
     any_platform constexpr unsigned int b(unsigned int iBoundary, unsigned int iPop) {
         return data::b<D,Q>[iBoundary][iPop];
     }
-} // namespace latticeDescriptors
+} // namespace descriptors
 
 #endif // LATTICE_DESCRIPTORS_H

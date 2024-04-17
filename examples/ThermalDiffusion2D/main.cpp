@@ -25,7 +25,6 @@ int main() {
     // ==============================
     // === Set lattice descriptor ===
     // ==============================
-    using D2Q9 = descriptors::D2Q9;
     using DESCRIPTOR = descriptors::D2Q9Scalar<T>;
 
     // ================================
@@ -47,7 +46,7 @@ int main() {
 
 
     T pecletNumber = 1.0;
-	T dt = (tauShear - 0.5) * dx * dx * pecletNumber * descriptors::cs2<T,D2Q9::D,D2Q9::Q>();
+	T dt = (tauShear - 0.5) * dx * dx * pecletNumber * descriptors::cs2<T,DESCRIPTOR::LATTICE::D,DESCRIPTOR::LATTICE::Q>();
     T u = 1.0;
     T v = 0.0;
     u *= dt / dx;

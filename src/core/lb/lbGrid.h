@@ -75,6 +75,7 @@ public:
     void prepareKernelParams();
     void fetchZerothMoment();
     void fetchFirstMoment();
+    void fetchMoments();
 
     /// Host-Device communication
     void copyToDevice();

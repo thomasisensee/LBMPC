@@ -43,6 +43,7 @@ template<typename T,typename DESCRIPTOR>
 void Simulation<T,DESCRIPTOR>::checkOutput(unsigned int iter) {
     if (_outputFrequency && iter % _outputFrequency == 0) {
         _lbGrid->computeMoments();
+        _lbGrid->fetchMoments();
         _vtkWriter->writeScalarField(_lbGrid->getHostZerothMoment(), "Rho", _outputCounter);
         _vtkWriter->writeVectorField(_lbGrid->getHostFirstMoment(), _lbGrid->getHostZerothMoment(), "Vel", _dt, _outputCounter);
         printOutput(_outputCounter);
