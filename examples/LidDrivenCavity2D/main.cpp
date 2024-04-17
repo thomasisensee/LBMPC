@@ -25,7 +25,7 @@ int main() {
     // ==============================
     // === Set lattice descriptor ===
     // ==============================
-    using DESCRIPTOR = descriptors::D2Q9Standard<T>;
+    using DESCRIPTOR = descriptors::StandardD2Q9<T>;
 
     // ================================
     // === Set necessary components ===

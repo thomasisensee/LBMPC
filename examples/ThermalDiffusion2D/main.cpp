@@ -25,7 +25,8 @@ int main() {
     // ==============================
     // === Set lattice descriptor ===
     // ==============================
-    using DESCRIPTOR = descriptors::D2Q9Scalar<T>;
+    using DESCRIPTOR = descriptors::ScalarD2Q9<T>;
+    //using DESCRIPTOR = descriptors::ScalarD2Q5<T>;
 
     // ================================
     // === Set necessary components ===
@@ -35,13 +36,11 @@ int main() {
     auto gridGeometry = std::make_unique<GridGeometry2D<T>>(dx, nx, ny);
     //gridGeometry->printParameters();
 
-
     T tauShear = 0.7;
     T tauBulk = tauShear;
     T omegaShear = 1.0 / tauShear;
     T omegaBulk = 1.0 / tauBulk;
     auto collisionModel = std::make_unique<CollisionBGK<T,DESCRIPTOR>>(omegaShear);
-    //auto collisionModel = std::make_unique<CollisionCHM<T,DESCRIPTOR>>(omegaShear, omegaBulk);
     //collisionModel->printParameters();
 
 

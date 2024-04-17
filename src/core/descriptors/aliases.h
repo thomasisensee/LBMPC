@@ -8,13 +8,19 @@
 namespace descriptors {
 
     template<typename T>
-    using D2Q9Standard = DESCRIPTOR<D2Q9>;
+    using StandardD2Q9 = DESCRIPTOR<D2Q9,MomentumConservation>;
 
     template<typename T>
-    using D2Q9Scalar = DESCRIPTOR<D2Q9,VelocityField>;
+    using ScalarD2Q9 = DESCRIPTOR<D2Q9,EnergyConservation>;
 
     template<typename T>
-    using D2Q5Standard = DESCRIPTOR<D2Q5,VelocityField>;
+    using ScalarD2Q5 = DESCRIPTOR<D2Q5,EnergyConservation>;
+
+    template<typename T>
+    using ScalarAdvectionD2Q9 = DESCRIPTOR<D2Q9,EnergyConservation>;
+
+    template<typename T>
+    using ScalarD2Q5 = DESCRIPTOR<D2Q5,EnergyConservation>;
 
 } // namespace descriptors
 

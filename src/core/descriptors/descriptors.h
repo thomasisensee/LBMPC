@@ -12,31 +12,26 @@ namespace descriptors {
 
     struct DESCRIPTOR_BASE {};
 
-    template<typename LATTICE_DESCRIPTOR, typename... FIELD_TYPE>
+    template<typename LATTICE_DESCRIPTOR, typename DISTRIBUTION_TYPE, typename... FIELD_TYPE>
     struct DESCRIPTOR : public DESCRIPTOR_BASE {
         DESCRIPTOR() = delete; // Deleted default constructor prevents instantiation, enforces pure usage as type
 
-        using LATTICE = LATTICE_DESCRIPTOR;
-        using FIELDS = std::tuple<FIELD_TYPE...>;
+        using TYPE      = DISTRIBUTION_TYPE;
+        using LATTICE   = LATTICE_DESCRIPTOR;
+        using FIELDS    = std::tuple<FIELD_TYPE...>;
 
         //template<typename T>
         //using EQUILIBRIUM = EQUILIBRIUM_FUNCTOR<T,LATTICE_DESCRIPTOR>;
         //using FORCE = EXTERNAL_FORCE_FUNCTOR;
     };
 
+
     /// Contains checks if a type is in a parameter pack
-    template<typename T, typename... List>
+    template<typename T, typename Tuple>
     struct Contains;
 
-    template<typename T, typename First, typename... Rest>
-    struct Contains<T, First, Rest...> : Contains<T, Rest...> {};
-
-    template<typename T, typename... Rest>
-    struct Contains<T, T, Rest...> : std::true_type {};
-
-    template<typename T>
-    struct Contains<T> : std::false_type {};
-
+    template<typename T, typename... Types>
+    struct Contains<T, std::tuple<Types...>> : std::disjunction<std::is_same<T, Types>...> {};
 
     /// Find the index of a type in a parameter pack
     template<typename T, typename Tuple>
@@ -48,7 +43,7 @@ namespace descriptors {
             constexpr std::size_t n = sizeof...(Types);
             std::array<bool, n> matches = {std::is_same<T, Types>::value...};
             for (std::size_t i = 0; i < n; ++i) {
-                if (matches[i]) return i;
+                if (matches[i]) return static_cast<int>(i);
             }
             return -1;
         }();
