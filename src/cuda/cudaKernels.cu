@@ -12,11 +12,7 @@
 #include "cell.h"
 #include "core/constants.h"
 #include "core/kernelParameters.h"
-
-
-__device__ unsigned int pos(unsigned int i, unsigned int j, unsigned int width) {
-    return j * width + i;
-}
+#include "core/gridGeometry.h"
 
 /************************************/
 /***** Initialize Distributions *****/
@@ -30,7 +26,7 @@ __global__ void initializeDistributionsKernel(T* collision, const BaseParams* co
     const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
     if (i > params->Nx - 1 || j > params->Ny - 1) { return; }
     
-    unsigned int idx = pos(i, j, params->Nx);
+    unsigned int idx = GridGeometry2D<T>::pos(i, j, params->Nx);
     
     Cell<T,DESCRIPTOR> cell;
     T R = 1.0;
@@ -59,7 +55,7 @@ __global__ void doStreamingKernel(const T *const collision, T *streaming, const 
     const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
     if (i < 1 || i > params->Nx - 2 || j < 1 || j > params->Ny - 2) { return; }
 
-    unsigned int idx = pos(i, j, params->Nx);
+    unsigned int idx = GridGeometry2D<T>::pos(i, j, params->Nx);
     unsigned int idxNeighbor;
     int cx, cy;
 
@@ -67,7 +63,7 @@ __global__ void doStreamingKernel(const T *const collision, T *streaming, const 
         cx = descriptors::c<D,Q>(l, 0);
         cy = descriptors::c<D,Q>(l, 1);
 
- 	    idxNeighbor = pos(static_cast<int>(i) - cx, static_cast<int>(j) - cy, params->Nx);
+ 	    idxNeighbor = GridGeometry2D<T>::pos(static_cast<int>(i) - cx, static_cast<int>(j) - cy, params->Nx);
 		streaming[Q * idx + l] = collision[Q * idxNeighbor + l];
 	}
 }
@@ -97,7 +93,7 @@ __global__ void doCollisionBGKKernel(T* collision, const CollisionParamsBGK<T>* 
     const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
     if (i < 1 || i > params->Nx - 2 || j < 1 || j > params->Ny - 2) { return; }
 
-    unsigned int idx = pos(i, j, params->Nx);
+    unsigned int idx = GridGeometry2D<T>::pos(i, j, params->Nx);
 
     T U, V;
     T* velocityField = nullptr;
@@ -157,7 +153,7 @@ __global__ void doCollisionCHMKernel(T* collision, const CollisionParamsCHM<T>* 
     const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
     if (i < 1 || i > params->Nx - 2 || j < 1 || j > params->Ny - 2) { return; }
 
-    unsigned int idx = pos(i, j, params->Nx);
+    unsigned int idx = GridGeometry2D<T>::pos(i, j, params->Nx);
 
     Cell<T,DESCRIPTOR> cell;
     T R = cell.getZerothMoment(&collision[idx * Q]);
@@ -233,8 +229,8 @@ __global__ void computeZerothMomentKernel(T* zerothMoment, const T* const collis
     const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
     if (i < 1 || i > params->Nx - 2 || j < 1 || j > params->Ny - 2) { return; }
 
-    unsigned int idx        = pos(i, j, params->Nx);
-    unsigned int idxMoment  = pos(i - 1, j - 1, params->Nx - 2); // Since the zerothMoment array does not contain the ghost cells
+    unsigned int idx        = GridGeometry2D<T>::pos(i, j, params->Nx);
+    unsigned int idxMoment  = GridGeometry2D<T>::pos(i - 1, j - 1, params->Nx - 2); // Since the zerothMoment array does not contain the ghost cells
 
     Cell<T,DESCRIPTOR> cell;
     T R = cell.getZerothMoment(&collision[idx * Q]);
@@ -260,8 +256,8 @@ __global__ void computeFirstMomentKernel(T* firstMoment, const T* const collisio
     const unsigned int j = threadIdx.y + blockIdx.y * blockDim.y;
     if (i < 1 || i > params->Nx - 2 || j < 1 || j > params->Ny - 2) { return; }
 
-    unsigned int idx        = pos(i, j, params->Nx);
-    unsigned int idxMoment  = pos(i - 1, j - 1, params->Nx - 2); // Since the zerothMoment array does not contain the ghost cells
+    unsigned int idx        = GridGeometry2D<T>::pos(i, j, params->Nx);
+    unsigned int idxMoment  = GridGeometry2D<T>::pos(i - 1, j - 1, params->Nx - 2); // Since the zerothMoment array does not contain the ghost cells
 
     Cell<T,DESCRIPTOR> cell;
     T U = cell.getFirstMomentX(&collision[idx * Q]);

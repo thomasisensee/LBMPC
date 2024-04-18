@@ -29,7 +29,7 @@ class BounceBack {
 public:
     /// Empty constructor
     __device__ BounceBack();
-    __device__ T operator()(T* collision, const BounceBackParams<T>* const params, unsigned int i, unsigned int j);
+    __device__ T operator()(T* collision, const BaseParams* const params, unsigned int i, unsigned int j);
 };
 
 template<typename T,typename DESCRIPTOR>
@@ -37,7 +37,7 @@ class MovingWall {
 public:
     /// Empty constructor
     __device__ MovingWall();
-    __device__ T operator()(T* collision, const MovingWallParams<T>* const params, unsigned int i, unsigned int j);
+    __device__ T operator()(T* collision, const BaseParams* const params, unsigned int i, unsigned int j);
 };
 
 template<typename T,typename DESCRIPTOR>
@@ -45,7 +45,7 @@ class AntiBounceBack {
 public:
     /// Empty constructor
     __device__ AntiBounceBack();
-    __device__ T operator()(T* collision, const AntiBounceBackParams<T>* const params, unsigned int i, unsigned int j);
+    __device__ T operator()(T* collision, const BaseParams* const params, unsigned int i, unsigned int j);
 };
 
 

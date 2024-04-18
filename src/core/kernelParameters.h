@@ -43,22 +43,20 @@ struct BoundaryParams : public BaseParams {
     BoundaryLocation location;
 };
 
-template<typename T>
 struct PeriodicParams : public BoundaryParams {};
 
-template<typename T>
 struct BounceBackParams : public BoundaryParams {};
 
 template<typename T>
 struct AntiBounceBackParams : public BoundaryParams {
-    /// Scalar value for dirichlet (via anti-bounce-back) condition
+    /// Scalar value for dirichlet condition (via anti-bounce-back)
     T wallValue = 0.0;
 };
 
 template<typename T>
 struct MovingWallParams : public BoundaryParams {
     /// Wall velocity
-    T* WALL_VELOCITY = nullptr;
+    T* wallVelocity = nullptr;
 };
 
 
@@ -188,31 +186,101 @@ public:
 /********************************************/
 template<typename T>
 class BoundaryParamsWrapper : public ParamsWrapper<T, BoundaryParams> {
+public:
+    /// Default constructor
+    BoundaryParamsWrapper() = default;
+
+    /// Parameterized constructor
+    BoundaryParamsWrapper(
+        unsigned int nx,
+        unsigned int ny,
+        BoundaryLocation location
+    );
+
+    /// Set values and trigger trigger allocateAndCopyToDevice
+    virtual void setValues(
+        unsigned int nx,
+        unsigned int ny,
+        BoundaryLocation location
+    );
+};
+
+/********************************************/
+/***** Derived class 05: PeriodicParams *****/
+/********************************************/
+template<typename T>
+class PeriodicParamsWrapper : public ParamsWrapper<T, PeriodicParams> {
+public:
+    /// Default constructor
+    PeriodicParamsWrapper() = default;
+
+    /// Parameterized constructor
+    PeriodicParamsWrapper(
+        unsigned int nx,
+        unsigned int ny,
+        BoundaryLocation location
+    );
+
+    /// Set values and trigger trigger allocateAndCopyToDevice
+    virtual void setValues(
+        unsigned int nx,
+        unsigned int ny,
+        BoundaryLocation location
+    );
+};
+
+/**********************************************/
+/***** Derived class 06: BounceBackParams *****/
+/**********************************************/
+template<typename T>
+class BounceBackParamsWrapper : public ParamsWrapper<T, BounceBackParams> {
+public:
+    /// Default constructor
+    BounceBackParamsWrapper() = default;
+
+    /// Parameterized constructor
+    BounceBackParamsWrapper(
+        unsigned int nx,
+        unsigned int ny,
+        BoundaryLocation location
+    );
+
+    /// Set values and trigger trigger allocateAndCopyToDevice
+    virtual void setValues(
+        unsigned int nx,
+        unsigned int ny,
+        BoundaryLocation location
+    );
+};
+
+
+template<typename T>
+class MovingWallParamsWrapper : public ParamsWrapper<T, MovingWallParams<T>> {
 private:
     // For keeping track of the wallVelocity dimension/size
     unsigned int _D;
 
 public:
     /// Default constructor
-    BoundaryParamsWrapper();
+    MovingWallParamsWrapper() = default;
 
     /// Parameterized constructor
-    BoundaryParamsWrapper(
+    MovingWallParamsWrapper(
         unsigned int nx,
         unsigned int ny,
-        const T* WALL_VELOCITY,
-        BoundaryLocation location
+        BoundaryLocation location,
+        const T* wallVelocity
     );
 
     /// Destructor
-    virtual ~BoundaryParamsWrapper();
+    virtual ~MovingWallParamsWrapper();
 
     /// Set values and trigger trigger allocateAndCopyToDevice
     virtual void setValues(
         unsigned int nx,
         unsigned int ny,
-        const T* WALL_VELOCITY,
-        BoundaryLocation location
+        BoundaryLocation location,
+        const T* wallVelocity
     );
 
     /// Set wall velocity specifically and trigger allocateAndCopyToDevice

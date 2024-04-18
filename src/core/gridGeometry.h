@@ -27,6 +27,10 @@ public:
     unsigned int getGhostVolume() const;
     /// Prints grid details
     void printParameters() const;
+    // 2D position mapping
+    __host__ __device__ static unsigned int pos(unsigned int i, unsigned int j, unsigned int width) {
+        return j * width + i;
+    };
 };
 
 #include "gridGeometry.hh"

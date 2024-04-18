@@ -26,8 +26,8 @@ void BoundaryCondition<T,DESCRIPTOR>::prepareKernelParams(const BaseParams& base
     _params.setValues(
         baseParams.Nx,
         baseParams.Ny,
-        nullptr,
-        this->_location
+        this->_location,
+        nullptr
     );
 
     // Set block and grid size for cuda kernel execution
