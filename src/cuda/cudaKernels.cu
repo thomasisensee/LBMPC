@@ -6,6 +6,7 @@
 #include "cudaErrorHandler.cuh"
 
 #include "core/descriptors/descriptors.h"
+#include "core/descriptors/aliases.h"
 #include "core/descriptors/fieldTags.h"
 #include "core/functors/functors.h"
 #include "cell.h"
@@ -100,9 +101,9 @@ __global__ void doCollisionBGKKernel(T* collision, const CollisionParamsBGK<T>* 
     /****** collision step of the energy conservation. If the velocity field is not present, the        ******/
     /****** velocity is computed from the distribution function.                                        ******/
     /*********************************************************************************************************/
-    constexpr int isMomentumDistribution = Contains<descriptors::MomentumConservation, typename DESCRIPTOR::TYPE>::value;
+    constexpr int isEnergyDistribution = Contains<descriptors::EnergyConservation, typename DESCRIPTOR::TYPE>::value;
 
-    if constexpr (isMomentumDistribution) {
+    if constexpr (isEnergyDistribution) {
         constexpr int hasVelocityField = Contains<descriptors::VelocityField, typename DESCRIPTOR::FIELDS>::value;
 
         if constexpr (hasVelocityField) {
@@ -111,19 +112,20 @@ __global__ void doCollisionBGKKernel(T* collision, const CollisionParamsBGK<T>* 
             U = velocityField[idx * D];
             V = velocityField[idx * D + 1];
         } else if constexpr (hasVelocityField == 0) {
-            U = cell.getVelocityX(&collision[idx * Q], R);
-            V = cell.getVelocityY(&collision[idx * Q], R);
+            U = 0.0;
+            V = 0.0;
         }
     } else {
-        U = 0.0;
-        V = 0.0;
+        U = cell.getVelocityX(&collision[idx * Q], R);
+        V = cell.getVelocityY(&collision[idx * Q], R);
     }
 
     cell.computePostCollisionDistributionBGK(&collision[idx * Q], params, R, U, V);
 }
 
 
-template<typename T,typename DESCRIPTOR, typename... FieldPtrs, typename std::enable_if_t<(sizeof...(FieldPtrs) > 0), int> = 0>
+template<typename T,typename DESCRIPTOR, typename... FieldPtrs,
+    typename std::enable_if_t<(sizeof...(FieldPtrs) > 0), int>>
 void doCollisionBGKCaller(T* deviceCollision, const CollisionParamsBGK<T>* const params, dim3 gridSize, dim3 blockSize, FieldPtrs... fields) {
     doCollisionBGKKernel<T,DESCRIPTOR,FieldPtrs...><<<gridSize, blockSize>>>(deviceCollision, params, fields...);
     cudaErrorCheck(cudaDeviceSynchronize());
@@ -162,7 +164,7 @@ void doCollisionCHMCaller(T* deviceCollision, const CollisionParamsCHM<T>* const
 }
 
 template<typename T,typename DESCRIPTOR>
-__device__ void applyBC(T* collision, const BoundaryParams<T>* const params, unsigned int i, unsigned int j) {
+__device__ void applyBounceBack(T* collision, const BoundaryParams<T>* const params, unsigned int i, unsigned int j) {
     // Local constants for easier access
     constexpr unsigned int D = DESCRIPTOR::LATTICE::D;
     constexpr unsigned int Q = DESCRIPTOR::LATTICE::Q;
@@ -219,27 +221,27 @@ __global__ void applyBounceBackKernel(T* collision, const BoundaryParams<T>* con
         j = threadIdx.x + blockIdx.x * blockDim.x;
         if (j > params->Ny - 1) { return; }
 
-        applyBC<T,DESCRIPTOR>(collision, params, i, j);
+        applyBounceBack<T,DESCRIPTOR>(collision, params, i, j);
         return;
     case BoundaryLocation::EAST:
         i = params->Nx-1;
         j = threadIdx.x + blockIdx.x * blockDim.x;
         if (j > params->Ny - 1) { return; }
 
-        applyBC<T,DESCRIPTOR>(collision, params, i, j);
+        applyBounceBack<T,DESCRIPTOR>(collision, params, i, j);
         return;     
     case BoundaryLocation::SOUTH:
         i = threadIdx.x + blockIdx.x * blockDim.x;
         j = 0;
         if (i > params->Nx - 1) { return; }
 
-        applyBC<T,DESCRIPTOR>(collision, params, i, j);
+        applyBounceBack<T,DESCRIPTOR>(collision, params, i, j);
         return;
     case BoundaryLocation::NORTH:
         i = threadIdx.x + blockIdx.x * blockDim.x;
         j = params->Ny-1;
         if (i > params->Nx - 1) { return; }
-        applyBC<T,DESCRIPTOR>(collision, params, i, j);
+        applyBounceBack<T,DESCRIPTOR>(collision, params, i, j);
         return;
     }
 }

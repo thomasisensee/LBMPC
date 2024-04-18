@@ -27,8 +27,8 @@ namespace descriptors {
 
 
     /// Contains checks if a type is in a parameter pack
-    template<typename T, typename Tuple>
-    struct Contains;
+    template<typename T, typename U>
+    struct Contains : std::is_same<T, U> {};
 
     template<typename T, typename... Types>
     struct Contains<T, std::tuple<Types...>> : std::disjunction<std::is_same<T, Types>...> {};

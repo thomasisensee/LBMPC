@@ -50,13 +50,14 @@ int main() {
     T v = 0.0;
     u *= dt / dx;
     v *= dt / dx;
-    std::vector<T> wallVelocity = {u, v};
+    T wallTemperatureLeft = 1.0;
+    T wallTemperatureRight = 0.0;
     auto boundaryConditionManager = std::make_unique<BoundaryConditionManager<T,DESCRIPTOR>>();
     boundaryConditionManager->setDxdt(dx/dt);
-    boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T,DESCRIPTOR>>(BoundaryLocation::WEST));
-    boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T,DESCRIPTOR>>(BoundaryLocation::EAST));
+    boundaryConditionManager->addBoundaryCondition(std::make_unique<AntiBounceBack<T,DESCRIPTOR>>(BoundaryLocation::WEST, wallTemperatureLeft));
+    boundaryConditionManager->addBoundaryCondition(std::make_unique<AntiBounceBack<T,DESCRIPTOR>>(BoundaryLocation::EAST, wallTemperatureRight));
     boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T,DESCRIPTOR>>(BoundaryLocation::SOUTH));
-    boundaryConditionManager->addBoundaryCondition(std::make_unique<MovingWall<T,DESCRIPTOR>>(BoundaryLocation::NORTH, wallVelocity));
+    boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T,DESCRIPTOR>>(BoundaryLocation::NORTH));
     //boundaryConditionManager->printParameters();
 
  
