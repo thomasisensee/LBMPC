@@ -9,19 +9,19 @@ __device__ unsigned int pos(unsigned int i, unsigned int j, unsigned int width);
 /***** Initialize Distributions *****/
 /************************************/
 template<typename T,typename DESCRIPTOR>
-__global__ void initializeDistributionsKernel(T* collision, const CollisionParamsBGK<T>* const params);
+__global__ void initializeDistributionsKernel(T* collision, const BaseParams* const params);
 
 template<typename T,typename DESCRIPTOR>
-void initializeDistributionsCaller(T* deviceCollision, const CollisionParamsBGK<T>* const params, dim3 gridSize, dim3 blockSize);
+void initializeDistributionsCaller(T* deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
 
 /*********************/
 /***** Streaming *****/
 /*********************/
 template<typename T,typename DESCRIPTOR>
-__global__ void doStreamingKernel(const T *const collision, T *streaming, const CollisionParamsBGK<T>* const params);
+__global__ void doStreamingKernel(const T *const collision, T *streaming, const BaseParams* const params);
 
 template<typename T,typename DESCRIPTOR>
-void doStreamingCaller(T** deviceCollision, T** deviceStreaming, const CollisionParamsBGK<T>* const params, dim3 gridSize, dim3 blockSize);
+void doStreamingCaller(T** deviceCollision, T** deviceStreaming, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
 
 /**************************/
 /***** Collision: BGK *****/
@@ -48,31 +48,29 @@ void doCollisionCHMCaller(T* deviceCollision, const CollisionParamsCHM<T>* const
 /*******************************/
 /***** Boundary conditions *****/
 /*******************************/
-template<typename T,typename DESCRIPTOR>
-__device__ void applyBounceBack(T* collision, const BoundaryParams<T>* const params, unsigned int i, unsigned int j);
 
-template<typename T,typename DESCRIPTOR>
-__global__ void applyBounceBackKernel(T* collision, const BoundaryParams<T>* const params);
+template<typename T,typename DESCRIPTOR,typename FUNCTOR>
+__global__ void applyBoundaryConditionKernel(T* collision, const BoundaryParams* const params);
 
-template<typename T,typename DESCRIPTOR>
-void applyBounceBackCaller(T* deviceCollision, const BoundaryParams<T>* const params, dim3 gridSize, dim3 blockSize);
+template<typename T,typename DESCRIPTOR,typename FUNCTOR>
+void applyBoundaryConditionCaller(T* deviceCollision, const BoundaryParams* const params, dim3 gridSize, dim3 blockSize);
 
 /***************************************/
 /***** Moment computations: zeroth *****/
 /***************************************/
 template<typename T,typename DESCRIPTOR>
-__global__ void computeZerothMomentKernel(T* zerothMoment, const T* const collision, const CollisionParamsBGK<T>* const params);
+__global__ void computeZerothMomentKernel(T* zerothMoment, const T* const collision, const BaseParams* const params);
 
 template<typename T,typename DESCRIPTOR>
-void computeZerothMomentCaller(T* deviceZerothMoment, const T* const deviceCollision, const CollisionParamsBGK<T>* const params, dim3 gridSize, dim3 blockSize);
+void computeZerothMomentCaller(T* deviceZerothMoment, const T* const deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
 
 /**************************************/
 /***** Moment computations: First *****/
 /**************************************/
 template<typename T,typename DESCRIPTOR>
-__global__ void computeFirstMomentKernel(T* firstMoment, const T* const collision, const CollisionParamsBGK<T>* const params);
+__global__ void computeFirstMomentKernel(T* firstMoment, const T* const collision, const BaseParams* const params);
 
 template<typename T,typename DESCRIPTOR>
-void computeFirstMomentCaller(T* deviceFirstMoment, const T* const deviceCollision, const CollisionParamsBGK<T>* const params, dim3 gridSize, dim3 blockSize);
+void computeFirstMomentCaller(T* deviceFirstMoment, const T* const deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
 
 #endif // CUDA_KERNELS_CUH

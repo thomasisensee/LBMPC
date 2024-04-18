@@ -9,9 +9,6 @@
 /***** Base class (templated) *****/
 /**********************************/
 template<typename T, typename ParamsType>
-ParamsWrapper<T, ParamsType>::ParamsWrapper() {}
-
-template<typename T, typename ParamsType>
 ParamsWrapper<T, ParamsType>::ParamsWrapper(
         unsigned int nx,
         unsigned int ny
@@ -20,17 +17,54 @@ ParamsWrapper<T, ParamsType>::ParamsWrapper(
 }
 
 template<typename T, typename ParamsType>
-ParamsWrapper<T, ParamsType>::~ParamsWrapper() {}
+ParamsWrapper<T, ParamsType>::~ParamsWrapper() {
+    // Cleanup host resources
+    cleanupHost();
+    // Cleanup device resources
+    cleanupDevice();
+}
 
 template<typename T, typename ParamsType>
 void ParamsWrapper<T, ParamsType>::setValues(
         unsigned int nx,
         unsigned int ny
     ) {
-    this->_hostParams.Nx                 = nx;
-    this->_hostParams.Ny                 = ny;
+    this->_hostParams.Nx = nx;
+    this->_hostParams.Ny = ny;
 
     allocateAndCopyToDevice();
+}
+
+template<typename T, typename ParamsType>
+void ParamsWrapper<T, ParamsType>::allocateAndCopyToDevice() {
+    // Cleanup device resources that may have been previously allocated
+    cleanupDevice();
+
+    // Prepare the host-side copy of Params with device pointers
+    BaseParams paramsTemp = this->_hostParams; // Use a temporary host copy
+
+    // Allocate memory for the Params struct on the device if not already allocated
+    if (this->_deviceParams == nullptr) {
+        cudaErrorCheck(cudaMalloc(&(this->_deviceParams), sizeof(BaseParams)));
+    }
+
+    // Copy the prepared Params (with device pointers) from the temporary host copy to the device
+    cudaErrorCheck(cudaMemcpy(this->_deviceParams, &paramsTemp, sizeof(BaseParams), cudaMemcpyHostToDevice));
+}
+
+template<typename T, typename ParamsType>
+void ParamsWrapper<T, ParamsType>::cleanupHost() {
+    // Nothing to clean up for this derived class
+}
+
+template<typename T, typename ParamsType>
+void ParamsWrapper<T, ParamsType>::cleanupDevice() {
+    // If _deviceParams was already freed and set to nullptr, return
+    if(this->getDeviceParams() == nullptr) { return; }
+
+    // Free the _deviceParams struct itself
+    cudaFree(this->_deviceParams);
+    this->_deviceParams = nullptr; // Ensure the pointer is marked as freed
 }
 
 template<typename T, typename ParamsType>
@@ -43,12 +77,29 @@ ParamsType* ParamsWrapper<T, ParamsType>::getDeviceParams() {
     return _deviceParams;
 }
 
+/*****************************************/
+/***** Derived class 01:  BaseParams *****/
+/*****************************************/
+template<typename T>
+BaseParamsWrapper<T>::BaseParamsWrapper(
+        unsigned int nx,
+        unsigned int ny
+    ) : ParamsWrapper<T, BaseParams>(nx, ny) {
+        ParamsWrapper<T, BaseParams>::allocateAndCopyToDevice();
+    }
+
+template<typename T>
+void BaseParamsWrapper<T>::setValues(
+        unsigned int nx,
+        unsigned int ny
+    ) {
+    // Clean up existing data
+    ParamsWrapper<T, BaseParams>::setValues(nx, ny);
+}
+
 /************************************************/
 /***** Derived class 02: CollisionParamsBGK *****/
 /************************************************/
-template<typename T>
-CollisionParamsBGKWrapper<T>::CollisionParamsBGKWrapper() {}
-
 template<typename T>
 CollisionParamsBGKWrapper<T>::CollisionParamsBGKWrapper(
         unsigned int nx,
@@ -59,73 +110,25 @@ CollisionParamsBGKWrapper<T>::CollisionParamsBGKWrapper(
 }
 
 template<typename T>
-CollisionParamsBGKWrapper<T>::~CollisionParamsBGKWrapper() {
-    // Cleanup host resources
-    cleanupHost();
-    // Cleanup device resources
-    cleanupDevice();
-}
-
-template<typename T>
 void CollisionParamsBGKWrapper<T>::setValues(
         unsigned int nx,
         unsigned int ny,
         T omegaShear
     ) {
     // Clean up existing data
-    cleanupHost();
+    ParamsWrapper<T, CollisionParamsBGK<T>>::cleanupHost();
 
     // Assign new deep copies
     this->_hostParams.Nx                 = nx;
     this->_hostParams.Ny                 = ny;
     this->_hostParams.omegaShear         = omegaShear;
 
-    allocateAndCopyToDevice();
-}
-
-template<typename T>
-void CollisionParamsBGKWrapper<T>::allocateAndCopyToDevice() {
-    // Cleanup device resources that may have been previously allocated
-    cleanupDevice();
-
-    // Prepare the host-side copy of Params with device pointers
-    CollisionParamsBGK<T> paramsTemp = this->_hostParams; // Use a temporary host copy
-
-    // Allocate memory for the Params struct on the device if not already allocated
-    if (this->_deviceParams == nullptr) {
-        cudaErrorCheck(cudaMalloc(&(this->_deviceParams), sizeof(CollisionParamsBGK<T>)));
-    }
-
-    // Copy the prepared Params (with device pointers) from the temporary host copy to the device
-    cudaErrorCheck(cudaMemcpy(this->_deviceParams, &paramsTemp, sizeof(CollisionParamsBGK<T>), cudaMemcpyHostToDevice));
-}
-
-template<typename T>
-void CollisionParamsBGKWrapper<T>::cleanupHost() {
-    // Nothing to clean up for this derived class
-}
-
-template<typename T>
-void CollisionParamsBGKWrapper<T>::cleanupDevice() {
-    // If _deviceParams was already freed and set to nullptr, return
-    if(this->getDeviceParams() == nullptr) { return; }
-
-    // Free the _deviceParams struct itself
-    cudaFree(this->_deviceParams);
-    this->_deviceParams = nullptr; // Ensure the pointer is marked as freed
+    ParamsWrapper<T, CollisionParamsBGK<T>>::allocateAndCopyToDevice();
 }
 
 /************************************************/
 /***** Derived class 02: CollisionParamsCHM *****/
 /************************************************/
-template<typename T>
-CollisionParamsCHMWrapper<T>::CollisionParamsCHMWrapper() {
-    // Cleanup host resources
-    cleanupHost();
-    // Cleanup device resources
-    cleanupDevice();
-}
-
 template<typename T>
 CollisionParamsCHMWrapper<T>::CollisionParamsCHMWrapper(
         unsigned int nx,
@@ -137,9 +140,6 @@ CollisionParamsCHMWrapper<T>::CollisionParamsCHMWrapper(
 }
 
 template<typename T>
-CollisionParamsCHMWrapper<T>::~CollisionParamsCHMWrapper() {}
-
-template<typename T>
 void CollisionParamsCHMWrapper<T>::setValues(
         unsigned int nx,
         unsigned int ny,
@@ -147,7 +147,7 @@ void CollisionParamsCHMWrapper<T>::setValues(
         T omegaBulk
     ) {
     // Clean up existing data
-    cleanupHost();
+    ParamsWrapper<T, CollisionParamsCHM<T>>::cleanupHost();
 
     // Assign new deep copies
     this->_hostParams.Nx            = nx;
@@ -155,39 +155,7 @@ void CollisionParamsCHMWrapper<T>::setValues(
     this->_hostParams.omegaShear    = omegaShear;
     this->_hostParams.omegaBulk     = omegaBulk;
 
-    allocateAndCopyToDevice();
-}
-
-template<typename T>
-void CollisionParamsCHMWrapper<T>::allocateAndCopyToDevice() {
-    // Cleanup device resources that may have been previously allocated
-    cleanupDevice();
-
-    // Prepare the host-side copy of Params with device pointers
-    CollisionParamsCHM<T> paramsTemp = this->_hostParams; // Use a temporary host copy
-
-    // Allocate memory for the Params struct on the device if not already allocated
-    if (this->_deviceParams == nullptr) {
-        cudaErrorCheck(cudaMalloc(&(this->_deviceParams), sizeof(CollisionParamsCHM<T>)));
-    }
-
-    // Copy the prepared Params (with device pointers) from the temporary host copy to the device
-    cudaErrorCheck(cudaMemcpy(this->_deviceParams, &paramsTemp, sizeof(CollisionParamsCHM<T>), cudaMemcpyHostToDevice));
-}
-
-template<typename T>
-void CollisionParamsCHMWrapper<T>::cleanupHost() {
-    // Nothing to clean up for this derived class
-}
-
-template<typename T>
-void CollisionParamsCHMWrapper<T>::cleanupDevice() {
-    // If _deviceParams was already freed and set to nullptr, return
-    if(this->getDeviceParams() == nullptr) { return; }
-
-    // Finally, free the _deviceParams struct itself
-    cudaFree(this->_deviceParams);
-    this->_deviceParams = nullptr; // Ensure the pointer is marked as freed
+    ParamsWrapper<T, CollisionParamsCHM<T>>::allocateAndCopyToDevice();
 }
 
 /********************************************/

@@ -27,8 +27,8 @@ set(SOURCES
     src/core/lb/lbGrid.hh
     src/core/lb/collisionModel.h
     src/core/lb/collisionModel.hh
-    src/core/lb/boundaryConditions.h
-    src/core/lb/boundaryConditions.hh
+    src/core/boundary/boundaryConditions.h
+    src/core/boundary/boundaryConditions.hh
     src/core/simulation.h
     src/core/simulation.hh
     src/core/kernelParameters.h

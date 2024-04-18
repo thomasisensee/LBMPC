@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "collisionModel.h"
-#include "boundaryConditions.h"
+#include "core/boundary/boundaryConditions.h"
 #include "core/gridGeometry.h"
 #include "core/kernelParameters.h"
 

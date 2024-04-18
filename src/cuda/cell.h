@@ -3,7 +3,7 @@
 
 #include "core/kernelParameters.h"
 
-template<typename T,typename LATTICE_DESCRIPTOR>
+template<typename T,typename DESCRIPTOR>
 class Cell {
 public:
     __device__ T computeEquilibriumPopulation(unsigned int l, T R, T U, T V) const;

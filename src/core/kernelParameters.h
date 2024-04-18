@@ -17,32 +17,48 @@ struct BaseParams {
     unsigned int Ny;
 };
 
-/************************************************/
-/***** Derived struct 01: LBParams (BGK) ****/
-/************************************************/
+/****************************************************/
+/***** Derived struct 01: CollisionParams (BGK)  ****/
+/****************************************************/
 template<typename T>
 struct CollisionParamsBGK : public BaseParams {
     /// Relaxation parameter related to shear viscosity
     T omegaShear;
 };
 
-/************************************************/
-/***** Derived struct 02: CollisionParamsCHM ****/
-/************************************************/
+/****************************************************/
+/***** Derived struct 02: CollisionParams (CHM)  ****/
+/****************************************************/
 template<typename T>
 struct CollisionParamsCHM : public CollisionParamsBGK<T> {
     /// Relaxation parameter related to bulk viscosity
     T omegaBulk;
 };
 
-/********************************************/
-/***** Derived struct 03: BoundaryParams ****/
-/********************************************/
-template<typename T>
+/***********************************************/
+/***** Derived structs (03): BoundaryParams ****/
+/***********************************************/
 struct BoundaryParams : public BaseParams {
-    /// Properties needed for boundary conditions
-    T* WALL_VELOCITY = nullptr;
+    /// Boundary location
     BoundaryLocation location;
+};
+
+template<typename T>
+struct PeriodicParams : public BoundaryParams {};
+
+template<typename T>
+struct BounceBackParams : public BoundaryParams {};
+
+template<typename T>
+struct AntiBounceBackParams : public BoundaryParams {
+    /// Scalar value for dirichlet (via anti-bounce-back) condition
+    T wallValue = 0.0;
+};
+
+template<typename T>
+struct MovingWallParams : public BoundaryParams {
+    /// Wall velocity
+    T* WALL_VELOCITY = nullptr;
 };
 
 
@@ -61,9 +77,9 @@ protected:
 
 public:
     /// Default constructor
-    ParamsWrapper();
+    ParamsWrapper() = default;
 
-    /// Parameterized constructor
+    /// Constructor
     ParamsWrapper(
         unsigned int nx,
         unsigned int ny
@@ -79,17 +95,42 @@ public:
     );
 
     /// Allocates device memory and copies data from the host instance
-    virtual void allocateAndCopyToDevice() = 0;
+    virtual void allocateAndCopyToDevice();
 
     /// Cleans up host memory
-    virtual void cleanupHost() = 0;
+    virtual void cleanupHost();
 
     /// Cleans up device memory
-    virtual void cleanupDevice() = 0;
+    virtual void cleanupDevice();
 
     /// Accessors for host and device params
     const ParamsType& getHostParams() const;
     ParamsType* getDeviceParams();
+};
+
+/****************************************/
+/***** Derived class 01: PaseParams *****/
+/****************************************/
+template<typename T>
+class BaseParamsWrapper : public ParamsWrapper<T, BaseParams> {
+public:
+    /// Default constructor
+    BaseParamsWrapper() = default;
+
+    /// Parameterized constructor
+    BaseParamsWrapper(
+        unsigned int nx,
+        unsigned int ny
+    );
+
+    /// Destructor
+    virtual ~BaseParamsWrapper();
+
+    /// Set values and trigger allocateAndCopyToDevice
+    virtual void setValues(
+        unsigned int nx,
+        unsigned int ny
+    );
 };
 
 /************************************************/
@@ -99,7 +140,7 @@ template<typename T>
 class CollisionParamsBGKWrapper : public ParamsWrapper<T, CollisionParamsBGK<T>> {
 public:
     /// Default constructor
-    CollisionParamsBGKWrapper();
+    CollisionParamsBGKWrapper() = default;
 
     /// Parameterized constructor
     CollisionParamsBGKWrapper(
@@ -108,24 +149,12 @@ public:
         T omegaShear
     );
 
-    /// Destructor
-    virtual ~CollisionParamsBGKWrapper();
-
     /// Set values and trigger allocateAndCopyToDevice
     virtual void setValues(
         unsigned int nx,
         unsigned int ny,
         T omegaShear
     );
-
-    /// Allocates device memory and copies data from the host instance
-    virtual void allocateAndCopyToDevice() override;
-
-    /// Cleans up host memory
-    virtual void cleanupHost() override;
-
-    /// Cleans up device memory
-    virtual void cleanupDevice() override;
 };
 
 /************************************************/
@@ -135,7 +164,7 @@ template<typename T>
 class CollisionParamsCHMWrapper final : public ParamsWrapper<T, CollisionParamsCHM<T>> {
 public:
     /// Default constructor
-    CollisionParamsCHMWrapper();
+    CollisionParamsCHMWrapper() = default;
 
     /// Parameterized constructor
     CollisionParamsCHMWrapper(
@@ -145,9 +174,6 @@ public:
         T omegaBulk
     );
 
-    /// Destructor
-    ~CollisionParamsCHMWrapper();
-
     /// Set values and trigger allocateAndCopyToDevice
     void setValues(
         unsigned int nx,
@@ -155,22 +181,13 @@ public:
         T omegaShear,
         T omegaBulk
     );
-
-    /// Allocates device memory and copies data from the host instance
-    void allocateAndCopyToDevice() override;
-
-    /// Cleans up host memory
-    void cleanupHost() override;
-
-    /// Cleans up device memory
-    void cleanupDevice() override;
 };
 
 /********************************************/
 /***** Derived class 04: BoundaryParams *****/
 /********************************************/
 template<typename T>
-class BoundaryParamsWrapper : public ParamsWrapper<T, BoundaryParams<T>> {
+class BoundaryParamsWrapper : public ParamsWrapper<T, BoundaryParams> {
 private:
     // For keeping track of the wallVelocity dimension/size
     unsigned int _D;

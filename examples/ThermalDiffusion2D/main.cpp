@@ -6,7 +6,7 @@
 #include "core/descriptors/aliases.h"
 #include "core/gridGeometry.h"
 #include "core/lb/collisionModel.h"
-#include "core/lb/boundaryConditions.h"
+#include "core/boundary/boundaryConditions.h"
 #include "core/lb/lbGrid.h"
 #include "core/simulation.h"
 #include "cuda/cudaUtilities.h"
