@@ -183,7 +183,7 @@ __device__ void applyBounceBack(T* collision, const BoundaryParams<T>* const par
         ciy = static_cast<T>(descriptors::c<D,Q>(iPop, 1));
         T uWall = 0.0, vWall = 0.0;
         T cixcs2 = 0.0, ciycs2 = 0.0;
-        T firstOrder = 0.0, thirdOrder = 0.0;
+        T firstOrder = 0.0, secondOrder = 0.0, thirdOrder = 0.0, fourthOrder = 0.0;
 
         // Check if the neighbor is outside the domain (i.e., a ghost cell)
         if (static_cast<int>(i) + cix < 1 || static_cast<int>(i) + cix > params->Nx - 2 || static_cast<int>(j) + ciy < 1 || static_cast<int>(j) + ciy > params->Ny - 2) { continue; }
@@ -198,14 +198,16 @@ __device__ void applyBounceBack(T* collision, const BoundaryParams<T>* const par
             cixcs2 = cix * cix - cs2<T,D,Q>();
             ciycs2 = ciy * ciy - cs2<T,D,Q>();
             firstOrder = descriptors::invCs2<T,D,Q>() * (uWall * cix + vWall * ciy);
+            secondOrder = 0.5 * invCs2<T,D,Q>() * invCs2<T,D,Q>() * (cixcs2 * uWall * uWall + ciycs2 * vWall * vWall + 2.0 * cix * ciy * uWall * vWall);
             thirdOrder = 0.5 * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * (cixcs2 * ciy * uWall * uWall * vWall + ciycs2 * cix * uWall * vWall * vWall);
+            fourthOrder = 0.25 * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * invCs2<T,D,Q>() * (cixcs2 * ciycs2 * uWall * uWall * vWall * vWall);
         }
 
         // Compute the zeroth moment (i.e., the density) of the neighbor cell
         R = cell.getZerothMoment(&collision[idxNeighbor * Q]);
 
         // Apply the bounce-back boundary condition
-        collision[idx * Q + iPop] = collision[idxNeighbor * Q + iPopRev] + 2.0 * R * descriptors::w<T,D,Q>(iPop) * (firstOrder + thirdOrder);
+        collision[idx * Q + iPop] = collision[idxNeighbor * Q + iPopRev] + 2.0 * R * descriptors::w<T,D,Q>(iPop) * (firstOrder + secondOrder + thirdOrder + fourthOrder);
     }
        
 }
