@@ -1,18 +1,50 @@
 #ifndef GRID_GEOMETRY_H
 #define GRID_GEOMETRY_H
 
+/******************************/
+/***** Base grid geometry *****/
+/******************************/
 template<typename T>
-class GridGeometry2D {
-private:
-    /// Number of nodes in the direction x and y
-    const unsigned int _nX, _nY;
+class GridGeometry {
+protected:
     /// Distance to the next node
     const T _delta;
+
 public:
-    /// Construction of a grid
-    GridGeometry2D(T delta, unsigned int nX, unsigned int nY);
+    /// Constructor
+    explicit GridGeometry(T delta);
+
     /// Read access to the distance of grid nodes
     T getDelta() const;
+
+    /// One-dimensional mapping function
+    __host__ __device__ static unsigned int pos(unsigned int i) {
+        return i;
+    };
+
+    /// Two-dimensional mapping function
+    __host__ __device__ static unsigned int pos(unsigned int i, unsigned int j, unsigned int width) {
+        return j * width + i;
+    };
+
+    /// Three-dimensional mapping function
+    __host__ __device__ static unsigned int pos(unsigned int i, unsigned int j, unsigned int k, unsigned int width, unsigned int height) {
+        return (k * height + j) * width + i;
+    };
+};
+
+/*************************************/
+/***** Derived grid geometry: 2D *****/
+/*************************************/
+template<typename T>
+class GridGeometry2D : public GridGeometry<T> {
+protected:
+    /// Number of nodes in the direction x and y
+    const unsigned int _nX, _nY;
+
+public:
+    /// Constructor
+    GridGeometry2D(T delta, unsigned int nX, unsigned int nY);
     /// Read access to grid width
     unsigned int getNx() const;
     /// Read access to grid height
@@ -27,10 +59,6 @@ public:
     unsigned int getGhostVolume() const;
     /// Prints grid details
     void printParameters() const;
-    // 2D position mapping
-    __host__ __device__ static unsigned int pos(unsigned int i, unsigned int j, unsigned int width) {
-        return j * width + i;
-    };
 };
 
 #include "gridGeometry.hh"

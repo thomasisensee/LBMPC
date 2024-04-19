@@ -5,13 +5,22 @@
 
 #include "gridGeometry.h"
 
+/******************************/
+/***** Base grid geometry *****/
+/******************************/
 template<typename T>
-GridGeometry2D<T>::GridGeometry2D(T delta, unsigned int nX, unsigned int nY) : _delta(delta), _nX(nX), _nY(nY) {}
+GridGeometry<T>::GridGeometry(T delta) : _delta(delta) {}
 
 template<typename T>
-T GridGeometry2D<T>::getDelta() const {
+T GridGeometry<T>::getDelta() const {
     return _delta;
 }
+
+/*************************************/
+/***** Derived grid geometry: 2D *****/
+/*************************************/
+template<typename T>
+GridGeometry2D<T>::GridGeometry2D(T delta, unsigned int nX, unsigned int nY) : GridGeometry<T>(delta), _nX(nX), _nY(nY) {}
 
 template<typename T>
 unsigned int GridGeometry2D<T>::getNx() const {
