@@ -46,9 +46,6 @@ namespace functors {
     }
 
     template<typename T,typename DESCRIPTOR>
-    __device__ BounceBack<T,DESCRIPTOR>::BounceBack() {}
-
-    template<typename T,typename DESCRIPTOR>
     __device__ T BounceBack<T,DESCRIPTOR>::operator()(T* collision, const BaseParams* const params, unsigned int i, unsigned int j) {
         // Local constants for easier access
         constexpr unsigned int D = DESCRIPTOR::LATTICE::D;
@@ -79,9 +76,6 @@ namespace functors {
             collision[idx * Q + iPop] = collision[idxNeighbor * Q + iPopRev];
         }
     }
-
-    template<typename T,typename DESCRIPTOR>
-    __device__ MovingWall<T,DESCRIPTOR>::MovingWall() {}
 
     template<typename T,typename DESCRIPTOR>
     __device__ T MovingWall<T,DESCRIPTOR>::operator()(T* collision, const BaseParams* const params, unsigned int i, unsigned int j) {
@@ -134,9 +128,6 @@ namespace functors {
     }
 
     template<typename T,typename DESCRIPTOR>
-    __device__ AntiBounceBack<T,DESCRIPTOR>::AntiBounceBack() {}
-
-    template<typename T,typename DESCRIPTOR>
     __device__ T AntiBounceBack<T,DESCRIPTOR>::operator()(T* collision, const BaseParams* const params, unsigned int i, unsigned int j) {
         // Local constants for easier access
         constexpr unsigned int D = DESCRIPTOR::LATTICE::D;
@@ -172,7 +163,6 @@ namespace functors {
             collision[idx * Q + iPop] = -collision[idxNeighbor * Q + iPopRev] + 2.0 * descriptors::w<T,D,Q>(iPop) * specificParams->wallValue;
         }
     }
-
 }
 
 #endif // FUNCTORS_HH

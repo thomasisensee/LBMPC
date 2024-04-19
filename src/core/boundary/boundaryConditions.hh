@@ -146,9 +146,6 @@ void AntiBounceBack<T,DESCRIPTOR>::printParameters() const {
 /***** Wrapper class *****/
 /*************************/
 template<typename T,typename DESCRIPTOR>
-BoundaryConditionManager<T,DESCRIPTOR>::BoundaryConditionManager() {}
-
-template<typename T,typename DESCRIPTOR>
 void BoundaryConditionManager<T,DESCRIPTOR>::setDxdt(T dxdt) {
     _dxdt = dxdt;
 }

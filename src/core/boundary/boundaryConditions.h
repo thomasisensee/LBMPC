@@ -24,7 +24,7 @@ protected:
 
 public:
     /// Constructor
-    BoundaryCondition(BoundaryLocation loc);
+    explicit BoundaryCondition(BoundaryLocation loc);
 
     /// Destructor
     virtual ~BoundaryCondition() = default;
@@ -46,7 +46,7 @@ template<typename T,typename DESCRIPTOR>
 class Periodic final : public BoundaryCondition<T,DESCRIPTOR> {
 public:
     /// Constructor
-    Periodic(BoundaryLocation loc);
+    explicit Periodic(BoundaryLocation loc);
 
     /// Destructor
     virtual ~Periodic() = default;
@@ -63,7 +63,7 @@ template<typename T,typename DESCRIPTOR>
 class BounceBack : public BoundaryCondition<T,DESCRIPTOR> {
 public:
     /// Constructor
-    BounceBack(BoundaryLocation loc);
+    explicit BounceBack(BoundaryLocation loc);
 
     /// Destructor
     virtual ~BounceBack() = default;
@@ -139,7 +139,7 @@ class BoundaryConditionManager {
 
 public:
     /// Constructor
-    BoundaryConditionManager();
+    BoundaryConditionManager() = default;
 
     /// Destructor
     ~BoundaryConditionManager() = default;

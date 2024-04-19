@@ -17,7 +17,7 @@ protected:
 
 public:
     /// Constructor
-    CollisionModel(T omega);
+    explicit CollisionModel(T omega);
 
     /// Destructor
     virtual ~CollisionModel() = default;
@@ -45,7 +45,7 @@ private:
 
 public:
     /// Constructor
-    CollisionBGK(T omegaS);
+    explicit CollisionBGK(T omegaS);
 
     /// Destructor
     ~CollisionBGK();
