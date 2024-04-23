@@ -253,6 +253,37 @@ public:
     );
 };
 
+template<typename T>
+class AntiBounceBackParamsWrapper : public ParamsWrapper<T, AntiBounceBackParams<T>> {
+public:
+    /// Default constructor
+    AntiBounceBackParamsWrapper() = default;
+
+    /// Parameterized constructor
+    AntiBounceBackParamsWrapper(
+        unsigned int nx,
+        unsigned int ny,
+        BoundaryLocation location,
+        T wallValue
+    );
+
+    /// Destructor
+    virtual ~AntiBounceBackParamsWrapper();
+
+    /// Set values and trigger trigger allocateAndCopyToDevice
+    virtual void setValues(
+        unsigned int nx,
+        unsigned int ny,
+        BoundaryLocation location,
+        T wallValue
+    );
+
+    /// Set wall velocity specifically and trigger allocateAndCopyToDevice
+    void setWallValue(T wallValue);
+    
+    /// Allocates device memory and copies data from the host instance
+    virtual void allocateAndCopyToDevice() override;
+};
 
 template<typename T>
 class MovingWallParamsWrapper : public ParamsWrapper<T, MovingWallParams<T>> {

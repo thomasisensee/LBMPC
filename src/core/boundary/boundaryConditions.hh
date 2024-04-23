@@ -26,8 +26,7 @@ void BoundaryCondition<T,DESCRIPTOR>::prepareKernelParams(const BaseParams& base
     _params.setValues(
         baseParams.Nx,
         baseParams.Ny,
-        this->_location,
-        nullptr
+        this->_location
     );
 
     // Set block and grid size for cuda kernel execution
@@ -87,9 +86,9 @@ void BounceBack<T,DESCRIPTOR>::printParameters() const {
     std::cout << "== Condition: " << "Bounce-back" << "\t=="  << std::endl;
 }
 
-/**********************************************************/
-/***** Derived class 03: Fixed Velocity (Bounce Back) *****/
-/**********************************************************/
+/*******************************************************/
+/***** Derived class 03: Moving Wall (Bounce Back) *****/
+/*******************************************************/
 template<typename T,typename DESCRIPTOR>
 MovingWall<T,DESCRIPTOR>::MovingWall(BoundaryLocation loc, const std::vector<T>& velocity) : BounceBack<T,DESCRIPTOR>(loc), _wallVelocity(velocity), _dxdt(0.0) {}
 
@@ -124,7 +123,7 @@ void AntiBounceBack<T,DESCRIPTOR>::prepareKernelParams(const BaseParams& basePar
 }
 
 template<typename T,typename DESCRIPTOR>
-void BounceBack<T,DESCRIPTOR>::apply(T* lbmField) {
+void AntiBounceBack<T,DESCRIPTOR>::apply(T* lbmField) {
     dim3 blockSize(this->_threadsPerBlock);
     dim3 gridSize(this->_numBlocks);
     applyBoundaryConditionCaller<T,DESCRIPTOR,functors::AntiBounceBack<T,DESCRIPTOR>>(lbmField, this->_params.getDeviceParams(), gridSize, blockSize);

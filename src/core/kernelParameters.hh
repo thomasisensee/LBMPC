@@ -9,13 +9,13 @@
 /***** Base class (templated) *****/
 /**********************************/
 template<typename T, typename ParamsType>
-ParamsWrapper<T, ParamsType>::ParamsWrapper(unsigned int nx,unsigned int ny) {
+ParamsWrapper<T,ParamsType>::ParamsWrapper(unsigned int nx,unsigned int ny) {
     setValues(nx, ny);
     allocateAndCopyToDevice();
 }
 
 template<typename T, typename ParamsType>
-ParamsWrapper<T, ParamsType>::~ParamsWrapper() {
+ParamsWrapper<T,ParamsType>::~ParamsWrapper() {
     // Cleanup host resources
     cleanupHost();
     // Cleanup device resources
@@ -23,13 +23,13 @@ ParamsWrapper<T, ParamsType>::~ParamsWrapper() {
 }
 
 template<typename T, typename ParamsType>
-void ParamsWrapper<T, ParamsType>::setValues(unsigned int nx, unsigned int ny) {
+void ParamsWrapper<T,ParamsType>::setValues(unsigned int nx, unsigned int ny) {
     this->_hostParams.Nx = nx;
     this->_hostParams.Ny = ny;
 }
 
 template<typename T, typename ParamsType>
-void ParamsWrapper<T, ParamsType>::allocateAndCopyToDevice() {
+void ParamsWrapper<T,ParamsType>::allocateAndCopyToDevice() {
     // Cleanup device resources that may have been previously allocated
     cleanupDevice();
 
@@ -46,12 +46,12 @@ void ParamsWrapper<T, ParamsType>::allocateAndCopyToDevice() {
 }
 
 template<typename T, typename ParamsType>
-void ParamsWrapper<T, ParamsType>::cleanupHost() {
+void ParamsWrapper<T,ParamsType>::cleanupHost() {
     // No dynamically allocated memory in the base class
 }
 
 template<typename T, typename ParamsType>
-void ParamsWrapper<T, ParamsType>::cleanupDevice() {
+void ParamsWrapper<T,ParamsType>::cleanupDevice() {
     // If _deviceParams was already freed and set to nullptr, return
     if(this->getDeviceParams() == nullptr) { return; }
 
@@ -61,12 +61,12 @@ void ParamsWrapper<T, ParamsType>::cleanupDevice() {
 }
 
 template<typename T, typename ParamsType>
-const ParamsType& ParamsWrapper<T, ParamsType>::getHostParams() const {
+const ParamsType& ParamsWrapper<T,ParamsType>::getHostParams() const {
     return _hostParams;
 }
 
 template<typename T, typename ParamsType>
-ParamsType* ParamsWrapper<T, ParamsType>::getDeviceParams() {
+ParamsType* ParamsWrapper<T,ParamsType>::getDeviceParams() {
     return _deviceParams;
 }
 
@@ -74,13 +74,13 @@ ParamsType* ParamsWrapper<T, ParamsType>::getDeviceParams() {
 /***** Derived class 01: BaseParams *****/
 /****************************************/
 template<typename T>
-BaseParamsWrapper<T>::BaseParamsWrapper(unsigned int nx, unsigned int ny) : ParamsWrapper<T, BaseParams>(nx, ny) {}
+BaseParamsWrapper<T>::BaseParamsWrapper(unsigned int nx, unsigned int ny) : ParamsWrapper<T,BaseParams>(nx, ny) {}
 
 template<typename T>
 void BaseParamsWrapper<T>::setValues(unsigned int nx, unsigned int ny) {
     // Clean up existing data
-    ParamsWrapper<T, BaseParams>::setValues(nx, ny);
-    ParamsWrapper<T, BaseParams>::allocateAndCopyToDevice();
+    ParamsWrapper<T,BaseParams>::setValues(nx, ny);
+    ParamsWrapper<T,BaseParams>::allocateAndCopyToDevice();
 }
 
 /************************************************/
@@ -94,13 +94,13 @@ CollisionParamsBGKWrapper<T>::CollisionParamsBGKWrapper(unsigned int nx, unsigne
 template<typename T>
 void CollisionParamsBGKWrapper<T>::setValues(unsigned int nx, unsigned int ny, T omegaShear) {
     // Clean up existing data
-    ParamsWrapper<T, CollisionParamsBGK<T>>::cleanupHost();
+    ParamsWrapper<T,CollisionParamsBGK<T>>::cleanupHost();
 
     // Assign new deep copies
-    ParamsWrapper<T, CollisionParamsBGK<T>>::setValues(nx, ny);
+    ParamsWrapper<T,CollisionParamsBGK<T>>::setValues(nx, ny);
     this->_hostParams.omegaShear = omegaShear;
 
-    ParamsWrapper<T, CollisionParamsBGK<T>>::allocateAndCopyToDevice();
+    ParamsWrapper<T,CollisionParamsBGK<T>>::allocateAndCopyToDevice();
 }
 
 /************************************************/
@@ -124,14 +124,14 @@ void CollisionParamsCHMWrapper<T>::setValues(
         T omegaBulk
     ) {
     // Clean up existing data
-    ParamsWrapper<T, CollisionParamsCHM<T>>::cleanupHost();
+    ParamsWrapper<T,CollisionParamsCHM<T>>::cleanupHost();
 
     // Assign new deep copies
-    ParamsWrapper<T, CollisionParamsCHM<T>>::setValues(nx, ny);
+    ParamsWrapper<T,CollisionParamsCHM<T>>::setValues(nx, ny);
     this->_hostParams.omegaShear    = omegaShear;
     this->_hostParams.omegaBulk     = omegaBulk;
 
-    ParamsWrapper<T, CollisionParamsCHM<T>>::allocateAndCopyToDevice();
+    ParamsWrapper<T,CollisionParamsCHM<T>>::allocateAndCopyToDevice();
 }
 
 /********************************************/
@@ -153,13 +153,13 @@ void BoundaryParamsWrapper<T>::setValues(
         BoundaryLocation location
     ) {
     // Clean up existing data
-    ParamsWrapper<T, BoundaryParams>::cleanupHost();
+    ParamsWrapper<T,BoundaryParams>::cleanupHost();
 
     // Assign new deep copies
-    ParamsWrapper<T, BoundaryParams>::setValues(nx, ny);
+    ParamsWrapper<T,BoundaryParams>::setValues(nx, ny);
     this->_hostParams.location   = location;
 
-    ParamsWrapper<T, BoundaryParams>::allocateAndCopyToDevice();
+    ParamsWrapper<T,BoundaryParams>::allocateAndCopyToDevice();
 }
 
 /********************************************/
@@ -181,13 +181,13 @@ void PeriodicParamsWrapper<T>::setValues(
         BoundaryLocation location
     ) {
     // Clean up existing data
-    ParamsWrapper<T, PeriodicParams>::cleanupHost();
+    ParamsWrapper<T,PeriodicParams>::cleanupHost();
 
     // Assign new deep copies
-    ParamsWrapper<T, PeriodicParams>::setValues(nx, ny);
+    ParamsWrapper<T,PeriodicParams>::setValues(nx, ny);
     this->_hostParams.location   = location;
 
-    ParamsWrapper<T, PeriodicParams>::allocateAndCopyToDevice();
+    ParamsWrapper<T,PeriodicParams>::allocateAndCopyToDevice();
 }
 
 /********************************************/
@@ -209,17 +209,56 @@ void BounceBackParamsWrapper<T>::setValues(
         BoundaryLocation location
     ) {
     // Clean up existing data
-    ParamsWrapper<T, BounceBackParams>::cleanupHost();
+    ParamsWrapper<T,BounceBackParams>::cleanupHost();
 
     // Assign new deep copies
-    ParamsWrapper<T, PeriodicParams>::setValues(nx, ny);
+    ParamsWrapper<T,PeriodicParams>::setValues(nx, ny);
     this->_hostParams.location   = location;
 
-    ParamsWrapper<T, BounceBackParams>::allocateAndCopyToDevice();
+    ParamsWrapper<T,BounceBackParams>::allocateAndCopyToDevice();
+}
+
+/**************************************************/
+/***** Derived class 06: AntiBounceBackParams *****/
+/**************************************************/
+template<typename T>
+AntiBounceBackParamsWrapper<T>::AntiBounceBackParamsWrapper(
+        unsigned int nx,
+        unsigned int ny,
+        BoundaryLocation location,
+        T wallValue
+    ) {
+    setValues(nx, ny, location, wallValue);
+}
+
+template<typename T>
+void AntiBounceBackParamsWrapper<T>::setValues(
+        unsigned int nx,
+        unsigned int ny,
+        BoundaryLocation location,
+        T wallValue
+    ) {
+    // Clean up existing data
+    ParamsWrapper<T,AntiBounceBackParams<T>>::cleanupHost();
+
+    // Assign new deep copies
+    ParamsWrapper<T,AntiBounceBackParams<T>>::setValues(nx, ny);
+    this->_hostParams.location  = location;
+    this->_hostParams.wallValue = wallValue;
+
+    ParamsWrapper<T,AntiBounceBackParams<T>>::allocateAndCopyToDevice();
+}
+
+template<typename T>
+void AntiBounceBackParamsWrapper<T>::setWallValue(T wallValue) {
+    // Assign new deep copies
+    this->_hostParams.wallValue = wallValue;
+
+    ParamsWrapper<T,AntiBounceBackParams<T>>::allocateAndCopyToDevice();
 }
 
 /**********************************************/
-/***** Derived class 06: MovingWallParams *****/
+/***** Derived class 07: MovingWallParams *****/
 /**********************************************/
 template<typename T>
 MovingWallParamsWrapper<T>::MovingWallParamsWrapper(
