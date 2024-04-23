@@ -37,23 +37,16 @@ int main() {
     //gridGeometry->printParameters();
 
     T tauShear = 0.7;
-    T tauBulk = tauShear;
     T omegaShear = 1.0 / tauShear;
-    T omegaBulk = 1.0 / tauBulk;
     auto collisionModel = std::make_unique<CollisionBGK<T,DESCRIPTOR>>(omegaShear);
     //collisionModel->printParameters();
 
 
     T pecletNumber = 1.0;
 	T dt = (tauShear - 0.5) * dx * dx * pecletNumber * descriptors::cs2<T,DESCRIPTOR::LATTICE::D,DESCRIPTOR::LATTICE::Q>();
-    T u = 1.0;
-    T v = 0.0;
-    u *= dt / dx;
-    v *= dt / dx;
     T wallTemperatureLeft = 1.0;
     T wallTemperatureRight = 0.0;
     auto boundaryConditionManager = std::make_unique<BoundaryConditionManager<T,DESCRIPTOR>>();
-    boundaryConditionManager->setDxdt(dx/dt);
     boundaryConditionManager->addBoundaryCondition(std::make_unique<AntiBounceBack<T,DESCRIPTOR>>(BoundaryLocation::WEST, wallTemperatureLeft));
     boundaryConditionManager->addBoundaryCondition(std::make_unique<AntiBounceBack<T,DESCRIPTOR>>(BoundaryLocation::EAST, wallTemperatureRight));
     boundaryConditionManager->addBoundaryCondition(std::make_unique<BounceBack<T,DESCRIPTOR>>(BoundaryLocation::SOUTH));
@@ -70,7 +63,7 @@ int main() {
     // ======================
     std::string outputDirectory = "./output";
     std::string baseFileName = "thermalDiffusion";
-    T simTime = 10.0;
+    T simTime = .1;
     unsigned int nOut = 10;
     auto vtkWriter = std::make_unique<VTKWriter>(outputDirectory, baseFileName);
     auto simulation = std::make_unique<LBFluidSimulation<T,DESCRIPTOR>>(std::move(lbGrid), std::move(vtkWriter), dt, simTime, nOut);

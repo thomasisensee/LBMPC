@@ -48,7 +48,6 @@ public:
     __device__ T operator()(T* collision, const BaseParams* const params, unsigned int i, unsigned int j);
 };
 
-
 } // namespace functors
 
 #include "functors.hh"

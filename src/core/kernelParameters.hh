@@ -34,15 +34,15 @@ void ParamsWrapper<T,ParamsType>::allocateAndCopyToDevice() {
     cleanupDevice();
 
     // Prepare the host-side copy of Params with device pointers
-    BaseParams paramsTemp = this->_hostParams; // Use a temporary host copy
+    ParamsType paramsTemp = this->_hostParams; // Use a temporary host copy
 
     // Allocate memory for the Params struct on the device if not already allocated
     if (this->_deviceParams == nullptr) {
-        cudaErrorCheck(cudaMalloc(&(this->_deviceParams), sizeof(BaseParams)));
+        cudaErrorCheck(cudaMalloc(&(this->_deviceParams), sizeof(ParamsType)));
     }
 
     // Copy the prepared Params (with device pointers) from the temporary host copy to the device
-    cudaErrorCheck(cudaMemcpy(this->_deviceParams, &paramsTemp, sizeof(BaseParams), cudaMemcpyHostToDevice));
+    cudaErrorCheck(cudaMemcpy(this->_deviceParams, &paramsTemp, sizeof(ParamsType), cudaMemcpyHostToDevice));
 }
 
 template<typename T, typename ParamsType>
@@ -190,9 +190,9 @@ void PeriodicParamsWrapper<T>::setValues(
     ParamsWrapper<T,PeriodicParams>::allocateAndCopyToDevice();
 }
 
-/********************************************/
-/***** Derived class 05: PeriodicParams *****/
-/********************************************/
+/**********************************************/
+/***** Derived class 06: BounceBackParams *****/
+/**********************************************/
 template<typename T>
 BounceBackParamsWrapper<T>::BounceBackParamsWrapper(
         unsigned int nx,
@@ -212,14 +212,14 @@ void BounceBackParamsWrapper<T>::setValues(
     ParamsWrapper<T,BounceBackParams>::cleanupHost();
 
     // Assign new deep copies
-    ParamsWrapper<T,PeriodicParams>::setValues(nx, ny);
+    ParamsWrapper<T,BounceBackParams>::setValues(nx, ny);
     this->_hostParams.location   = location;
 
     ParamsWrapper<T,BounceBackParams>::allocateAndCopyToDevice();
 }
 
 /**************************************************/
-/***** Derived class 06: AntiBounceBackParams *****/
+/***** Derived class 07: AntiBounceBackParams *****/
 /**************************************************/
 template<typename T>
 AntiBounceBackParamsWrapper<T>::AntiBounceBackParamsWrapper(
@@ -232,11 +232,18 @@ AntiBounceBackParamsWrapper<T>::AntiBounceBackParamsWrapper(
 }
 
 template<typename T>
+AntiBounceBackParamsWrapper<T>::~AntiBounceBackParamsWrapper() {
+    // Cleanup host resources
+    ParamsWrapper<T,AntiBounceBackParams<T>>::cleanupHost();
+    // Cleanup device resources
+    ParamsWrapper<T,AntiBounceBackParams<T>>::cleanupDevice();
+}
+
+template<typename T>
 void AntiBounceBackParamsWrapper<T>::setValues(
         unsigned int nx,
         unsigned int ny,
-        BoundaryLocation location,
-        T wallValue
+        BoundaryLocation location
     ) {
     // Clean up existing data
     ParamsWrapper<T,AntiBounceBackParams<T>>::cleanupHost();
@@ -244,7 +251,6 @@ void AntiBounceBackParamsWrapper<T>::setValues(
     // Assign new deep copies
     ParamsWrapper<T,AntiBounceBackParams<T>>::setValues(nx, ny);
     this->_hostParams.location  = location;
-    this->_hostParams.wallValue = wallValue;
 
     ParamsWrapper<T,AntiBounceBackParams<T>>::allocateAndCopyToDevice();
 }
@@ -258,7 +264,7 @@ void AntiBounceBackParamsWrapper<T>::setWallValue(T wallValue) {
 }
 
 /**********************************************/
-/***** Derived class 07: MovingWallParams *****/
+/***** Derived class 08: MovingWallParams *****/
 /**********************************************/
 template<typename T>
 MovingWallParamsWrapper<T>::MovingWallParamsWrapper(
@@ -268,6 +274,30 @@ MovingWallParamsWrapper<T>::MovingWallParamsWrapper(
         const T* wallVelocity
     ) {
     setValues(nx, ny, location, wallVelocity);
+}
+
+template<typename T>
+MovingWallParamsWrapper<T>::~MovingWallParamsWrapper() {
+    // Cleanup host resources
+    cleanupHost();
+    // Cleanup device resources
+    cleanupDevice();
+}
+
+template<typename T>
+void MovingWallParamsWrapper<T>::setValues(
+        unsigned int nx,
+        unsigned int ny,
+        BoundaryLocation location
+    ) {
+    // Clean up existing data
+    ParamsWrapper<T,MovingWallParams<T>>::cleanupHost();
+
+    // Assign new deep copies
+    ParamsWrapper<T,MovingWallParams<T>>::setValues(nx, ny);
+    this->_hostParams.location  = location;
+
+    ParamsWrapper<T,MovingWallParams<T>>::allocateAndCopyToDevice();
 }
 
 template<typename T>

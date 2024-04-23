@@ -108,10 +108,10 @@ namespace functors {
             // Compute the index of the neighbor
             idxNeighbor = GridGeometry2D<T>::pos(static_cast<int>(i) + cix, static_cast<int>(j) + ciy, specificParams->Nx);
 
-            // Compute the dot product if WALL_VELOCITY is not null
-            if (specificParams->WALL_VELOCITY != nullptr) {
-                uWall = specificParams->WALL_VELOCITY[0];
-                vWall = specificParams->WALL_VELOCITY[1];
+            // Compute the dot product if wallVelocity is not null
+            if (specificParams->wallVelocity != nullptr) {
+                uWall = specificParams->wallVelocity[0];
+                vWall = specificParams->wallVelocity[1];
                 cixcs2 = cix * cix - cs2<T,D,Q>();
                 ciycs2 = ciy * ciy - cs2<T,D,Q>();
                 firstOrder = descriptors::invCs2<T,D,Q>() * (uWall * cix + vWall * ciy);
