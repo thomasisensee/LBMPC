@@ -9,10 +9,10 @@ __device__ unsigned int pos(unsigned int i, unsigned int j, unsigned int width);
 /***** Initialize Distributions *****/
 /************************************/
 template<typename T,typename DESCRIPTOR>
-__global__ void initializeDistributionsKernel(T* collision, const BaseParams* const params);
+__global__ void initializeDistributionsKernel(T* collision, const BaseParams* const params, T initialScalarValue);
 
 template<typename T,typename DESCRIPTOR>
-void initializeDistributionsCaller(T* deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
+void initializeDistributionsCaller(T* deviceCollision, const BaseParams* const params, T initialScalarValue, dim3 gridSize, dim3 blockSize);
 
 /*********************/
 /***** Streaming *****/

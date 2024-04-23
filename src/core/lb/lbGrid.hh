@@ -14,8 +14,12 @@ template<typename T,typename DESCRIPTOR>
 LBGrid<T,DESCRIPTOR>::LBGrid(
         std::unique_ptr<GridGeometry2D<T>>&& geometry,
         std::unique_ptr<CollisionModel<T,DESCRIPTOR>>&& collision,
-        std::unique_ptr<BoundaryConditionManager<T,DESCRIPTOR>>&& boundary
-) : _gridGeometry(std::move(geometry)), _collisionModel(std::move(collision)), _boundaryConditionManager(std::move(boundary)) {
+        std::unique_ptr<BoundaryConditionManager<T,DESCRIPTOR>>&& boundary,
+        T initialScalarValue
+) : _gridGeometry(std::move(geometry)),
+    _collisionModel(std::move(collision)),
+    _boundaryConditionManager(std::move(boundary)),
+    _initialScalarValue(initialScalarValue) {
     prepareKernelParams();
     allocateHostData();
     allocateDeviceData();
@@ -186,7 +190,7 @@ void LBGrid<T,DESCRIPTOR>::initializeDistributions() {
     dim3 blockSize(_threadsPerBlock.first, _threadsPerBlock.second);
     dim3 gridSize(_numBlocks.first, _numBlocks.first);
 
-    initializeDistributionsCaller<T,DESCRIPTOR>(_deviceCollision, _params.getDeviceParams(), gridSize, blockSize);
+    initializeDistributionsCaller<T,DESCRIPTOR>(_deviceCollision, _params.getDeviceParams(), _initialScalarValue, gridSize, blockSize);
 }
 
 template<typename T,typename DESCRIPTOR>

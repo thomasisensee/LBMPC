@@ -144,8 +144,8 @@ const T AntiBounceBack<T,DESCRIPTOR>::getWallValue() const {
 template<typename T,typename DESCRIPTOR>
 void AntiBounceBack<T,DESCRIPTOR>::printParameters() const {
     BoundaryCondition<T,DESCRIPTOR,AntiBounceBackParamsWrapper<T>>::printBoundaryLocation();
-    std::cout << "== Condition: " << "Bounce-Back with fixed velocity" << "\t=="  << std::endl;
-    std::cout << "== Value = {" << getWallValue()  << "\t=="  << std::endl;
+    std::cout << "== Condition: " << "Bounce-Back with fixed scalar value" << " =="  << std::endl;
+    std::cout << "== Value = " << getWallValue()  << "\t=="  << std::endl;
 }
 
 /*************************/

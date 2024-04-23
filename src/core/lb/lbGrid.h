@@ -32,6 +32,9 @@ private:
     /// Parameters to pass to cuda kernels
     CollisionParamsBGKWrapper<T> _params;
 
+    /// Initial (scalar) value (e.g., density or temperature)
+    T _initialScalarValue;
+
     /// Cuda grid and block size
     std::pair<unsigned int, unsigned int> _threadsPerBlock;
     std::pair<unsigned int, unsigned int> _numBlocks;
@@ -41,7 +44,8 @@ public:
     LBGrid(
         std::unique_ptr<GridGeometry2D<T>>&& geometry,
         std::unique_ptr<CollisionModel<T,DESCRIPTOR>>&& collision, 
-        std::unique_ptr<BoundaryConditionManager<T,DESCRIPTOR>>&& boundary
+        std::unique_ptr<BoundaryConditionManager<T,DESCRIPTOR>>&& boundary,
+        T initialScalarValue = T(1.0)
     );
 
     /// Destructor

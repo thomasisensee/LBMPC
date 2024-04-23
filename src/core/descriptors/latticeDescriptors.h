@@ -23,9 +23,9 @@ struct LATTICE_DESCRIPTOR : public LATTICE_DESCRIPTOR_BASE {
     static constexpr unsigned int nPop = npop;
 };
 
-/// D2Q9 lattice descriptor
-struct D2Q9 : public LATTICE_DESCRIPTOR<2,9,3> {
-    D2Q9() = delete; // Deleted default constructor prevents instantiation, enforces pure usage as type
+/// D1Q3 lattice descriptor
+struct D1Q3 : public LATTICE_DESCRIPTOR<1,3,1> {
+    D1Q3() = delete; // Deleted default constructor prevents instantiation, enforces pure usage as type
 };
 
 /// D2Q5 lattice descriptor
@@ -33,36 +33,60 @@ struct D2Q5 : public LATTICE_DESCRIPTOR<2,5,1> {
     D2Q5() = delete; // Deleted default constructor prevents instantiation, enforces pure usage as type
 };
 
+/// D2Q9 lattice descriptor
+struct D2Q9 : public LATTICE_DESCRIPTOR<2,9,3> {
+    D2Q9() = delete; // Deleted default constructor prevents instantiation, enforces pure usage as type
+};
+
 namespace data {
 
     using utilities::Fraction;
 
     template <unsigned int D, unsigned int Q>
-    platform_constant int c[Q][D] = {};
+    platform_constant int c[Q][D] = {};             // Lattice velocities
 
     template <unsigned int D, unsigned int Q>
-    platform_constant Fraction w[Q] = {};
+    platform_constant Fraction w[Q] = {};           // Lattice weights
 
     template <unsigned int D, unsigned int Q>
-    platform_constant Fraction cs2 = {};
+    platform_constant Fraction cs2 = {};            // Speed of sound
 
     template <unsigned int D, unsigned int Q>
-    platform_constant unsigned int b[Q][D] = {}; // Boundary mapping
+    platform_constant unsigned int b[Q][D] = {};    // Boundary mapping
 
-    /// Specializations for D2Q9
+
+    /************************************/
+    /*** D1Q3 Lattice configuration:  ***/
+    /***                              ***/
+    /***  2 ---- 0 ---- 1             ***/
+    /***                              ***/
+    /************************************/
     template <>
-    platform_constant int c<2,9>[9][2] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}};
+    platform_constant int c<1,3>[3][1] = {{0}, {1}, {-1}};
 
     template <>
-    platform_constant Fraction w<2,9>[9] = {{4, 9}, {1, 9}, {1, 36}, {1, 9}, {1, 36}, {1, 36}, {1, 9}, {1, 36}, {1, 9}};
+    platform_constant Fraction w<1,3>[3] = {{2, 3}, {1, 6}, {1, 6}};
 
     template <>
-    platform_constant Fraction cs2<2,9> = {1, 3};
+    platform_constant Fraction cs2<1,3> = {1, 3};
 
     template <>
-    platform_constant unsigned int b<2,9>[4][3] = {{1, 2, 5}, {4, 7, 8}, {2, 3, 4}, {5, 6, 7}};
+    platform_constant unsigned int b<1,3>[2][1] = {{1}, {2}};
 
-    /// Specializations for D2Q5
+    /************************************/
+    /*** D2Q5 Lattice configuration:  ***/
+    /***                              ***/
+    /***         2                    ***/
+    /***         |                    ***/
+    /***         |                    ***/
+    /***         |                    ***/
+    /***  4 ---- 0 ---- 1             ***/
+    /***         |                    ***/
+    /***         |                    ***/
+    /***         |                    ***/
+    /***         3                    ***/
+    /***                              ***/
+    /************************************/
     template <>
     platform_constant int c<2,5>[5][2] = {{0, 0}, {1, 0}, {0, 1}, {0, -1}, {-1, 0}};
 
@@ -74,6 +98,32 @@ namespace data {
 
     template <>
     platform_constant unsigned int b<2,5>[4][1] = {{1}, {4}, {2}, {3}};
+
+    /************************************/
+    /*** D2Q9 Lattice configuration:  ***/
+    /***                              ***/
+    /***     8   3   5                ***/
+    /***      \  |  /                 ***/
+    /***       \ | /                  ***/
+    /***        \|/                   ***/
+    /***  2 ---- 0 ---- 1             ***/
+    /***        /|\                   ***/
+    /***       / | \                  ***/
+    /***      /  |  \                 ***/
+    /***     6   4   7                ***/
+    /***                              ***/
+    /************************************/
+    template <>
+    platform_constant int c<2,9>[9][2] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}};
+
+    template <>
+    platform_constant Fraction w<2,9>[9] = {{4, 9}, {1, 9}, {1, 36}, {1, 9}, {1, 36}, {1, 36}, {1, 9}, {1, 36}, {1, 9}};
+
+    template <>
+    platform_constant Fraction cs2<2,9> = {1, 3};
+
+    template <>
+    platform_constant unsigned int b<2,9>[4][3] = {{1, 2, 5}, {4, 7, 8}, {2, 3, 4}, {5, 6, 7}};
 
 } // namespace data
 

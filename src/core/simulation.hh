@@ -1,6 +1,8 @@
 #ifndef SIMULAITION_HH
 #define SIMULAITION_HH
 
+#include <type_traits>
+
 #include "simulation.h"
 #include "cuda/cudaUtilities.h"
 
@@ -45,7 +47,12 @@ void Simulation<T,DESCRIPTOR>::checkOutput(unsigned int iter) {
         _lbGrid->computeMoments();
         _lbGrid->fetchMoments();
         _vtkWriter->writeScalarField(_lbGrid->getHostZerothMoment(), "Rho", _outputCounter);
-        _vtkWriter->writeVectorField(_lbGrid->getHostFirstMoment(), _lbGrid->getHostZerothMoment(), "Vel", _dt, _outputCounter);
+
+        // Check if DESCRIPTOR::TYPE is MomentumConservation
+        if constexpr (std::is_same<typename DESCRIPTOR::TYPE, MomentumConservation>::value) {
+            _vtkWriter->writeVectorField(_lbGrid->getHostFirstMoment(), _lbGrid->getHostZerothMoment(), "Vel", _dt, _outputCounter);
+        }
+
         printOutput(_outputCounter);
         _outputCounter++;
     }

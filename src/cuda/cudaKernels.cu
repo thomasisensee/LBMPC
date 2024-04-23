@@ -18,7 +18,7 @@
 /***** Initialize Distributions *****/
 /************************************/
 template<typename T,typename DESCRIPTOR>
-__global__ void initializeDistributionsKernel(T* collision, const BaseParams* const params) {
+__global__ void initializeDistributionsKernel(T* collision, const BaseParams* const params, T initialScalarValue) {
     // Local constants for easier access
     constexpr unsigned int Q = DESCRIPTOR::LATTICE::Q;
 
@@ -29,7 +29,7 @@ __global__ void initializeDistributionsKernel(T* collision, const BaseParams* co
     unsigned int idx = GridGeometry2D<T>::pos(i, j, params->Nx);
     
     Cell<T,DESCRIPTOR> cell;
-    T R = 1.0;
+    T R = initialScalarValue;
     T U = 0.0;
     T V = 0.0;
 
@@ -37,8 +37,8 @@ __global__ void initializeDistributionsKernel(T* collision, const BaseParams* co
 }
 
 template<typename T,typename DESCRIPTOR>
-void initializeDistributionsCaller(T* deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize) {
-    initializeDistributionsKernel<T,DESCRIPTOR><<<gridSize, blockSize>>>(deviceCollision, params);
+void initializeDistributionsCaller(T* deviceCollision, const BaseParams* const params, T initialScalarValue, dim3 gridSize, dim3 blockSize) {
+    initializeDistributionsKernel<T,DESCRIPTOR><<<gridSize, blockSize>>>(deviceCollision, params, initialScalarValue);
     cudaErrorCheck(cudaDeviceSynchronize());
 }
 
@@ -278,9 +278,9 @@ void computeFirstMomentCaller(T* deviceFirstMoment, const T* const deviceCollisi
 /********************************************/
 /***** Explicit template instantiations *****/
 /********************************************/
-template void initializeDistributionsCaller<float,descriptors::StandardD2Q9<float>>(float* deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
-template void initializeDistributionsCaller<float,descriptors::ScalarD2Q9<float>>(float* deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
-template void initializeDistributionsCaller<float,descriptors::ScalarD2Q5<float>>(float* deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
+template void initializeDistributionsCaller<float,descriptors::StandardD2Q9<float>>(float* deviceCollision, const BaseParams* const params, float initialScalarValue, dim3 gridSize, dim3 blockSize);
+template void initializeDistributionsCaller<float,descriptors::ScalarD2Q9<float>>(float* deviceCollision, const BaseParams* const params, float initialScalarValue, dim3 gridSize, dim3 blockSize);
+template void initializeDistributionsCaller<float,descriptors::ScalarD2Q5<float>>(float* deviceCollision, const BaseParams* const params, float initialScalarValue, dim3 gridSize, dim3 blockSize);
 
 template void doStreamingCaller<float,descriptors::StandardD2Q9<float>>(float** deviceCollision, float** deviceStreaming, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
 template void doStreamingCaller<float,descriptors::ScalarD2Q9<float>>(float** deviceCollision, float** deviceStreaming, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
