@@ -170,7 +170,6 @@ void LBGrid<T,DESCRIPTOR>::fetchMoments() {
     fetchFirstMoment();
 }
 
-
 template<typename T,typename DESCRIPTOR>
 void LBGrid<T,DESCRIPTOR>::copyToDevice() {
     if(this->getDeviceCollision() != nullptr) {
