@@ -5,24 +5,7 @@
 
 namespace functors {
 
-template<typename T,typename DESCRIPTOR>
-class StandardEquilibrium {
-private:
-    T _R, _U, _V;
-public:
-    __device__ explicit StandardEquilibrium(T* population);
-    __device__ T operator()(unsigned int l) const;
-};
-
-template<typename T,typename DESCRIPTOR>
-class ScalarEquilibrium {
-private:
-    T _R, _U, _V;
-public:
-    __device__ explicit ScalarEquilibrium(T* population);
-    __device__ ScalarEquilibrium(T* population, T U, T V);
-    __device__ T operator()(unsigned int l) const;
-};
+namespace boundary {
 
 template<typename T,typename DESCRIPTOR>
 class BounceBack {
@@ -47,6 +30,27 @@ public:
     AntiBounceBack() = default;
     __device__ T operator()(T* collision, const BaseParams* const params, unsigned int i, unsigned int j);
 };
+
+} // namespace boundary
+
+namespace force {
+
+class NoForce {
+public:
+    /// Constructor
+    NoForce() = default;
+    __device__ void operator()() {};
+};
+
+template<typename T,typename DESCRIPTOR>
+class ThermalBuoyancy {
+public:
+    /// Constructor
+    ThermalBuoyancy() = default;
+    __device__ T operator()(T* temperature, const CollisionParamsBGK<T>* const params, unsigned int i, unsigned int j);
+};
+
+} // namespace force
 
 } // namespace functors
 

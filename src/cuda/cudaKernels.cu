@@ -12,7 +12,7 @@
 #include "cell.h"
 #include "core/constants.h"
 #include "core/kernelParameters.h"
-#include "core/gridGeometry.h"
+#include "core/grid/gridGeometryBase.h"
 
 /************************************/
 /***** Initialize Distributions *****/
@@ -294,12 +294,12 @@ template void doCollisionCHMCaller<float,descriptors::StandardD2Q9<float>>(float
 template void doCollisionCHMCaller<float,descriptors::ScalarD2Q9<float>>(float* deviceCollision, const CollisionParamsCHM<float>* const params, dim3 gridSize, dim3 blockSize);
 template void doCollisionCHMCaller<float,descriptors::ScalarD2Q5<float>>(float* deviceCollision, const CollisionParamsCHM<float>* const params, dim3 gridSize, dim3 blockSize);
 
-template void applyBoundaryConditionCaller<float,descriptors::StandardD2Q9<float>,functors::BounceBack<float,descriptors::StandardD2Q9<float>>>(float* deviceCollision, const BoundaryParams* const params, dim3 gridSize, dim3 blockSize);
-template void applyBoundaryConditionCaller<float,descriptors::StandardD2Q9<float>,functors::MovingWall<float,descriptors::StandardD2Q9<float>>>(float* deviceCollision, const BoundaryParams* const params, dim3 gridSize, dim3 blockSize);
-template void applyBoundaryConditionCaller<float,descriptors::ScalarD2Q9<float>,functors::BounceBack<float,descriptors::ScalarD2Q9<float>>>(float* deviceCollision, const BoundaryParams* const params, dim3 gridSize, dim3 blockSize);
-template void applyBoundaryConditionCaller<float,descriptors::ScalarD2Q9<float>,functors::AntiBounceBack<float,descriptors::ScalarD2Q9<float>>>(float* deviceCollision, const BoundaryParams* const params, dim3 gridSize, dim3 blockSize);
-template void applyBoundaryConditionCaller<float,descriptors::ScalarD2Q5<float>,functors::BounceBack<float,descriptors::ScalarD2Q5<float>>>(float* deviceCollision, const BoundaryParams* const params, dim3 gridSize, dim3 blockSize);
-template void applyBoundaryConditionCaller<float,descriptors::ScalarD2Q5<float>,functors::AntiBounceBack<float,descriptors::ScalarD2Q5<float>>>(float* deviceCollision, const BoundaryParams* const params, dim3 gridSize, dim3 blockSize);
+template void applyBoundaryConditionCaller<float,descriptors::StandardD2Q9<float>,functors::boundary::BounceBack<float,descriptors::StandardD2Q9<float>>>(float* deviceCollision, const BoundaryParams* const params, dim3 gridSize, dim3 blockSize);
+template void applyBoundaryConditionCaller<float,descriptors::StandardD2Q9<float>,functors::boundary::MovingWall<float,descriptors::StandardD2Q9<float>>>(float* deviceCollision, const BoundaryParams* const params, dim3 gridSize, dim3 blockSize);
+template void applyBoundaryConditionCaller<float,descriptors::ScalarD2Q9<float>,functors::boundary::BounceBack<float,descriptors::ScalarD2Q9<float>>>(float* deviceCollision, const BoundaryParams* const params, dim3 gridSize, dim3 blockSize);
+template void applyBoundaryConditionCaller<float,descriptors::ScalarD2Q9<float>,functors::boundary::AntiBounceBack<float,descriptors::ScalarD2Q9<float>>>(float* deviceCollision, const BoundaryParams* const params, dim3 gridSize, dim3 blockSize);
+template void applyBoundaryConditionCaller<float,descriptors::ScalarD2Q5<float>,functors::boundary::BounceBack<float,descriptors::ScalarD2Q5<float>>>(float* deviceCollision, const BoundaryParams* const params, dim3 gridSize, dim3 blockSize);
+template void applyBoundaryConditionCaller<float,descriptors::ScalarD2Q5<float>,functors::boundary::AntiBounceBack<float,descriptors::ScalarD2Q5<float>>>(float* deviceCollision, const BoundaryParams* const params, dim3 gridSize, dim3 blockSize);
 
 template void computeZerothMomentCaller<float,descriptors::StandardD2Q9<float>>(float* deviceZerothMoment, const float* const deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
 template void computeZerothMomentCaller<float,descriptors::ScalarD2Q9<float>>(float* deviceZerothMoment, const float* const deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize);

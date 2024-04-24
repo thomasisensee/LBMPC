@@ -37,10 +37,16 @@ public:
     Simulation(std::unique_ptr<LBGrid<T,DESCRIPTOR>>&& lbgrid, std::unique_ptr<VTKWriter>&& vtkWriter, T dt, T simTime, unsigned int numberOutput);
   
     /// Destructor
-    virtual ~Simulation();
+    virtual ~Simulation() = default;
 
     /// Print parameters
-    void printParameters();
+    virtual void printParameters();
+
+    /// Print parameters
+    void printGridParameters();
+
+    /// Print parameters
+    void printSimulationParameters();
 
     /// Time loop
     void run();
@@ -50,17 +56,36 @@ public:
 };
 
 
-/***************************/
-/***** Derived classes *****/
-/***************************/
+/*****************************************/
+/***** Derived class 01: Single grid *****/
+/*****************************************/
 template<typename T,typename DESCRIPTOR>
 class LBFluidSimulation final : public Simulation<T,DESCRIPTOR> {
 public:
     /// Constructor
-    LBFluidSimulation(std::unique_ptr<LBGrid<T,DESCRIPTOR>>&& lbgrid, std::unique_ptr<VTKWriter>&& vtkWriter, T dt, T simTime, unsigned int numberOutput);
+    LBFluidSimulation(std::unique_ptr<LBGrid<T,DESCRIPTOR>>&& lbGrid, std::unique_ptr<VTKWriter>&& vtkWriter, T dt, T simTime, unsigned int numberOutput);
 
     /// Simulation steps
     void simulationSteps(unsigned int iter) override;
+};
+
+/******************************************************************************/
+/***** Derived class 02: Coupled momentum - thermal simulation, two grids *****/
+/******************************************************************************/
+template<typename T,typename MOMENTUM_DESCRIPTOR,typename THERMAL_DESCRIPTOR>
+class LBCoupledSimulation final : public Simulation<T,MOMENTUM_DESCRIPTOR> {
+protected:
+    std::unique_ptr<LBGrid<T,THERMAL_DESCRIPTOR>> _lbGridThermal;
+
+public:
+    /// Constructor
+    LBCoupledSimulation(std::unique_ptr<LBGrid<T,MOMENTUM_DESCRIPTOR>>&& lbGridMomentum, std::unique_ptr<LBGrid<T,THERMAL_DESCRIPTOR>>&& lbGridThermal, std::unique_ptr<VTKWriter>&& vtkWriter, T dt, T simTime, unsigned int numberOutput);
+
+    /// Simulation steps
+    void simulationSteps(unsigned int iter) override;
+
+    /// Print parameters
+    void printParameters() override;
 };
 
 #include "simulation.hh"

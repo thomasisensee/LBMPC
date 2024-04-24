@@ -12,7 +12,7 @@
 
 template<typename T,typename DESCRIPTOR>
 LBGrid<T,DESCRIPTOR>::LBGrid(
-        std::unique_ptr<GridGeometry2D<T>>&& geometry,
+        std::shared_ptr<GridGeometry2D<T>> geometry,
         std::unique_ptr<CollisionModel<T,DESCRIPTOR>>&& collision,
         std::unique_ptr<BoundaryConditionManager<T,DESCRIPTOR>>&& boundary,
         T initialScalarValue

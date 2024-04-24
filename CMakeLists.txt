@@ -21,8 +21,12 @@ set(SOURCES
     src/core/functors/functors.hh
     src/core/utilities.h
     src/core/utilities.cpp
-    src/core/gridGeometry.h
-    src/core/gridGeometry.hh
+    src/core/grid/gridGeometryBase.h
+    src/core/grid/gridGeometryBase.hh
+    src/core/grid/gridGeometry1D.h
+    src/core/grid/gridGeometry1D.hh
+    src/core/grid/gridGeometry2D.h
+    src/core/grid/gridGeometry2D.hh
     src/core/lb/lbGrid.h
     src/core/lb/lbGrid.hh
     src/core/lb/collisionModel.h
@@ -64,3 +68,10 @@ CUDA_ADD_EXECUTABLE(ThermalDiffusion2D examples/ThermalDiffusion2D/main.cpp ${SO
 target_link_libraries(ThermalDiffusion2D ${CUDA_LIBRARIES} tinyxml2)
 set_target_properties(ThermalDiffusion2D PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/ThermalDiffusion2D/build")
 set_target_properties(ThermalDiffusion2D PROPERTIES CUDA_ARCHITECTURES "native")
+
+# Example: ThermalFlow2D
+#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=sm_61)  # Example for compute capability 6.1
+CUDA_ADD_EXECUTABLE(ThermalFlow2D examples/ThermalFlow2D/main.cpp ${SOURCES})
+target_link_libraries(ThermalFlow2D ${CUDA_LIBRARIES} tinyxml2)
+set_target_properties(ThermalFlow2D PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/ThermalFlow2D/build")
+set_target_properties(ThermalFlow2D PROPERTIES CUDA_ARCHITECTURES "native")

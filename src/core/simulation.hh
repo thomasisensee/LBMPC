@@ -11,17 +11,14 @@
 /**********************/
 template<typename T,typename DESCRIPTOR>
 Simulation<T,DESCRIPTOR>::Simulation(
-    std::unique_ptr<LBGrid<T,DESCRIPTOR>>&& lbgrid,
+    std::unique_ptr<LBGrid<T,DESCRIPTOR>>&& lbGrid,
     std::unique_ptr<VTKWriter>&& vtkWriter,
     T dt,
     T simTime,
     unsigned int numberOutput)
-    : _lbGrid(std::move(lbgrid)), _vtkWriter(std::move(vtkWriter)), _dt(dt), _simTime(simTime), _totalIter(simTime / dt), _outputFrequency(simTime / dt / numberOutput), _outputCounter(0) {
+    : _lbGrid(std::move(lbGrid)), _vtkWriter(std::move(vtkWriter)), _dt(dt), _simTime(simTime), _totalIter(simTime / dt), _outputFrequency(simTime / dt / numberOutput), _outputCounter(0) {
         _vtkWriter->setNonInherent(this->_lbGrid->getGridGeometry().getNx(), this->_lbGrid->getGridGeometry().getNy(), static_cast<float>(this->_lbGrid->getGridGeometry().getDelta()));
     }
-
-template<typename T,typename DESCRIPTOR>
-Simulation<T,DESCRIPTOR>::~Simulation() {}
 
 template<typename T,typename DESCRIPTOR>
 void Simulation<T,DESCRIPTOR>::printOutput(unsigned int outputCounter) {
@@ -59,10 +56,22 @@ void Simulation<T,DESCRIPTOR>::checkOutput(unsigned int iter) {
 }
 
 template<typename T,typename DESCRIPTOR>
+void Simulation<T,DESCRIPTOR>::printGridParameters() {
+    // Print grid parameters
+    _lbGrid->printParameters();
+}
+
+template<typename T,typename DESCRIPTOR>
 void Simulation<T,DESCRIPTOR>::printParameters() {
     // Call member functions to print parameters
-    _lbGrid->printParameters();
+    this->printGridParameters();
 
+    // Print simulation specific parameters
+    this->printSimulationParameters();
+}
+
+template<typename T,typename DESCRIPTOR>
+void Simulation<T,DESCRIPTOR>::printSimulationParameters() {
     // Print simulation specific parameters
     std::cout << "=========== Simulation ===========" << std::endl;
     std::cout << "== Simulation time: " << _simTime << "\t\t==" << std::endl;
@@ -99,17 +108,17 @@ void Simulation<T,DESCRIPTOR>::simulationSteps(unsigned int iter) {
     std::cerr << "Simulation steps not implemented." << std::endl;
 }
 
-/********************************************************************************/
-/***** Derived class 01: Simple fluid simulation without any external force *****/
-/********************************************************************************/
+/*****************************************/
+/***** Derived class 01: Single grid *****/
+/*****************************************/
 template<typename T,typename DESCRIPTOR>
 LBFluidSimulation<T,DESCRIPTOR>::LBFluidSimulation(
-    std::unique_ptr<LBGrid<T,DESCRIPTOR>>&& lbgrid,
+    std::unique_ptr<LBGrid<T,DESCRIPTOR>>&& lbGrid,
     std::unique_ptr<VTKWriter>&& vtkWriter,
     T dt,
     T simTime,
     unsigned int numberOutput)
-    : Simulation<T,DESCRIPTOR>(std::move(lbgrid), std::move(vtkWriter), dt, simTime, numberOutput) {}
+    : Simulation<T,DESCRIPTOR>(std::move(lbGrid), std::move(vtkWriter), dt, simTime, numberOutput) {}
 
 template<typename T,typename DESCRIPTOR>
 void LBFluidSimulation<T,DESCRIPTOR>::simulationSteps(unsigned int iter) {
@@ -117,6 +126,42 @@ void LBFluidSimulation<T,DESCRIPTOR>::simulationSteps(unsigned int iter) {
         this->_lbGrid->performStreamingStep();
         this->_lbGrid->performCollisionStep();
         this->checkOutput(iter);
+}
+
+/******************************************************************************/
+/***** Derived class 02: Coupled momentum - thermal simulation, two grids *****/
+/******************************************************************************/
+template<typename T,typename MOMENTUM_DESCRIPTOR,typename THERMAL_DESCRIPTOR>
+LBCoupledSimulation<T,MOMENTUM_DESCRIPTOR,THERMAL_DESCRIPTOR>::LBCoupledSimulation(
+    std::unique_ptr<LBGrid<T,MOMENTUM_DESCRIPTOR>>&& lbGridMomentum,
+    std::unique_ptr<LBGrid<T,THERMAL_DESCRIPTOR>>&& lbGridThermal,
+    std::unique_ptr<VTKWriter>&& vtkWriter,
+    T dt,
+    T simTime,
+    unsigned int numberOutput)
+    : Simulation<T,MOMENTUM_DESCRIPTOR>(std::move(lbGridMomentum), std::move(vtkWriter), dt, simTime, numberOutput), _lbGridThermal(std::move(lbGridThermal)) {}
+
+template<typename T,typename MOMENTUM_DESCRIPTOR,typename THERMAL_DESCRIPTOR>
+void LBCoupledSimulation<T,MOMENTUM_DESCRIPTOR,THERMAL_DESCRIPTOR>::simulationSteps(unsigned int iter) {
+        this->_lbGrid->applyBoundaryConditions();
+        this->_lbGridThermal->applyBoundaryConditions();
+        this->_lbGrid->performStreamingStep();
+        this->_lbGridThermal->performStreamingStep();
+        this->_lbGrid->performCollisionStep();
+        this->_lbGridThermal->performCollisionStep();
+        this->checkOutput(iter);
+}
+
+template<typename T,typename MOMENTUM_DESCRIPTOR,typename THERMAL_DESCRIPTOR>
+void LBCoupledSimulation<T,MOMENTUM_DESCRIPTOR,THERMAL_DESCRIPTOR>::printParameters() {
+    // Call base class to print parameters of momentum grid
+    Simulation<T,MOMENTUM_DESCRIPTOR>::printGridParameters();
+
+    // Call member functions to print parameters of thermal grid
+    _lbGridThermal->printParameters();
+
+    // Call base class to print simulation parameters
+    Simulation<T,MOMENTUM_DESCRIPTOR>::printSimulationParameters();
 }
 
 #endif // SIMULAITION_HH

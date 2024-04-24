@@ -12,17 +12,14 @@ namespace descriptors {
 
 struct DESCRIPTOR_BASE {};
 
-template<typename LATTICE_DESCRIPTOR, typename DISTRIBUTION_TYPE, typename... FIELD_TYPE>
+template<typename LATTICE_DESCRIPTOR, typename DISTRIBUTION_TYPE, typename EXTERNAL_FORCE_FUNCTOR, typename... FIELD_TYPE>
 struct DESCRIPTOR : public DESCRIPTOR_BASE {
     DESCRIPTOR() = delete; // Deleted default constructor prevents instantiation, enforces pure usage as type
 
     using TYPE      = DISTRIBUTION_TYPE;
     using LATTICE   = LATTICE_DESCRIPTOR;
     using FIELDS    = std::tuple<FIELD_TYPE...>;
-
-    //template<typename T>
-    //using EQUILIBRIUM = EQUILIBRIUM_FUNCTOR<T,LATTICE_DESCRIPTOR>;
-    //using FORCE = EXTERNAL_FORCE_FUNCTOR;
+    using FORCE     = EXTERNAL_FORCE_FUNCTOR;
 };
 
 

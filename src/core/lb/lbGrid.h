@@ -7,14 +7,14 @@
 
 #include "collisionModel.h"
 #include "core/boundary/boundaryConditions.h"
-#include "core/gridGeometry.h"
+#include "core/grid/gridGeometry2D.h"
 #include "core/kernelParameters.h"
 
 template<typename T,typename DESCRIPTOR>
 class LBGrid {
 private:
     /// Required model objects
-    std::unique_ptr<GridGeometry2D<T>> _gridGeometry;
+    std::shared_ptr<GridGeometry2D<T>> _gridGeometry;
     std::unique_ptr<CollisionModel<T,DESCRIPTOR>> _collisionModel;
     std::unique_ptr<BoundaryConditionManager<T,DESCRIPTOR>> _boundaryConditionManager;
 
@@ -42,7 +42,7 @@ private:
 public:
     /// Constructor
     LBGrid(
-        std::unique_ptr<GridGeometry2D<T>>&& geometry,
+        std::shared_ptr<GridGeometry2D<T>> geometry,
         std::unique_ptr<CollisionModel<T,DESCRIPTOR>>&& collision, 
         std::unique_ptr<BoundaryConditionManager<T,DESCRIPTOR>>&& boundary,
         T initialScalarValue = T(1.0)

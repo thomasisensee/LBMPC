@@ -77,7 +77,7 @@ template<typename T,typename DESCRIPTOR>
 void BounceBack<T,DESCRIPTOR>::apply(T* lbmField) {
     dim3 blockSize(this->_threadsPerBlock);
     dim3 gridSize(this->_numBlocks);
-    applyBoundaryConditionCaller<T,DESCRIPTOR,functors::BounceBack<T,DESCRIPTOR>>(lbmField, this->_params.getDeviceParams(), gridSize, blockSize);
+    applyBoundaryConditionCaller<T,DESCRIPTOR,functors::boundary::BounceBack<T,DESCRIPTOR>>(lbmField, this->_params.getDeviceParams(), gridSize, blockSize);
 }
 
 template<typename T,typename DESCRIPTOR>
@@ -102,7 +102,7 @@ template<typename T,typename DESCRIPTOR>
 void MovingWall<T,DESCRIPTOR>::apply(T* lbmField) {
     dim3 blockSize(this->_threadsPerBlock);
     dim3 gridSize(this->_numBlocks);
-    applyBoundaryConditionCaller<T,DESCRIPTOR,functors::MovingWall<T,DESCRIPTOR>>(lbmField, this->_params.getDeviceParams(), gridSize, blockSize);
+    applyBoundaryConditionCaller<T,DESCRIPTOR,functors::boundary::MovingWall<T,DESCRIPTOR>>(lbmField, this->_params.getDeviceParams(), gridSize, blockSize);
 }
 
 template<typename T,typename DESCRIPTOR>
@@ -133,7 +133,7 @@ template<typename T,typename DESCRIPTOR>
 void AntiBounceBack<T,DESCRIPTOR>::apply(T* lbmField) {
     dim3 blockSize(this->_threadsPerBlock);
     dim3 gridSize(this->_numBlocks);
-    applyBoundaryConditionCaller<T,DESCRIPTOR,functors::AntiBounceBack<T,DESCRIPTOR>>(lbmField, this->_params.getDeviceParams(), gridSize, blockSize);
+    applyBoundaryConditionCaller<T,DESCRIPTOR,functors::boundary::AntiBounceBack<T,DESCRIPTOR>>(lbmField, this->_params.getDeviceParams(), gridSize, blockSize);
 }
 
 template<typename T,typename DESCRIPTOR>

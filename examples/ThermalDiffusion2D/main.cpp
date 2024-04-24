@@ -4,7 +4,7 @@
 
 #include "core/descriptors/descriptors.h"
 #include "core/descriptors/aliases.h"
-#include "core/gridGeometry.h"
+#include "core/grid/gridGeometry2D.h"
 #include "core/lb/collisionModel.h"
 #include "core/boundary/boundaryConditions.h"
 #include "core/lb/lbGrid.h"
@@ -33,7 +33,7 @@ int main() {
     // =========================
     unsigned int nx = 126, ny = 126;
     T dx = 1.0 / nx;
-    auto gridGeometry = std::make_unique<GridGeometry2D<T>>(dx, nx, ny);
+    auto gridGeometry = std::make_shared<GridGeometry2D<T>>(dx, nx, ny);
     //gridGeometry->printParameters();
 
     // ===================================================
@@ -61,7 +61,7 @@ int main() {
     //boundaryConditionManager->printParameters();
 
  
-    auto lbGrid = std::make_unique<LBGrid<T,DESCRIPTOR>>(std::move(gridGeometry), std::move(collisionModel), std::move(boundaryConditionManager), initialTemperature);
+    auto lbGrid = std::make_unique<LBGrid<T,DESCRIPTOR>>(gridGeometry, std::move(collisionModel), std::move(boundaryConditionManager), initialTemperature);
     //lbGrid->printParameters();
 
 
