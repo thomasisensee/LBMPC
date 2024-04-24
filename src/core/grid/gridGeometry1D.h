@@ -20,11 +20,11 @@ public:
     /// Read access to grid width
     unsigned int getGhostNx() const;
     /// Read access to grid volume
-    unsigned int getVolume() const;
+    virtual unsigned int getVolume() const;
     /// Read access to grid volume
-    unsigned int getGhostVolume() const;
+    virtual unsigned int getGhostVolume() const;
     /// Prints grid details
-    void printParameters() const;
+    virtual void printParameters() const;
 };
 
 #include "gridGeometry1D.hh"

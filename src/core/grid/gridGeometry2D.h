@@ -20,11 +20,11 @@ public:
     /// Read access to grid height
     unsigned int getGhostNy() const;
     /// Read access to grid volume
-    unsigned int getVolume() const;
+    unsigned int getVolume() const override;
     /// Read access to grid volume
-    unsigned int getGhostVolume() const;
+    unsigned int getGhostVolume() const override;
     /// Prints grid details
-    void printParameters() const;
+    void printParameters() const override;
 };
 
 #include "gridGeometry2D.hh"
