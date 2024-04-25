@@ -15,16 +15,19 @@ protected:
 public:
     /// Constructor
     GridGeometry1D(T delta, unsigned int nX);
+
     /// Read access to grid width
     unsigned int getNx() const;
+
     /// Read access to grid width
     unsigned int getGhostNx() const;
+
     /// Read access to grid volume
-    virtual unsigned int getVolume() const;
+    unsigned int getVolume() const;
     /// Read access to grid volume
-    virtual unsigned int getGhostVolume() const;
+    unsigned int getGhostVolume() const;
     /// Prints grid details
-    virtual void printParameters() const;
+    void printParameters() const;
 };
 
 #include "gridGeometry1D.hh"

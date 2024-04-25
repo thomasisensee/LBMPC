@@ -170,7 +170,6 @@ void LBGrid<T,DESCRIPTOR>::fetchMoments() {
     fetchFirstMoment();
 }
 
-
 template<typename T,typename DESCRIPTOR>
 void LBGrid<T,DESCRIPTOR>::copyToDevice() {
     if(this->getDeviceCollision() != nullptr) {
@@ -230,7 +229,15 @@ void LBGrid<T,DESCRIPTOR>::computeFirstMoment() {
     dim3 blockSize(_threadsPerBlock.first, _threadsPerBlock.second);
     dim3 gridSize(_numBlocks.first, _numBlocks.first);
 
-    computeFirstMomentCaller<T,DESCRIPTOR>(_deviceFirstMoment, _deviceCollision, _params.getDeviceParams(), gridSize, blockSize);
+    computeFirstMomentCaller<T,DESCRIPTOR>(_deviceFirstMoment, _deviceCollision, _params.getDeviceParams(), false, gridSize, blockSize);
+}
+
+template<typename T,typename DESCRIPTOR>
+void LBGrid<T,DESCRIPTOR>::computeVelocity() {
+    dim3 blockSize(_threadsPerBlock.first, _threadsPerBlock.second);
+    dim3 gridSize(_numBlocks.first, _numBlocks.first);
+
+    computeFirstMomentCaller<T,DESCRIPTOR>(_deviceFirstMoment, _deviceCollision, _params.getDeviceParams(), true, gridSize, blockSize);
 }
 
 template<typename T,typename DESCRIPTOR>

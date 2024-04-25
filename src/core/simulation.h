@@ -30,7 +30,7 @@ protected:
     void outputSimulationEndTime(float elapsedTimeMs);
 
     /// Check for output and trigger moment computation and output if ncesseary
-    void checkOutput(unsigned int iter);
+    virtual void checkOutput(unsigned int iter);
 
 public:
     /// Constructor
@@ -86,6 +86,9 @@ public:
 
     /// Print parameters
     void printParameters() override;
+
+    /// Check for output and trigger moment computation and output if ncesseary
+    void checkOutput(unsigned int iter) override;
 };
 
 #include "simulation.hh"

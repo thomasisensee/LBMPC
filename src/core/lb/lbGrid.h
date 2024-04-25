@@ -93,6 +93,7 @@ public:
     void computeMoments();
     void computeZerothMoment();
     void computeFirstMoment();
+    void computeVelocity();
     static unsigned int pos(unsigned int i, unsigned int j, unsigned int Nx);
 };
 

@@ -15,14 +15,17 @@ protected:
 public:
     /// Constructor
     GridGeometry2D(T delta, unsigned int nX, unsigned int nY);
+
     /// Read access to grid height
     unsigned int getNy() const;
+
     /// Read access to grid height
     unsigned int getGhostNy() const;
+
     /// Read access to grid volume
-    unsigned int getVolume() const override;
+    unsigned int getVolume() const;
     /// Read access to grid volume
-    unsigned int getGhostVolume() const override;
+    unsigned int getGhostVolume() const;
     /// Prints grid details
     void printParameters() const override;
 };
