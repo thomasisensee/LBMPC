@@ -147,6 +147,8 @@ void LBCoupledSimulation<T,MOMENTUM_DESCRIPTOR,THERMAL_DESCRIPTOR>::simulationSt
         this->_lbGridThermal->applyBoundaryConditions();
         this->_lbGrid->performStreamingStep();
         this->_lbGridThermal->performStreamingStep();
+        this->_lbGrid->computeVelocity();
+        this->_lbGridThermal->computeZerothMoment();
         this->_lbGrid->performCollisionStep();
         this->_lbGridThermal->performCollisionStep();
         this->checkOutput(iter);
@@ -162,6 +164,23 @@ void LBCoupledSimulation<T,MOMENTUM_DESCRIPTOR,THERMAL_DESCRIPTOR>::printParamet
 
     // Call base class to print simulation parameters
     Simulation<T,MOMENTUM_DESCRIPTOR>::printSimulationParameters();
+}
+
+template<typename T,typename MOMENTUM_DESCRIPTOR,typename THERMAL_DESCRIPTOR>
+void LBCoupledSimulation<T,MOMENTUM_DESCRIPTOR,THERMAL_DESCRIPTOR>::checkOutput(unsigned int iter) {
+    if (this->_outputFrequency && iter % this->_outputFrequency == 0) {
+        this->_lbGrid->computeMoments();
+        this->_lbGrid->fetchMoments();
+        this->_vtkWriter->writeScalarField(this->_lbGrid->getHostZerothMoment(), "Rho", this->_outputCounter);
+        this->_vtkWriter->writeVectorField(this->_lbGrid->getHostFirstMoment(), this->_lbGrid->getHostZerothMoment(), "Vel", this->_dt, this->_outputCounter);
+
+        _lbGridThermal->computeZerothMoment();
+        _lbGridThermal->fetchZerothMoment();
+        this->_vtkWriter->writeScalarField(_lbGridThermal->getHostZerothMoment(), "T", this->_outputCounter);
+
+        this->printOutput(this->_outputCounter);
+        this->_outputCounter++;
+    }
 }
 
 #endif // SIMULAITION_HH

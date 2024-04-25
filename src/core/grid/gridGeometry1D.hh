@@ -21,12 +21,12 @@ unsigned int GridGeometry1D<T>::getGhostNx() const {
 
 template<typename T>
 unsigned int GridGeometry1D<T>::getVolume() const {
-    return _nX;
+    return this->getNx();
 }
 
 template<typename T>
 unsigned int GridGeometry1D<T>::getGhostVolume() const {
-    return _nX+2;
+    return this->getGhostNx();
 }
 
 template<typename T>

@@ -68,9 +68,9 @@ void computeZerothMomentCaller(T* deviceZerothMoment, const T* const deviceColli
 /***** Moment computations: First *****/
 /**************************************/
 template<typename T,typename DESCRIPTOR>
-__global__ void computeFirstMomentKernel(T* firstMoment, const T* const collision, const BaseParams* const params);
+__global__ void computeFirstMomentKernel(T* firstMoment, const T* const collision, const BaseParams* const params, bool computeVelocity);
 
 template<typename T,typename DESCRIPTOR>
-void computeFirstMomentCaller(T* deviceFirstMoment, const T* const deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
+void computeFirstMomentCaller(T* deviceFirstMoment, const T* const deviceCollision, const BaseParams* const params, bool computeVelocity, dim3 gridSize, dim3 blockSize);
 
 #endif // CUDA_KERNELS_CUH

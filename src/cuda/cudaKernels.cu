@@ -247,7 +247,7 @@ void computeZerothMomentCaller(T* deviceZerothMoment, const T* const deviceColli
 /***** Moment computations: First *****/
 /**************************************/
 template<typename T,typename DESCRIPTOR>
-__global__ void computeFirstMomentKernel(T* firstMoment, const T* const collision, const BaseParams* const params) {
+__global__ void computeFirstMomentKernel(T* firstMoment, const T* const collision, const BaseParams* const params, bool computeVelocity) {
     // Local constants for easier access
     constexpr unsigned int D = DESCRIPTOR::LATTICE::D;
     constexpr unsigned int Q = DESCRIPTOR::LATTICE::Q;
@@ -260,16 +260,22 @@ __global__ void computeFirstMomentKernel(T* firstMoment, const T* const collisio
     unsigned int idxMoment  = GridGeometry2D<T>::pos(i - 1, j - 1, params->Nx - 2); // Since the zerothMoment array does not contain the ghost cells
 
     Cell<T,DESCRIPTOR> cell;
-    T U = cell.getFirstMomentX(&collision[idx * Q]);
-    T V = cell.getFirstMomentY(&collision[idx * Q]);
+    T U, V;
+    if (computeVelocity) {
+        U = cell.getVelocityX(&collision[idx * Q]);
+        V = cell.getVelocityY(&collision[idx * Q]);
+    } else {
+        U = cell.getFirstMomentX(&collision[idx * Q]);
+        V = cell.getFirstMomentY(&collision[idx * Q]);
+    }
 
     firstMoment[idxMoment * D]      = U;
     firstMoment[idxMoment * D + 1]  = V;
 }
 
 template<typename T,typename DESCRIPTOR>
-void computeFirstMomentCaller(T* deviceFirstMoment, const T* const deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize) {
-    computeFirstMomentKernel<T,DESCRIPTOR><<<gridSize, blockSize>>>(deviceFirstMoment, deviceCollision, params);
+void computeFirstMomentCaller(T* deviceFirstMoment, const T* const deviceCollision, const BaseParams* const params, bool computeVelocity, dim3 gridSize, dim3 blockSize) {
+    computeFirstMomentKernel<T,DESCRIPTOR><<<gridSize, blockSize>>>(deviceFirstMoment, deviceCollision, params, computeVelocity);
     cudaErrorCheck(cudaDeviceSynchronize());
 }
 
@@ -305,6 +311,6 @@ template void computeZerothMomentCaller<float,descriptors::StandardD2Q9<float>>(
 template void computeZerothMomentCaller<float,descriptors::ScalarD2Q9<float>>(float* deviceZerothMoment, const float* const deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
 template void computeZerothMomentCaller<float,descriptors::ScalarD2Q5<float>>(float* deviceZerothMoment, const float* const deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
 
-template void computeFirstMomentCaller<float,descriptors::StandardD2Q9<float>>(float* deviceFirstMoment, const float* const deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
-template void computeFirstMomentCaller<float,descriptors::ScalarD2Q9<float>>(float* deviceFirstMoment, const float* const deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
-template void computeFirstMomentCaller<float,descriptors::ScalarD2Q5<float>>(float* deviceFirstMoment, const float* const deviceCollision, const BaseParams* const params, dim3 gridSize, dim3 blockSize);
+template void computeFirstMomentCaller<float,descriptors::StandardD2Q9<float>>(float* deviceFirstMoment, const float* const deviceCollision, const BaseParams* const params, bool computeVelocity, dim3 gridSize, dim3 blockSize);
+template void computeFirstMomentCaller<float,descriptors::ScalarD2Q9<float>>(float* deviceFirstMoment, const float* const deviceCollision, const BaseParams* const params, bool computeVelocity, dim3 gridSize, dim3 blockSize);
+template void computeFirstMomentCaller<float,descriptors::ScalarD2Q5<float>>(float* deviceFirstMoment, const float* const deviceCollision, const BaseParams* const params, bool computeVelocity, dim3 gridSize, dim3 blockSize);
