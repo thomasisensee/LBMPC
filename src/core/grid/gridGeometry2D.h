@@ -9,7 +9,7 @@
 template<typename T>
 class GridGeometry2D : public GridGeometry1D<T> {
 protected:
-    /// Number of nodes in the direction x and y
+    /// Number of nodes in the y direction
     const unsigned int _nY;
 
 public:
@@ -23,9 +23,11 @@ public:
     unsigned int getGhostNy() const;
 
     /// Read access to grid volume
-    unsigned int getVolume() const;
+    unsigned int getVolume() const override;
+
     /// Read access to grid volume
-    unsigned int getGhostVolume() const;
+    unsigned int getGhostVolume() const override;
+
     /// Prints grid details
     void printParameters() const override;
 };

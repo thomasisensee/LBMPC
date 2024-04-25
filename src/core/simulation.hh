@@ -122,10 +122,10 @@ LBFluidSimulation<T,DESCRIPTOR>::LBFluidSimulation(
 
 template<typename T,typename DESCRIPTOR>
 void LBFluidSimulation<T,DESCRIPTOR>::simulationSteps(unsigned int iter) {
-        this->_lbGrid->applyBoundaryConditions();
-        this->_lbGrid->performStreamingStep();
-        this->_lbGrid->performCollisionStep();
-        this->checkOutput(iter);
+    this->_lbGrid->applyBoundaryConditions();
+    this->_lbGrid->performStreamingStep();
+    this->_lbGrid->performCollisionStep();
+    this->checkOutput(iter);
 }
 
 /******************************************************************************/
@@ -143,15 +143,15 @@ LBCoupledSimulation<T,MOMENTUM_DESCRIPTOR,THERMAL_DESCRIPTOR>::LBCoupledSimulati
 
 template<typename T,typename MOMENTUM_DESCRIPTOR,typename THERMAL_DESCRIPTOR>
 void LBCoupledSimulation<T,MOMENTUM_DESCRIPTOR,THERMAL_DESCRIPTOR>::simulationSteps(unsigned int iter) {
-        this->_lbGrid->applyBoundaryConditions();
-        this->_lbGridThermal->applyBoundaryConditions();
-        this->_lbGrid->performStreamingStep();
-        this->_lbGridThermal->performStreamingStep();
-        this->_lbGrid->computeVelocity();
-        this->_lbGridThermal->computeZerothMoment();
-        this->_lbGrid->performCollisionStep();
-        this->_lbGridThermal->performCollisionStep();
-        this->checkOutput(iter);
+    this->_lbGrid->applyBoundaryConditions();
+    this->_lbGridThermal->applyBoundaryConditions();
+    this->_lbGrid->performStreamingStep();
+    this->_lbGridThermal->performStreamingStep();
+    this->_lbGrid->computeVelocity();
+    this->_lbGridThermal->computeZerothMoment();
+    this->_lbGrid->performCollisionStep();
+    this->_lbGridThermal->performCollisionStep();
+    this->checkOutput(iter);
 }
 
 template<typename T,typename MOMENTUM_DESCRIPTOR,typename THERMAL_DESCRIPTOR>
